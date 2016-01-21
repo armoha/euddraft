@@ -2,6 +2,6 @@
     "input":  "basemap.scx",
     "output": "testmap.scx",
     "plugins": [
-        "example_plugin_1"
+        "unlimiter"
     ]
 }

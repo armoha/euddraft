@@ -1,12 +1,28 @@
 import eudplib as ep
 import runpy as rp
 import sys
+import os
 import json
-import traceback
 
 
+# Get absolute path of current executable
+if getattr(sys, 'frozen', False):
+    # frozen
+    basepath = os.path.dirname(sys.executable)
+else:
+    # unfrozen
+    basepath = os.path.dirname(os.path.realpath(__file__))
+
+
+# Needed for defaulting function
 def empty():
     pass
+
+
+# --------------------------------------
+# --------------------------------------
+# --------------------------------------
+
 
 # Load input json file
 
@@ -28,6 +44,7 @@ print('---------- Loading plugins... ----------')
 
 pluginList = {}
 
+
 for pluginSetting in pluginSettingList:
     if isinstance(pluginSetting, str):
         pluginName = pluginSetting
@@ -40,11 +57,8 @@ for pluginSetting in pluginSettingList:
     print('Loading plugin %s...' % pluginName)
 
     try:
-        pluginDict = rp.run_path(
-            'plugins/%s.py' % pluginName,
-            pluginArgs,
-            pluginName
-        )
+        pluginPath = os.path.join(basepath, 'plugins', '%s.py' % pluginName)
+        pluginDict = rp.run_path(pluginPath, pluginArgs, pluginName)
 
         if pluginDict:
             onPluginStart = pluginDict.get('onPluginStart', empty)
@@ -57,8 +71,7 @@ for pluginSetting in pluginSettingList:
             )
 
     except Exception as e:
-        print('Error on loading plugin %s.' % pluginName)
-        traceback.print_exc()
+        print('Error on loading plugin %s : %s' % (pluginName, e.__repr__()))
 
 
 # Create main function
