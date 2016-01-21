@@ -28,6 +28,7 @@ def empty():
 
 if len(sys.argv) != 2:
     print("Usage : euddraft [setting file]")
+    input()
     sys.exit(1)
 
 sfname = sys.argv[1]
@@ -35,6 +36,11 @@ settings = json.load(open(sfname, 'r'))
 
 ifname = settings['input']
 ofname = settings['output']
+if ifname == ofname:
+    print('input and output should be different')
+    input()
+    sys.exit(2)
+
 pluginSettingList = settings['plugins']
 
 
@@ -96,7 +102,7 @@ def main():
         ep.RunTrigTrigger()
         ep.f_setcurpl(currentPlayer)
 
-        for pluginName, plugin in pluginList.items():
+        for pluginName, plugin in reversed(pluginList.items()):
             afterTriggerExec = plugin[2]
             afterTriggerExec()
 
