@@ -9,4 +9,4 @@ from eudplib import *
 
 def onPluginStart():
     strOffsetEPD = f_epdread_epd(EPD(0x5993D4))
-    DoActions(SetDeaths(strOffsetEPD - 1, Add, 0x01000000))
+    DoActions(SetDeaths(strOffsetEPD - 1, Add, 0x01000000, 0))

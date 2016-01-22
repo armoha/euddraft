@@ -1,0 +1,15 @@
+{
+    'input':  "basemap.scx",
+    "output": "output.scx",
+    "plugins": [
+        "keepSTR",
+        {
+            "name": "dataDumper",
+            "args": {
+                "datas": [
+                    ["myiscript.bin", 0x6D1200]
+                ]
+            }
+        }
+    ]
+}

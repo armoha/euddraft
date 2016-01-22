@@ -5,7 +5,7 @@ sys.argv.append('build_exe')
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
-    "packages": ["os", "sys", "importlib", ]
+    "packages": ["os", "sys", "importlib", "json", "eudplib"]
 }
 
 # GUI applications require a different base on Windows (the default is for a
