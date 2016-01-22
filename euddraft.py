@@ -30,6 +30,7 @@ try:
         sys.exit(1)
 
     sfname = sys.argv[1]
+    os.chdir(os.path.dirname(sfname))
     settings = yaml.load(open(sfname, 'r').read())
 
     ifname = settings['input']
