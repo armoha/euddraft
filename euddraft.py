@@ -74,8 +74,12 @@ try:
         print('Loading plugin %s...' % pluginName)
 
         try:
-            pluginPath = os.path.join(
-                basepath, 'plugins', '%s.py' % pluginName)
+            if os.path.isabs(pluginName):
+                pluginPath = pluginName
+            else:
+                pluginPath = os.path.join(
+                    basepath, 'plugins', '%s.py' % pluginName)
+
             pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
 
             if pluginDict:
