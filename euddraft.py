@@ -2,8 +2,10 @@ import eudplib as ep
 import runpy as rp
 import sys
 import os
-import yaml
 import traceback
+import configparser
+
+config = configparser.ConfigParser()
 
 try:
     # Get absolute path of current executable
@@ -22,7 +24,7 @@ try:
     # --------------------------------------
     # --------------------------------------
 
-    # Load input json file
+    # Load input setting file
 
     if len(sys.argv) != 2:
         print("Usage : euddraft [setting file]")
@@ -30,70 +32,78 @@ try:
         sys.exit(1)
 
     sfname = sys.argv[1]
-    os.chdir(os.path.dirname(sfname))
-    settings = yaml.load(open(sfname, 'r').read())
 
-    ifname = settings['input']
-    ofname = settings['output']
+    dirname, filename = os.path.split(sfname)
+    if dirname:
+        os.chdir(dirname)
+
+    if not config.read(filename):
+        print('Cannot read setting file \"%s\".' % sfname)
+        input()
+        sys.exit(3)
+
+    if 'main' not in config:
+        print('Setting file doesn\'t have \"main\" section.')
+        input()
+        sys.exit(3)
+
+    mainSection = config['main']
+    ifname = mainSection['input']
+    ofname = mainSection['output']
     if ifname == ofname:
         print('input and output should be different')
         input()
         sys.exit(2)
 
-    pluginSettingList = settings['plugins']
-
     # Load plugins
 
     print('---------- Loading plugins... ----------')
 
-    pluginList = {}
+    pluginList = list(filter(lambda x: x != 'main', config.sections()))
 
-    for pluginSetting in pluginSettingList:
-        if isinstance(pluginSetting, str):
-            pluginName = pluginSetting
-            pluginArgs = {}
+    pluginFuncDict = {}
+    loadedPluginList = []
+    for pluginName in pluginList:
+        if pluginName == 'main':  # Map settings -> pass
+            pass
 
-        else:
-            pluginName = pluginSetting['name']
-            pluginArgs = pluginSetting.get('args', {})
-            if not isinstance(pluginArgs, dict):
-                print('Invalid plugin argument %s' % pluginArgs)
-                pluginArgs = {}
+        pluginSettings = {
+            'settings': config[pluginName]
+        }
 
         print('Loading plugin %s...' % pluginName)
 
         try:
             pluginPath = os.path.join(
                 basepath, 'plugins', '%s.py' % pluginName)
-            pluginDict = rp.run_path(pluginPath, pluginArgs, pluginName)
+            pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
 
             if pluginDict:
                 onPluginStart = pluginDict.get('onPluginStart', empty)
                 beforeTriggerExec = pluginDict.get('beforeTriggerExec', empty)
                 afterTriggerExec = pluginDict.get('afterTriggerExec', empty)
-                pluginList[pluginName] = (
+                pluginFuncDict[pluginName] = (
                     onPluginStart,
                     beforeTriggerExec,
                     afterTriggerExec
                 )
 
         except Exception as e:
-            print('Error on loading plugin %s : %s'
-                  % (pluginName, e.__repr__()))
+            raise RuntimeError('Error on loading plugin \"%s\"' % pluginName)
 
     # Create main function
 
     @ep.EUDFunc
     def main():
         # init plugins
-        for pluginName, plugin in pluginList.items():
-            onPluginStart = plugin[0]
+        for pluginName in pluginList:
+            onPluginStart = pluginFuncDict[pluginName][0]
             onPluginStart()
 
         # do trigger loop
         if ep.EUDInfLoop()():
-            for pluginName, plugin in pluginList.items():
-                beforeTriggerExec = plugin[1]
+            for pluginName in pluginList:
+                beforeTriggerExec = pluginFuncDict[pluginName][1]
                 beforeTriggerExec()
 
             # eudplib v0.50 has bug that RunTrigTrigger don't revert Current
@@ -102,8 +112,8 @@ try:
             ep.RunTrigTrigger()
             ep.f_setcurpl(currentPlayer)
 
-            for pluginName, plugin in pluginList.items():
-                afterTriggerExec = plugin[2]
+            for pluginName in reversed(pluginList):
+                afterTriggerExec = pluginFuncDict[pluginName][2]
                 afterTriggerExec()
 
             ep.EUDDoEvents()

@@ -1,16 +1,9 @@
-{
-    "input":  "basemap.scx",
-    "output": "testmap.scx",
-    "plugins": [
-        "unlimiter",
-        {
-            "name": "dataDumper",
-            "args": {
-                "dataList": [
-                    ["iscript_fix.bin", 0x123450],
-                    ["test2.grp", 0x123454]
-                ]
-            }
-        }
-    ]
-}
+[main]
+input: basemap.scx
+output: testmap.scx
+
+[unlimiter]
+
+[dataDumper]
+iscript_fix.bin : 0x123450
+test2.grp: 0x123454

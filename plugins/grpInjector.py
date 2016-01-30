@@ -1,17 +1,25 @@
+'''
+grpInjector v1
+'''
+
+
 from eudplib import *
+
+inputGrps = []
 
 
 def onPluginStart():
-    try:
-        grpList = args['grpList']
-        for grpPath, outOffsets in grpList:
-            inputGrp = EUDGrp(grppath)
-            if isinstance(outOffsets, int):
-                DoActions(SetMemory(outOffsets, SetTo, inputGrp))
-            else:
-                DoActions([
-                    SetMemory(outOffset, SetTo, inputGrp)
-                    for outOffset in outOffsets])
+    for inputGrp, outOffsets in inputGrps:
+        DoActions([
+            SetMemory(outOffset, SetTo, inputGrp)
+            for outOffset in outOffsets])
 
-    except KeyError as e:
-        raise RuntimeError('No argument \'grplist\'', e)
+
+def onInit():
+    for grpPath, outOffsets in settings.items():
+        print(' - Loading file \"%s\"...' % grpPath)
+        inputGrp = EUDGrp(grpPath)
+        outOffsets = map(lambda x: int(x, 0), outOffsets.split(','))
+        inputGrps.append((inputGrp, outOffsets))
+
+onInit()
