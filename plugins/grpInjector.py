@@ -19,7 +19,7 @@ def onInit():
     for grpPath, outOffsets in settings.items():
         print(' - Loading file \"%s\"...' % grpPath)
         inputGrp = EUDGrp(grpPath)
-        outOffsets = map(lambda x: int(x, 0), outOffsets.split(','))
+        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
         inputGrps.append((inputGrp, outOffsets))
 
 onInit()

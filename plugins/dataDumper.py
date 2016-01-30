@@ -18,7 +18,7 @@ def onInit():
     for dataPath, outOffsets in settings.items():
         print(' - Loading file \"%s\"...' % dataPath)
         inputData = Db(open(dataPath, 'rb').read())
-        outOffsets = map(lambda x: int(x, 0), outOffsets.split(','))
+        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
         inputDatas.append((inputData, outOffsets))
 
 onInit()

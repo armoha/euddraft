@@ -1,20 +1,24 @@
 '''
-dataDumper v1
+dataDumper v2
 '''
 
 from eudplib import *
 
+inputDatas = []
+
 
 def onPluginStart():
-    try:
-        for dataPath, outOffsets in dataList:
-            inputData = Db(open(dataPath, 'rb').read())
-            if isinstance(outOffsets, int):
-                DoActions(SetMemory(outOffsets, SetTo, inputData))
-            else:
-                DoActions([
-                    SetMemory(outOffset, SetTo, inputData)
-                    for outOffset in outOffsets])
+    for inputData, outOffsets in inputDatas:
+        DoActions([
+            SetMemory(outOffset, SetTo, inputData)
+            for outOffset in outOffsets])
 
-    except KeyError as e:
-        raise RuntimeError('No argument \'datalist\'', e)
+
+def onInit():
+    for dataPath, outOffsets in settings.items():
+        print(' - Loading file \"%s\"...' % dataPath)
+        inputData = Db(open(dataPath, 'rb').read())
+        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
+        inputDatas.append((inputData, outOffsets))
+
+onInit()

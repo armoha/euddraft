@@ -5,4 +5,4 @@ output: output.scx
 [keepSTR]
 
 [dataDumper]
-myiscript.bin : 0x6D1200, 0x58A364
+myiscript.bin : 0x6D1200, 0x58A364 + 4
