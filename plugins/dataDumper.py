@@ -9,6 +9,7 @@ inputDatas = []
 
 def onPluginStart():
     for inputData, outOffsets in inputDatas:
+        f_patchdw
         DoActions([
             SetMemory(outOffset, SetTo, inputData)
             for outOffset in outOffsets])

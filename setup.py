@@ -5,7 +5,7 @@ sys.argv.append('build_exe')
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
-    'append_script_to_exe':True,
+    'append_script_to_exe': True,
     "packages": ["os", "sys", "importlib", "json", "eudplib", "yaml"],
     "compressed": True,
     "optimize": 2
@@ -16,7 +16,7 @@ build_exe_options = {
 
 setup(
     name="euddraft",
-    version='0.1.1',
+    version='0.2',
     description="euddraft main executable",
     options={
         "build_exe": build_exe_options

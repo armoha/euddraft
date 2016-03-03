@@ -8,6 +8,8 @@ import configparser
 config = configparser.ConfigParser()
 
 try:
+    print("euddraft v0.02 : Simple eudplib plugin system")
+
     # Get absolute path of current executable
     if getattr(sys, 'frozen', False):
         # frozen
@@ -74,7 +76,8 @@ try:
         print('Loading plugin %s...' % pluginName)
 
         try:
-            if os.path.isabs(pluginName):
+            # real python name
+            if pluginName[-3:] == 'py':
                 pluginPath = pluginName
             else:
                 pluginPath = os.path.join(

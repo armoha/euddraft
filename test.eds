@@ -5,5 +5,4 @@ output: testmap.scx
 [unlimiter]
 
 [dataDumper]
-iscript_fix.bin : 0x123450
 test2.grp: 0x123454
