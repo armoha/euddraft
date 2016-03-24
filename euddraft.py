@@ -77,7 +77,7 @@ try:
 
         try:
             # real python name
-            if pluginName[-3:] == 'py':
+            if pluginName[-3:] == '.py':
                 pluginPath = pluginName
             else:
                 pluginPath = os.path.join(
