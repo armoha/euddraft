@@ -9,9 +9,24 @@ inputDatas = []
 
 def onPluginStart():
     for inputData, outOffsets in inputDatas:
-        DoActions([
-            SetMemory(outOffset, SetTo, inputData)
-            for outOffset in outOffsets])
+        if len(outOffsets) == 0:
+            continue
+
+        # Reset?
+        if isinstance(outOffsets[-1], bool):
+            doReset = bool(outOffsets[-1])
+            outOffsets = outOffsets[:-1]
+        else:
+            doReset = False
+
+        if doReset:
+            for outOffset in outOffsets:
+                f_dwpatch_epd(EPD(outOffset), inputData)
+
+        else:
+            DoActions([
+                SetMemory(outOffset, SetTo, inputData)
+                for outOffset in outOffsets])
 
 
 def onInit():
