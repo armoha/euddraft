@@ -1,25 +1,54 @@
-'''
-grpInjector v1
-'''
-
-
 from eudplib import *
 
-inputGrps = []
+inputDatas = []
+
+
+class _Flag:
+    pass
+
+copy = _Flag()
+unpatchable = _Flag()
 
 
 def onPluginStart():
-    for inputGrp, outOffsets in inputGrps:
-        DoActions([
-            SetMemory(outOffset, SetTo, inputGrp)
-            for outOffset in outOffsets])
+    for inputData, outOffsets, flags in inputDatas:
+        if len(outOffsets) == 0:
+            continue
+
+        # Reset?
+        if unpatchable in flags:
+            assert copy not in flags, "Cannot apply both 'copy' and 'unpatchable'"
+            for outOffset in outOffsets:
+                f_dwpatch_epd(EPD(outOffset), EUDGrp(inputData))
+
+        elif copy in flags:
+            inputData_db = EUDGrp(inputData)
+            inputDwordN = (len(inputData) + 3) // 4
+
+            for outOffset in outOffsets:
+                addrEPD = f_epdread_epd(EPD(outOffset))
+                f_repmovsd(addrEPD, EPD(inputData_db), inputDwordN)
+
+        else:
+            DoActions([
+                SetMemory(outOffset, SetTo, EUDGrp(inputData))
+                for outOffset in outOffsets])
 
 
 def onInit():
-    for grpPath, outOffsets in settings.items():
-        print(' - Loading file \"%s\"...' % grpPath)
-        inputGrp = EUDGrp(grpPath)
-        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
-        inputGrps.append((inputGrp, outOffsets))
+    for dataPath, outOffsetStr in settings.items():
+        print(' - Loading file \"%s\"...' % dataPath)
+        inputData = open(dataPath, 'rb').read()
+        flags = set()
+        outOffsets = []
+
+        for outOffset in outOffsetStr.split(','):
+            outOffset = eval(outOffset)
+            if isinstance(outOffset, _Flag):
+                flags.add(outOffset)
+            else:
+                outOffsets.append(outOffset)
+
+        inputDatas.append((inputData, outOffsets, flags))
 
 onInit()

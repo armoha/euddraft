@@ -5,4 +5,7 @@ output: output.scx
 [keepSTR]
 
 [dataDumper]
-myiscript.bin : 0x6D1200
+myiscript.bin : 0x6D1200, unpatchable
+
+[noAirCollision]
+[unlimiter]

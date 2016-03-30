@@ -1,25 +1,39 @@
 '''
-grpInjector v1
+grpInjector v3
 '''
-
 
 from eudplib import *
 
-inputGrps = []
+inputDatas = []
 
 
 def onPluginStart():
-    for inputGrp, outOffsets in inputGrps:
-        DoActions([
-            SetMemory(outOffset, SetTo, inputGrp)
-            for outOffset in outOffsets])
+    for inputData, outOffsets in inputDatas:
+        if len(outOffsets) == 0:
+            continue
+
+        # Reset?
+        if isinstance(outOffsets[-1], bool):
+            doReset = bool(outOffsets[-1])
+            outOffsets = outOffsets[:-1]
+        else:
+            doReset = False
+
+        if doReset:
+            for outOffset in outOffsets:
+                f_dwpatch_epd(EPD(outOffset), inputData)
+
+        else:
+            DoActions([
+                SetMemory(outOffset, SetTo, inputData)
+                for outOffset in outOffsets])
 
 
 def onInit():
-    for grpPath, outOffsets in settings.items():
-        print(' - Loading file \"%s\"...' % grpPath)
-        inputGrp = EUDGrp(grpPath)
-        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
-        inputGrps.append((inputGrp, outOffsets))
+    for dataPath, outOffsets in settings.items():
+        print(' - Loading file \"%s\"...' % dataPath)
+        inputData = EUDGrp(dataPath)
+        outOffsets = list(map(lambda x: eval(x), outOffsets.split(',')))
+        inputDatas.append((inputData, outOffsets))
 
 onInit()

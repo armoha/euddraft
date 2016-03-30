@@ -1,39 +1,54 @@
-'''
-dataDumper v2
-'''
-
 from eudplib import *
 
 inputDatas = []
 
 
+class _Flag:
+    pass
+
+copy = _Flag()
+unpatchable = _Flag()
+
+
 def onPluginStart():
-    for inputData, outOffsets in inputDatas:
+    for inputData, outOffsets, flags in inputDatas:
         if len(outOffsets) == 0:
             continue
 
         # Reset?
-        if isinstance(outOffsets[-1], bool):
-            doReset = bool(outOffsets[-1])
-            outOffsets = outOffsets[:-1]
-        else:
-            doReset = False
-
-        if doReset:
+        if unpatchable in flags:
+            assert copy not in flags, "Cannot apply both 'copy' and 'unpatchable'"
             for outOffset in outOffsets:
-                f_dwpatch_epd(EPD(outOffset), inputData)
+                f_dwpatch_epd(EPD(outOffset), Db(inputData))
+
+        elif copy in flags:
+            inputData_db = Db(inputData)
+            inputDwordN = (len(inputData) + 3) // 4
+
+            for outOffset in outOffsets:
+                addrEPD = f_epdread_epd(EPD(outOffset))
+                f_repmovsd(addrEPD, EPD(inputData_db), inputDwordN)
 
         else:
             DoActions([
-                SetMemory(outOffset, SetTo, inputData)
+                SetMemory(outOffset, SetTo, Db(inputData))
                 for outOffset in outOffsets])
 
 
 def onInit():
-    for dataPath, outOffsets in settings.items():
+    for dataPath, outOffsetStr in settings.items():
         print(' - Loading file \"%s\"...' % dataPath)
-        inputData = Db(open(dataPath, 'rb').read())
-        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
-        inputDatas.append((inputData, outOffsets))
+        inputData = open(dataPath, 'rb').read()
+        flags = set()
+        outOffsets = []
+
+        for outOffset in outOffsetStr.split(','):
+            outOffset = eval(outOffset)
+            if isinstance(outOffset, _Flag):
+                flags.add(outOffset)
+            else:
+                outOffsets.append(outOffset)
+
+        inputDatas.append((inputData, outOffsets, flags))
 
 onInit()

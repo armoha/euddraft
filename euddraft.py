@@ -1,144 +1,131 @@
-import eudplib as ep
-import runpy as rp
 import sys
 import os
-import traceback
-import configparser
+import winsound as ws
+import time
+import ctypes
 
-config = configparser.ConfigParser()
 
-try:
-    print("euddraft v0.02 : Simple eudplib plugin system")
+from pluginLoader import loadPluginsFromConfig
+from applyeuddraft import applyEUDDraft
+from readconfig import readconfig
 
-    # Get absolute path of current executable
-    if getattr(sys, 'frozen', False):
-        # frozen
-        basepath = os.path.dirname(sys.executable)
-    else:
-        # unfrozen
-        basepath = os.path.dirname(os.path.realpath(__file__))
 
-    # Needed for defaulting function
-    def empty():
-        pass
+def MessageBox(title, text, style=0):
+    """ Helper function """
+    hWnd = ctypes.windll.kernel32.GetConsoleWindow()
+    ctypes.windll.user32.SetForegroundWindow(hWnd)
+    ctypes.windll.user32.BringWindowToTop(hWnd)
+    ctypes.windll.user32.SetForegroundWindow(hWnd)
+    ctypes.windll.user32.MessageBoxW(0, text, title, style)
 
-    # --------------------------------------
-    # --------------------------------------
-    # --------------------------------------
 
-    # Load input setting file
 
-    if len(sys.argv) != 2:
-        print("Usage : euddraft [setting file]")
+# Intro!
+print("euddraft v0.3 : Simple eudplib plugin system")
+
+if len(sys.argv) != 2:
+    raise RuntimeError("Usage : euddraft [setting file]")
+
+
+# Chdir
+sfname = sys.argv[1]
+oldpath = os.getcwd()
+dirname, sfname = os.path.split(sfname)
+if dirname:
+    os.chdir(dirname)
+
+
+# Use simple setting system
+if sfname[-4:] == '.eds':
+    print(' - Running euddraft in compile mode')
+    try:
+        config = readconfig(sfname)
+        mainSection = config['main']
+        ifname = mainSection['input']
+        ofname = mainSection['output']
+        if ifname == ofname:
+            raise RuntimeError('input and output file should be different.')
+
+        print('---------- Loading plugins... ----------')
+        pluginList, pluginFuncDict = loadPluginsFromConfig(config)
+
+        print('--------- Injecting plugins... ---------')
+        applyEUDDraft(ifname, ofname, pluginList, pluginFuncDict)
+
+    except Exception as e:
+        print("==========================================")
+        print("[Error] %s" % e)
         input()
-        sys.exit(1)
 
-    sfname = sys.argv[1]
 
-    dirname, filename = os.path.split(sfname)
-    if dirname:
-        os.chdir(dirname)
+# Use daemon system
+elif sfname[-4:] == '.edd':
+    print(' - Running euddraft in daemon mode')
+    config_mttime = None
+    input_mttime = None
+    ifname = None
 
-    if not config.read(filename):
-        print('Cannot read setting file \"%s\".' % sfname)
-        input()
-        sys.exit(3)
-
-    if 'main' not in config:
-        print('Setting file doesn\'t have \"main\" section.')
-        input()
-        sys.exit(3)
-
-    mainSection = config['main']
-    ifname = mainSection['input']
-    ofname = mainSection['output']
-    if ifname == ofname:
-        print('input and output should be different')
-        input()
-        sys.exit(2)
-
-    # Load plugins
-
-    print('---------- Loading plugins... ----------')
-
-    pluginList = list(filter(lambda x: x != 'main', config.sections()))
-
-    pluginFuncDict = {}
-    loadedPluginList = []
-    for pluginName in pluginList:
-        if pluginName == 'main':  # Map settings -> pass
-            pass
-
-        pluginSettings = {
-            'settings': config[pluginName]
-        }
-
-        print('Loading plugin %s...' % pluginName)
-
+    def checkNeedUpdate(old_mttime, fname):
         try:
-            # real python name
-            if pluginName[-3:] == '.py':
-                pluginPath = pluginName
-            else:
-                pluginPath = os.path.join(
-                    basepath, 'plugins', '%s.py' % pluginName)
+            new_mttime = os.path.getmtime(fname)
+        except OSError:
+            new_mttime = None
 
-            pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
-
-            if pluginDict:
-                onPluginStart = pluginDict.get('onPluginStart', empty)
-                beforeTriggerExec = pluginDict.get('beforeTriggerExec', empty)
-                afterTriggerExec = pluginDict.get('afterTriggerExec', empty)
-                pluginFuncDict[pluginName] = (
-                    onPluginStart,
-                    beforeTriggerExec,
-                    afterTriggerExec
-                )
-
-        except Exception as e:
-            raise RuntimeError('Error on loading plugin \"%s\"' % pluginName)
-
-    # Create main function
-
-    @ep.EUDFunc
-    def main():
-        # init plugins
-        for pluginName in pluginList:
-            onPluginStart = pluginFuncDict[pluginName][0]
-            onPluginStart()
-
-        # do trigger loop
-        if ep.EUDInfLoop()():
-            for pluginName in pluginList:
-                beforeTriggerExec = pluginFuncDict[pluginName][1]
-                beforeTriggerExec()
-
-            # eudplib v0.50 has bug that RunTrigTrigger don't revert Current
-            # player after RunTrigTriger call, so we have to do it manually.
-            currentPlayer = ep.f_getcurpl()
-            ep.RunTrigTrigger()
-            ep.f_setcurpl(currentPlayer)
-
-            for pluginName in reversed(pluginList):
-                afterTriggerExec = pluginFuncDict[pluginName][2]
-                afterTriggerExec()
-
-            ep.EUDDoEvents()
-
-        ep.EUDEndInfLoop()
-
-    # Inject
-
-    print('--------- Injecting plugins... ---------')
-
-    ep.LoadMap(ifname)
-    ep.SaveMap(ofname, main)
+        return old_mttime != new_mttime
 
 
-except Exception as e:
-    print("==========================================")
-    print("==========================================")
-    print("Exception occured while running euddraft.")
+    while True:
+        needUpdate = False
 
-    traceback.print_exc()
-    input()
+        # Check if any of file is updated
+        if checkNeedUpdate(config_mttime, sfname):
+            needUpdate = True
+
+        elif ifname:
+            if checkNeedUpdate(input_mttime, ifname):
+                needUpdate = True
+
+        if needUpdate:
+            print("\n\n[[Updating on %s]]" % time.strftime("%Y-%m-%d %H:%M:%S"))
+            try:
+                try:
+                    config = readconfig(sfname)
+                except OSError as e:
+                    config_mttime = None
+                    raise
+
+                ifname = config['main']['input']
+                ofname = config['main']['output']
+
+                try:
+                    config_mttime = os.path.getmtime(sfname)
+                except OSError:
+                    config_mttime = None
+                    raise
+
+                try:
+                    input_mttime = os.path.getmtime(ifname)
+                except OSError:
+                    input_mttime = None
+                    raise
+
+                print('---------- Loading plugins... ----------')
+                pluginList, pluginFuncDict = loadPluginsFromConfig(config)
+                print('--------- Injecting plugins... ---------')
+                applyEUDDraft(ifname, ofname, pluginList, pluginFuncDict)
+
+                ws.MessageBeep(ws.MB_OK)
+
+            except Exception as e:
+                print("[Error] %s" % e)
+                ws.MessageBeep(ws.MB_ICONHAND)
+                MessageBox('Error', str(e))
+
+        time.sleep(1)
+
+
+# else
+else:
+    print("Invalid extension %s" % os.path.splitext(sfname)[1])
+
+os.chdir(os.getcwd())

@@ -1,5 +1,5 @@
 '''
-dataDumper v2
+dataDumper v3
 '''
 
 from eudplib import *
@@ -7,19 +7,51 @@ from eudplib import *
 inputDatas = []
 
 
+class _Flag:
+    pass
+
+copy = _Flag()
+unpatchable = _Flag()
+
+
 def onPluginStart():
-    for inputData, outOffsets in inputDatas:
-        f_patchdw
-        DoActions([
-            SetMemory(outOffset, SetTo, inputData)
-            for outOffset in outOffsets])
+    for inputData, outOffsets, flags in inputDatas:
+        if len(outOffsets) == 0:
+            continue
+
+        # Reset?
+        if unpatchable in flags:
+            assert copy not in flags, "Cannot apply both 'copy' and 'unpatchable'"
+            for outOffset in outOffsets:
+                f_dwpatch_epd(EPD(outOffset), Db(inputData))
+
+        elif copy in flags:
+            inputData_db = Db(inputData)
+            inputDwordN = (len(inputData) + 3) // 4
+
+            for outOffset in outOffsets:
+                f_repmovsd_epd(EPD(outOffset), EPD(inputData_db), inputDwordN)
+
+        else:
+            DoActions([
+                SetMemory(outOffset, SetTo, Db(inputData))
+                for outOffset in outOffsets])
 
 
 def onInit():
-    for dataPath, outOffsets in settings.items():
+    for dataPath, outOffsetStr in settings.items():
         print(' - Loading file \"%s\"...' % dataPath)
-        inputData = Db(open(dataPath, 'rb').read())
-        outOffsets = map(lambda x: eval(x), outOffsets.split(','))
-        inputDatas.append((inputData, outOffsets))
+        inputData = open(dataPath, 'rb').read()
+        flags = set()
+        outOffsets = []
+
+        for outOffset in outOffsetStr.split(','):
+            outOffset = eval(outOffset)
+            if isinstance(outOffset, _Flag):
+                flags.add(outOffset)
+            else:
+                outOffsets.append(outOffset)
+
+        inputDatas.append((inputData, outOffsets, flags))
 
 onInit()

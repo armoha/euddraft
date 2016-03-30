@@ -12,7 +12,7 @@ def beforeTriggerExec():
     t = EUDLightVariable()
     t << 29244 // 4
 
-    if EUDWhile(t >= 1):
+    if EUDWhile()(t >= 1):
         DoActions([
             t.SubtractNumber(1),
             SetDeaths(m, SetTo, 0, 0),
