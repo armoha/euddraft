@@ -2,7 +2,4 @@
 input: basemap.scx
 output: testmap.scx
 
-[unlimiter]
-
-[dataDumper]
-test2.grp: 0x123454
+[soundStopper]

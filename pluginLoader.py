@@ -12,11 +12,24 @@ else:
     basepath = os.path.dirname(os.path.realpath(__file__))
 
 
+def getPluginPath(pluginName):
+    if pluginName[-3:] == '.py':
+        pluginPath = pluginName
+    else:
+        pluginPath = os.path.join(
+            basepath, 'plugins', '%s.py' % pluginName)
+
+    return pluginPath
+
+
+def empty():
+    pass
+
+
 def loadPluginsFromConfig(config):
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != 'main']
     pluginFuncDict = {}
-    empty = lambda: None  # Do-nothing function
 
     for pluginName in pluginList:
         pluginSettings = {'settings': config[pluginName]}
@@ -24,11 +37,7 @@ def loadPluginsFromConfig(config):
         print('Loading plugin %s...' % pluginName)
 
         # real python name
-        if pluginName[-3:] == '.py':
-            pluginPath = pluginName
-        else:
-            pluginPath = os.path.join(
-                basepath, 'plugins', '%s.py' % pluginName)
+        pluginPath = getPluginPath(pluginName)
 
         try:
             pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
@@ -46,7 +55,7 @@ def loadPluginsFromConfig(config):
         except (KeyboardInterrupt, SystemExit):
             raise
 
-        except Exception as e:
-            raise RuntimeError('Error loading plugin "%s" : %s' % (pluginName, e))
+        except Exception:
+            raise RuntimeError('Error loading plugin "%s"' % pluginName)
 
     return pluginList, pluginFuncDict

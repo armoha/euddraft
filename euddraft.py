@@ -4,10 +4,13 @@ import winsound as ws
 import time
 import ctypes
 
+import traceback
 
-from pluginLoader import loadPluginsFromConfig
+from pluginLoader import loadPluginsFromConfig, getPluginPath
 from applyeuddraft import applyEUDDraft
 from readconfig import readconfig
+
+import eudplib as ep
 
 
 def MessageBox(title, text, style=0):
@@ -19,9 +22,9 @@ def MessageBox(title, text, style=0):
     ctypes.windll.user32.MessageBoxW(0, text, title, style)
 
 
-
 # Intro!
-print("euddraft v0.3 : Simple eudplib plugin system")
+print("euddraft v0.4 : Simple eudplib plugin system")
+print(" - Using eudplib version %s" % ep.eudplibVersion())
 
 if len(sys.argv) != 2:
     raise RuntimeError("Usage : euddraft [setting file]")
@@ -63,6 +66,7 @@ elif sfname[-4:] == '.edd':
     print(' - Running euddraft in daemon mode')
     config_mttime = None
     input_mttime = None
+    plugins_mttime = {}
     ifname = None
 
     def checkNeedUpdate(old_mttime, fname):
@@ -72,7 +76,6 @@ elif sfname[-4:] == '.edd':
             new_mttime = None
 
         return old_mttime != new_mttime
-
 
     while True:
         needUpdate = False
@@ -85,8 +88,16 @@ elif sfname[-4:] == '.edd':
             if checkNeedUpdate(input_mttime, ifname):
                 needUpdate = True
 
+        for pluginName, plugin_mttime in plugins_mttime.items():
+            pluginPath = getPluginPath(pluginName)
+            if checkNeedUpdate(plugin_mttime, pluginPath):
+                needUpdate = True
+
         if needUpdate:
-            print("\n\n[[Updating on %s]]" % time.strftime("%Y-%m-%d %H:%M:%S"))
+            print(
+                "\n\n[[Updating on %s]]" % time.strftime("%Y-%m-%d %H:%M:%S")
+            )
+
             try:
                 try:
                     config = readconfig(sfname)
@@ -109,6 +120,19 @@ elif sfname[-4:] == '.edd':
                     input_mttime = None
                     raise
 
+                ep.EUDClearNamespace()
+
+                # Get plugin mtime
+                plugins_mttime.clear()
+                pluginList = [name for name in config.keys() if name != 'main']
+                for pluginName in pluginList:
+                    pPath = getPluginPath(pluginName)
+                    try:
+                        plugins_mttime[pluginName] = os.path.getmtime(pPath)
+                    except OSError:
+                        plugins_mttime[pluginName] = None
+
+                # Inject
                 print('---------- Loading plugins... ----------')
                 pluginList, pluginFuncDict = loadPluginsFromConfig(config)
                 print('--------- Injecting plugins... ---------')
@@ -118,6 +142,7 @@ elif sfname[-4:] == '.edd':
 
             except Exception as e:
                 print("[Error] %s" % e)
+                traceback.print_exc()
                 ws.MessageBeep(ws.MB_ICONHAND)
                 MessageBox('Error', str(e))
 
