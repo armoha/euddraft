@@ -23,7 +23,7 @@ def MessageBox(title, text, style=0):
 
 
 # Intro!
-print("euddraft v0.4 : Simple eudplib plugin system")
+print("euddraft v0.5 : Simple eudplib plugin system")
 print(" - Using eudplib version %s" % ep.eudplibVersion())
 
 if len(sys.argv) != 2:
@@ -36,6 +36,7 @@ oldpath = os.getcwd()
 dirname, sfname = os.path.split(sfname)
 if dirname:
     os.chdir(dirname)
+    sys.path.insert(0, os.path.abspath(dirname))
 
 
 # Use simple setting system
