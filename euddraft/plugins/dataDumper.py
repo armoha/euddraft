@@ -27,7 +27,7 @@ def onPluginStart():
 
             for outOffset in outOffsets:
                 addrEPD = f_epdread_epd(EPD(outOffset))
-                f_repmovsd(addrEPD, EPD(inputData_db), inputDwordN)
+                f_repmovsd_epd(addrEPD, EPD(inputData_db), inputDwordN)
 
         else:
             DoActions([
