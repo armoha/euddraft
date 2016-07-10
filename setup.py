@@ -1,27 +1,16 @@
 import sys
-from cx_Freeze import setup, Executable
+from distutils.core import setup
+import py2exe
 
-sys.argv.append('build_exe')
+sys.argv.append('py2exe')
 
-# Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
-    'append_script_to_exe': True,
-    "packages": ["os", "sys", "importlib", "json", "eudplib", "configparser"],
+    "packages": ["importlib", "json", "eudplib"],
     "compressed": True,
-    "optimize": 2
+    "optimize": 2,
 }
 
-# GUI applications require a different base on Windows (the default is for a
-# console application).
-
 setup(
-    name="euddraft",
-    version='0.3',
-    description="euddraft main executable",
-    options={
-        "build_exe": build_exe_options
-    },
-    executables=[
-        Executable("euddraft.py")
-    ]
+    console=["euddraft.py"],
+    options={'py2exe': build_exe_options}
 )
