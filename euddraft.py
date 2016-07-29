@@ -23,7 +23,7 @@ def MessageBox(title, text, style=0):
 
 
 # Intro!
-print("euddraft v0.5.1 : Simple eudplib plugin system")
+print("euddraft v0.5.2 : Simple eudplib plugin system")
 print(" - Using eudplib version %s" % ep.eudplibVersion())
 
 if len(sys.argv) != 2:
