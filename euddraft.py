@@ -62,6 +62,7 @@ if sfname[-4:] == '.eds':
             raise RuntimeError('input and output file should be different.')
 
         print('---------- Loading plugins... ----------')
+        ep.LoadMap(ifname)
         pluginList, pluginFuncDict = loadPluginsFromConfig(config)
 
         print('--------- Injecting plugins... ---------')
@@ -147,6 +148,7 @@ elif sfname[-4:] == '.edd':
 
                 # Inject
                 print('---------- Loading plugins... ----------')
+                ep.LoadMap(ifname)
                 pluginList, pluginFuncDict = loadPluginsFromConfig(config)
                 print('--------- Injecting plugins... ---------')
                 applyEUDDraft(ifname, ofname, pluginList, pluginFuncDict)

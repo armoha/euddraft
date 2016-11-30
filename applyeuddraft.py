@@ -39,6 +39,5 @@ def createPayloadMain(pluginList, pluginFuncDict):
 
 def applyEUDDraft(ifname, ofname, pluginList, pluginFuncDict):
     payloadMain = createPayloadMain(pluginList, pluginFuncDict)
-    ep.LoadMap(ifname)
     ep.CompressPayload(True)
     ep.SaveMap(ofname, payloadMain)
