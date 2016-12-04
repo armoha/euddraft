@@ -21,6 +21,8 @@ def hasModifiedFile(dirname, since):
 
 
 if __name__ == '__main__':
+    mp.freeze_support()
+
     print("euddraft v0.6 : Simple eudplib plugin system")
 
     if len(sys.argv) != 2:

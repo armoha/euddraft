@@ -1,5 +1,6 @@
 import eudplib as ep
 import traceback
+import sys
 from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig
 from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
@@ -37,6 +38,13 @@ def createPayloadMain(pluginList, pluginFuncDict):
     return payloadMain
 
 
+def isEpExc(s):
+    return (
+        s.startswith('  File "C:\\gitclones\\euddraft\\') or
+        s.startswith('  File "C:\\Python34\\lib\\site-packages\\eudplib')
+    )
+
+
 def applyEUDDraft(sfname):
     try:
         config = readconfig(sfname)
@@ -60,4 +68,20 @@ def applyEUDDraft(sfname):
     except Exception as e:
         print("==========================================")
         MessageBeep(MB_ICONHAND)
-        MessageBox("[Error] %s" % e, traceback.format_exc())
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        excs = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        in_eudplib_code = False
+        formatted_excs = []
+
+
+        for i, exc in enumerate(excs):
+            if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1:]):
+                if in_eudplib_code:
+                    continue
+                in_eudplib_code = True
+                exc = '<euddraft/eudplib internal code> \n'
+            else:
+                in_eudplib_code = False
+            formatted_excs.append(exc)
+
+        MessageBox("[Error] %s" % e, ''.join(formatted_excs))
