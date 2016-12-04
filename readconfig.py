@@ -2,7 +2,13 @@ import re
 
 
 def readconfig(fname):
-    s = open(fname, 'r').read()
+    s = open(fname, 'rb').read()
+
+    try:
+        s = s.decode('cp949')
+    except UnicodeDecodeError:
+        s = s.decode('utf-8')
+
     currentSectionName = None
     currentSection = None
     config = {}
@@ -56,17 +62,3 @@ def readconfig(fname):
             continue
 
     return config
-
-
-if __name__ == '__main__':
-    import pprint
-
-    config = readconfig(r'''
-    [test]
-    a b c
-    test: asdf
-    test\\: tesa
-
-    ''')
-
-    pprint.pprint(config)

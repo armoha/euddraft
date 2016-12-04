@@ -12,6 +12,10 @@ else:
     basepath = os.path.dirname(os.path.realpath(__file__))
 
 
+def getGlobalPluginDirectory():
+    return os.path.join(basepath, 'plugins')
+
+
 def getPluginPath(pluginName):
     if pluginName[-3:] == '.py':
         pluginPath = pluginName

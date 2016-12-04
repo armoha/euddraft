@@ -1,8 +1,8 @@
 import eudplib as ep
-import os
-
+import traceback
 from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig
+from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
 
 
 def createPayloadMain(pluginList, pluginFuncDict):
@@ -37,7 +37,27 @@ def createPayloadMain(pluginList, pluginFuncDict):
     return payloadMain
 
 
-def applyEUDDraft(ifname, ofname, pluginList, pluginFuncDict):
-    payloadMain = createPayloadMain(pluginList, pluginFuncDict)
-    ep.CompressPayload(True)
-    ep.SaveMap(ofname, payloadMain)
+def applyEUDDraft(sfname):
+    try:
+        config = readconfig(sfname)
+        mainSection = config['main']
+        ifname = mainSection['input']
+        ofname = mainSection['output']
+        if ifname == ofname:
+            raise RuntimeError('input and output file should be different.')
+
+        print('---------- Loading plugins... ----------')
+        ep.LoadMap(ifname)
+        pluginList, pluginFuncDict = loadPluginsFromConfig(config)
+
+        print('--------- Injecting plugins... ---------')
+
+        payloadMain = createPayloadMain(pluginList, pluginFuncDict)
+        ep.CompressPayload(True)
+        ep.SaveMap(ofname, payloadMain)
+        MessageBeep(MB_OK)
+
+    except Exception as e:
+        print("==========================================")
+        MessageBeep(MB_ICONHAND)
+        MessageBox("[Error] %s" % e, traceback.format_exc())
