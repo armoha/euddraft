@@ -35,6 +35,9 @@ def loadPluginsFromConfig(config):
     pluginList = [name for name in config.keys() if name != 'main']
     pluginFuncDict = {}
 
+    initialDirectory = os.getcwd()
+    initialPath = sys.path[:]
+
     for pluginName in pluginList:
         pluginSettings = {'settings': config[pluginName]}
 
@@ -44,6 +47,10 @@ def loadPluginsFromConfig(config):
         pluginPath = getPluginPath(pluginName)
 
         try:
+            pluginDir, _ = os.path.split(pluginPath)
+            if pluginDir and pluginDir not in sys.path:
+                sys.path.append(os.path.abspath(pluginDir))
+
             pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
 
             if pluginDict:
@@ -61,5 +68,9 @@ def loadPluginsFromConfig(config):
 
         except Exception:
             raise RuntimeError('Error loading plugin "%s"' % pluginName)
+
+        finally:
+            os.chdir(initialDirectory)
+            sys.path[:] = initialPath[:]
 
     return pluginList, pluginFuncDict

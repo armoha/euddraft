@@ -50,17 +50,36 @@ if __name__ == '__main__':
 
         try:
             while True:
-                if (
-                    not lasttime or
-                    hasModifiedFile(globalPluginDir, lasttime) or
-                    hasModifiedFile('.', lasttime)
+                # Wait for changes
+                while (
+                    lasttime and
+                    not hasModifiedFile(globalPluginDir, lasttime) and
+                    not hasModifiedFile('.', lasttime)
                 ):
-                    p = mp.Process(target=applyEUDDraft, args=(sfname,))
-                    p.start()
-                    p.join()
-                    lasttime = time.time()
+                    time.sleep(1)
 
+                # epscript can alter other files if some file changes.
+                # Wait 0.5 sec more for additional changes
+                while True:
+                    lasttime = time.time()
+                    time.sleep(0.5)
+                    if not (
+                        hasModifiedFile(globalPluginDir, lasttime) or
+                        hasModifiedFile('.', lasttime)
+                    ):
+                        break
+
+                print(
+                    "\n\n[[Updating on %s]]" %
+                    time.strftime("%Y-%m-%d %H:%M:%S"))
+                p = mp.Process(target=applyEUDDraft, args=(sfname,))
+                p.start()
+                p.join()
+
+                print("")  # newline
+                lasttime = time.time()
                 time.sleep(1)
+
         except KeyboardInterrupt:
             pass
 

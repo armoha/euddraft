@@ -40,8 +40,10 @@ def createPayloadMain(pluginList, pluginFuncDict):
 
 def isEpExc(s):
     return (
+        s.startswith('  File "C:\\Python34\\lib\\runpy.py"') or
         s.startswith('  File "C:\\gitclones\\euddraft\\') or
-        s.startswith('  File "C:\\Python34\\lib\\site-packages\\eudplib')
+        s.startswith('  File "C:\\Python34\\lib\\site-packages\\eudplib') or
+        s.startswith('  File "eudplib')
     )
 
 
@@ -73,9 +75,8 @@ def applyEUDDraft(sfname):
         in_eudplib_code = False
         formatted_excs = []
 
-
         for i, exc in enumerate(excs):
-            if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1:]):
+            if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1:-1]):
                 if in_eudplib_code:
                     continue
                 in_eudplib_code = True
