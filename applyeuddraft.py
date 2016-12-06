@@ -1,6 +1,7 @@
 import eudplib as ep
 import traceback
 import sys
+import os
 from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig
 from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
@@ -38,13 +39,27 @@ def createPayloadMain(pluginList, pluginFuncDict):
     return payloadMain
 
 
+##############################
+
+if getattr(sys, 'frozen', False):
+    # frozen
+    basepath = os.path.dirname(sys.executable)
+else:
+    # unfrozen
+    basepath = os.path.dirname(os.path.realpath(__file__))
+
+epPath = os.path.dirname(ep.__file__)
+
+
 def isEpExc(s):
     return (
-        s.startswith('  File "C:\\Python34\\lib\\runpy.py"') or
-        s.startswith('  File "C:\\gitclones\\euddraft\\') or
-        s.startswith('  File "C:\\Python34\\lib\\site-packages\\eudplib') or
+        epPath in s or
+        basepath in s or
+        'runpy.py' in s or
         s.startswith('  File "eudplib')
     )
+
+##############################
 
 
 def applyEUDDraft(sfname):

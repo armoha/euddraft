@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 
 def readconfig(fname):
@@ -11,7 +12,7 @@ def readconfig(fname):
 
     currentSectionName = None
     currentSection = None
-    config = {}
+    config = OrderedDict()
 
     header_regex = re.compile(r"\[(.+)\]$")
     keyvalue_regex = re.compile(r"(([^\\:=]|\\.)+)\s*[:=]\s*(.+)$")
