@@ -9,6 +9,7 @@ import multiprocessing as mp
 
 def hasModifiedFile(dirname, since):
     for root, dirs, files in os.walk(dirname):
+        dirs[:] = [d for d in dirs if d[:1] != '.']
         for f in files:
             finalpath = os.path.join(root, f)
             mtime = max(
