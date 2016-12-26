@@ -12,5 +12,8 @@ build_exe_options = {
 
 setup(
     console=["euddraft.py"],
-    options={'py2exe': build_exe_options}
+    options={'py2exe': build_exe_options},
+    version="0.0.7.1",
+    name="euddraft",
+    description="euddraft compilication system",
 )

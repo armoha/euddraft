@@ -1,10 +1,43 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+'''
+Copyright (c) 2014 trgk
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+'''
+
 import eudplib as ep
 import traceback
 import sys
 import os
+import subprocess
 from readconfig import readconfig
-from pluginLoader import loadPluginsFromConfig
+from pluginLoader import loadPluginsFromConfig, isFreezeIssued
 from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
+
+
+from freeze import (
+    unFreeze,
+    decryptOffsets,
+    encryptOffsets
+)
 
 
 def createPayloadMain(pluginList, pluginFuncDict):
@@ -12,25 +45,31 @@ def createPayloadMain(pluginList, pluginFuncDict):
     def payloadMain():
         """ Main function of euddraft payload """
         # init plugins
+        if isFreezeIssued():
+            unFreeze()
+            ep.PRT_SetInliningRate(0.05)
+
         for pluginName in pluginList:
             onPluginStart = pluginFuncDict[pluginName][0]
             onPluginStart()
 
         # Do trigger loop
         if ep.EUDInfLoop()():
+            if isFreezeIssued():
+                decryptOffsets()
+
             for pluginName in pluginList:
                 beforeTriggerExec = pluginFuncDict[pluginName][1]
                 beforeTriggerExec()
 
-            # eudplib v0.50 has bug that RunTrigTrigger don't revert Current
-            # player after RunTrigTriger call, so we have to do it manually.
-            currentPlayer = ep.f_getcurpl()
             ep.RunTrigTrigger()
-            ep.f_setcurpl(currentPlayer)
 
             for pluginName in reversed(pluginList):
                 afterTriggerExec = pluginFuncDict[pluginName][2]
                 afterTriggerExec()
+
+            if isFreezeIssued():
+                encryptOffsets()
 
             ep.EUDDoEvents()
 
@@ -49,6 +88,7 @@ else:
     basepath = os.path.dirname(os.path.realpath(__file__))
 
 epPath = os.path.dirname(ep.__file__)
+mpqFreezePath = os.path.join(basepath, "mpq.exc")
 
 
 def isEpExc(s):
@@ -80,6 +120,12 @@ def applyEUDDraft(sfname):
         payloadMain = createPayloadMain(pluginList, pluginFuncDict)
         ep.CompressPayload(True)
         ep.SaveMap(ofname, payloadMain)
+
+        if isFreezeIssued():
+            ret = subprocess.call([mpqFreezePath, ofname, ofname])
+            if ret != 0:
+                raise RuntimeError("Error on mpq protection")
+
         MessageBeep(MB_OK)
 
     except Exception as e:
