@@ -30,6 +30,10 @@ from applyeuddraft import applyEUDDraft
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
+import ctypes
+
+
+GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
 
 
 def hasModifiedFile(dirname, since):
@@ -49,10 +53,10 @@ def hasModifiedFile(dirname, since):
     return False
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
-    print("euddraft v0.7 : Simple eudplib plugin system")
+    print("euddraft v0.7.2 : Simple eudplib plugin system")
 
     if len(sys.argv) != 2:
         raise RuntimeError("Usage : euddraft [setting file]")
@@ -71,6 +75,7 @@ if __name__ == '__main__':
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
+        print(" - Daemon mode. Ctrl+C to quit, Ctrl+R to force recompile")
         mp.set_start_method('spawn')
         q = mp.Queue()
         lasttime = None
@@ -85,6 +90,8 @@ if __name__ == '__main__':
                     not hasModifiedFile(globalPluginDir, lasttime) and
                     not hasModifiedFile('.', lasttime)
                 ):
+                    if GetAsyncKeyState(0x11) and GetAsyncKeyState(ord('R')):
+                        break
                     time.sleep(1)
 
                 # epscript can alter other files if some file changes.
@@ -105,7 +112,7 @@ if __name__ == '__main__':
                 p.start()
                 p.join()
 
-                print("")  # newline
+                print("Done!")  # newline
                 lasttime = time.time()
                 time.sleep(1)
 

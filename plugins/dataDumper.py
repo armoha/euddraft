@@ -1,7 +1,3 @@
-'''
-dataDumper v3
-'''
-
 from eudplib import *
 
 inputDatas = []
@@ -30,7 +26,8 @@ def onPluginStart():
             inputDwordN = (len(inputData) + 3) // 4
 
             for outOffset in outOffsets:
-                f_repmovsd_epd(EPD(outOffset), EPD(inputData_db), inputDwordN)
+                addrEPD = f_epdread_epd(EPD(outOffset))
+                f_repmovsd_epd(addrEPD, EPD(inputData_db), inputDwordN)
 
         else:
             DoActions([

@@ -1,19 +1,31 @@
 import sys
-from distutils.core import setup
-import py2exe
+from cx_Freeze import setup, Executable
 
-sys.argv.append('py2exe')
+sys.argv.append('build_exe')
 
+# Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
-    "packages": ["importlib", "json", "eudplib"],
-    "compressed": True,
+    "packages": ["os", "sys", "importlib", "json", "eudplib"],
     "optimize": 2,
+    "include_msvcr": True,
+    "include_files": [
+        "StormLib32.dll",
+        "mpq.exc",
+        "plugins"
+    ],
+    'zip_include_packages': ['*'],
+    'zip_exclude_packages': []
 }
 
+
 setup(
-    console=["euddraft.py"],
-    options={'py2exe': build_exe_options},
-    version="0.0.7.1",
     name="euddraft",
+    version='0.7.2',
     description="euddraft compilication system",
+    options={
+        "build_exe": build_exe_options
+    },
+    executables=[
+        Executable("euddraft.py", base="Console")
+    ]
 )

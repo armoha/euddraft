@@ -77,6 +77,14 @@ def loadPluginsFromConfig(config):
     for pluginName in pluginList:
         if pluginName == 'freeze':
             freeze_enabled = True
+            print("""\
+                          *                                         *
+        *                                        *
+                        [[ freeze activated ]]
+                                  *                       *
+                *                                                          *\
+""")
+            print("Freeze plugin loaded")
             continue
 
         pluginSettings = {'settings': config[pluginName]}

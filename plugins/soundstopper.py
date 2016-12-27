@@ -1,7 +1,3 @@
-'''
-dataDumper v2
-'''
-
 from eudplib import *
 
 
