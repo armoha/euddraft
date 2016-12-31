@@ -56,14 +56,19 @@ def empty():
 
 
 freeze_enabled = False
+mpaq_enabled = False
 
 
 def isFreezeIssued():
     return freeze_enabled
 
 
+def isMpaqIssued():
+    return mpaq_enabled
+
+
 def loadPluginsFromConfig(config):
-    global freeze_enabled
+    global freeze_enabled, mpaq_enabled
 
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != 'main']
@@ -85,6 +90,9 @@ def loadPluginsFromConfig(config):
                 *                                                          *\
 """)
             print("Freeze plugin loaded")
+            if 'mpaq' in config[pluginName]:
+                mpaq_enabled = True
+
             continue
 
         pluginSettings = {'settings': config[pluginName]}

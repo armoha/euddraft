@@ -29,7 +29,7 @@ import sys
 import os
 import subprocess
 from readconfig import readconfig
-from pluginLoader import loadPluginsFromConfig, isFreezeIssued
+from pluginLoader import loadPluginsFromConfig, isFreezeIssued, isMpaqIssued
 from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
 
 
@@ -122,7 +122,10 @@ def applyEUDDraft(sfname):
         ep.SaveMap(ofname, payloadMain)
 
         if isFreezeIssued():
-            ret = subprocess.call([mpqFreezePath, ofname, ofname])
+            if isMpaqIssued():
+                ret = subprocess.call([mpqFreezePath, ofname, 'mpaq'])
+            else:
+                ret = subprocess.call([mpqFreezePath, ofname])
             if ret != 0:
                 raise RuntimeError("Error on mpq protection")
 

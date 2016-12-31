@@ -26,7 +26,6 @@ THE SOFTWARE.
 import sys
 import os
 import time
-from applyeuddraft import applyEUDDraft
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
@@ -34,6 +33,19 @@ import ctypes
 
 
 GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
+
+
+def applyEUDDraft(fname, queue=None):
+    try:
+        import applyeuddraft
+        applyeuddraft.applyEUDDraft(fname)
+        queue.put(True)
+    except ImportError as e:
+        if queue and str(e).startswith('DLL load failed:'):
+            queue.put(False)
+        else:
+            queue.put(True)
+            raise
 
 
 def hasModifiedFile(dirname, since):
@@ -56,7 +68,7 @@ def hasModifiedFile(dirname, since):
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
-    print("euddraft v0.7.2 : Simple eudplib plugin system")
+    print("euddraft v0.7.3 : Simple eudplib plugin system")
 
     if len(sys.argv) != 2:
         raise RuntimeError("Usage : euddraft [setting file]")
@@ -77,7 +89,6 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
     elif sfname[-4:] == '.edd':
         print(" - Daemon mode. Ctrl+C to quit, Ctrl+R to force recompile")
         mp.set_start_method('spawn')
-        q = mp.Queue()
         lasttime = None
 
         globalPluginDir = getGlobalPluginDirectory()
@@ -108,11 +119,24 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                 print(
                     "\n\n[[Updating on %s]]" %
                     time.strftime("%Y-%m-%d %H:%M:%S"))
-                p = mp.Process(target=applyEUDDraft, args=(sfname,))
-                p.start()
-                p.join()
 
-                print("Done!")  # newline
+                compileStatus = False
+                count = 0
+                while not compileStatus and count < 5:
+                    time.sleep(0.2)
+                    q = mp.Queue()
+                    p = mp.Process(target=applyEUDDraft, args=(sfname, q))
+                    p.start()
+                    compileStatus = q.get()
+                    p.join()
+                    count += 1
+                    if not compileStatus:
+                        print("# Compile failed [%d/%d]" % (count, 5))
+
+                if count == 5:
+                    print('Unexpected error!')
+                else:
+                    print("Done!")
                 lasttime = time.time()
                 time.sleep(1)
 
