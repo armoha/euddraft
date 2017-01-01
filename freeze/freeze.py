@@ -41,7 +41,6 @@ from .utils import (
 
 from .crypt import (
     mix,
-    mix2,
 )
 
 from .mpqh import getMapHandleEPD
@@ -58,6 +57,8 @@ from .obfpatch import (
     obfunpatch
 )
 
+from .keycalc import keycalc
+
 g_seedKey = None
 
 
@@ -66,59 +67,6 @@ g_seedKey = None
 
 def unFreeze():
     global tKeys
-
-    mpqEPD = getMapHandleEPD()
-
-    mpqHeaderEPD = f_epdread_epd_safe(mpqEPD + (0x130 // 4))
-    blockTableEPD = f_epdread_epd_safe(mpqEPD + (0x134 // 4)).makeR()
-    hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4)).makeR()
-
-    if EUDIf()(MemoryEPD(mpqHeaderEPD + (0x14 // 4), AtLeast, 1)):
-        DoActions([
-            [
-                SetCurrentPlayer(i),
-                DisplayExtText("freeze needs mpq post-protection.")
-            ] for i in range(8)
-        ])
-        if EUDInfLoop()():
-            EUDDoEvents()
-        EUDEndInfLoop()
-    EUDEndIf()
-
-    # Basic check
-    mpqArchiveSize = f_dwread_epd_safe(mpqHeaderEPD + (0x08 // 4))
-    mpqHashTableOffset = f_dwread_epd_safe(mpqHeaderEPD + (0x10 // 4))
-    mpqBlockTableOffset = f_dwread_epd_safe(mpqHeaderEPD + (0x14 // 4))
-    mpqHashTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x18 // 4))
-    mpqBlockTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x1C // 4))
-    # EUDJumpIfNot(mpqBlockTableOffset == 0, hell1) - This should match
-    # EUDJumpIfNot(mpqBlockTableSize == mpqArchiveSize // 16, hell2)
-    zero = mpqBlockTableOffset
-
-    # To find first real block index, seek scenario.chk.
-    # Find scenario.chk in hash table
-    chkHashA = 0xB701656E
-    chkHashB = 0xFCFB1EED
-    chkHashOffset = EUDVariable()
-    chkHashEntryEPD = EUDVariable()
-    chkHashOffset << (0xAFC8C05D & (mpqHashTableSize - 1))
-    if EUDInfLoop()():
-        chkHashEntryEPD << hashTableEPD + 4 * chkHashOffset
-        EUDBreakIf([
-            MemoryEPD(chkHashEntryEPD + 0, Exactly, chkHashA),
-            MemoryEPD(chkHashEntryEPD + 1, Exactly, chkHashB)
-        ])
-        # I know this is slow, but too prevent any vulnerability, we will do
-        # exactly the same operation as sc does for finding mpq.
-        chkHashOffset << ((chkHashOffset + 1) & (mpqHashTableSize - 1))
-    EUDEndInfLoop()
-
-    initialBlockIndex = f_dwread_epd_safe(chkHashEntryEPD + 3) + zero
-    chkBlockEntryEPD = blockTableEPD + initialBlockIndex * 4
-
-    # OK. Map seems pretty good.
-
-    ###########################################################################
 
     # Generate key
     keys = [random.randint(0, 0xFFFFFFFF) for _ in range(9)]
@@ -147,75 +95,10 @@ def unFreeze():
     cryptKey << mix(cryptKey, seedKey[1])
     cryptKey << mix(cryptKey, seedKey[2])
     cryptKey << mix(cryptKey, seedKey[3])
-    cryptKey << mix(cryptKey, zero)
+    cryptKey << mix(cryptKey, 0)
 
-    def feedSample(sample, inplace=True):
-        nonlocal seedKey
-        if inplace:
-            seedKey[0] << mix(seedKey[0], sample)
-            seedKey[1] << mix(seedKey[1], seedKey[0])
-            seedKey[2] << mix(seedKey[2], seedKey[1])
-            seedKey[3] << mix(seedKey[3], seedKey[2])
-        else:
-            seedKey[0] = mix(seedKey[0], sample).makeL()
-            seedKey[1] = mix(seedKey[1], seedKey[0]).makeL()
-            seedKey[2] = mix(seedKey[2], seedKey[1]).makeL()
-            seedKey[3] = mix(seedKey[3], seedKey[2]).makeL()
-
-    def feedSampleByIndex(index, inplace=True):
-        sample = f_dwread_epd_safe(blockTableEPD + index)
-        feedSample(sample, inplace)
-
-    # 1. Feed mpq header
-    for i in range(8):
-        feedSample(f_dwread_epd_safe(mpqHeaderEPD + i))
-
-    for i in range(8):
-        feedSampleByIndex(i, random.random() >= 0.5)
-
-    # 2. Feed HET
-    hashTableOffsetDiv4 = mpqHashTableOffset // 4
-    for i in EUDLoopRange(mpqHashTableSize):
-        feedSampleByIndex(hashTableOffsetDiv4 + i * 4 + 3)
-
-    # 3. Feed BET
-    blockTableOffsetDiv4 = initialBlockIndex * 4
-    for i in EUDLoopRange(mpqBlockTableSize - initialBlockIndex - 2):
-        feedSampleByIndex(blockTableOffsetDiv4 + i * 4)
-
-    # 4. Feed scenario.chk sectorOffsetTable
-    chkSectorNum = (f_dwread_epd_safe(chkBlockEntryEPD + 2) + 4095) // 4096
-    i_ = EUDVariable(0)
-    if EUDWhile()(i_ <= chkSectorNum):
-        feedSampleByIndex(8 + i_)
-        i_ += 3
-    EUDEndWhile()
-
-    # 5. Feed entire mpq file
-    # For speed, we employ more simpler expression here instead of T function.
-    SAMPLEN = 2048
-    n = mpqArchiveSize // 4 - 4
-    for i in range(4):
-        for j in EUDLoopRange(SAMPLEN // 4):
-            sample = f_dwread_epd(blockTableEPD + fileCursor % n)
-            seedKey[i] += seedKey[i] + seedKey[i] + sample
-            fileCursor << mix(fileCursor, j)
-
-    # 6. Final feedback
-    if EUDLoopN()(64):
-        seedKey[0] << mix(seedKey[0], seedKey[3])
-        seedKey[1] << mix(seedKey[1], seedKey[0])
-        seedKey[2] << mix(seedKey[2], seedKey[1])
-    EUDEndLoopN()
-
-    # Append block data
-    seedKeySrc = blockTableEPD + (mpqBlockTableSize - 1) * 4
-    seedKey[0] = mix(seedKey[0], f_dwread_epd(seedKeySrc + 0))
-    seedKey[1] = mix(seedKey[1], f_dwread_epd(seedKeySrc + 1))
-    seedKey[2] = mix(seedKey[2], f_dwread_epd(seedKeySrc + 2))
-    seedKey[3] = mix(seedKey[3], f_dwread_epd(seedKeySrc + 3))
-
-    # now seedKey should be equal to destKey.
+    # Calculate key using file data
+    keycalc(seedKey, fileCursor)
 
     # Modify tables!
     initOffsets(seedKey, destKeyVal, cryptKey)
