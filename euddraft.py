@@ -39,12 +39,16 @@ def applyEUDDraft(fname, queue=None):
     try:
         import applyeuddraft
         applyeuddraft.applyEUDDraft(fname)
-        queue.put(True)
-    except ImportError as e:
-        if queue and str(e).startswith('DLL load failed:'):
-            queue.put(False)
-        else:
+        if queue:
             queue.put(True)
+    except ImportError as e:
+        if queue:
+            if str(e).startswith('DLL load failed:'):
+                queue.put(False)
+            else:
+                queue.put(True)
+                raise
+        else:
             raise
 
 
@@ -69,6 +73,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
     print("euddraft v0.7.3 : Simple eudplib plugin system")
+    sys.argv.append("test.eds")
 
     if len(sys.argv) != 2:
         raise RuntimeError("Usage : euddraft [setting file]")

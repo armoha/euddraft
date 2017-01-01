@@ -29,42 +29,30 @@ import random
 # Basic mixer
 
 from eudplib.core.eudfunc.eudfuncn import EUDFuncN
-from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
+from freezeTrigHelper import (
+    getTriggerExecutingPlayers,
+    getExpectedTriggerCount
+)
 
+from freezehelper import (
+    obfuscatedValueAssigner,
+    assignerMerge,
+    writeAssigner
+)
 
-@EUDFunc
-def T(x):
-    xsq = x * x
-    return x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053
-
-
-unTDict = {}
-
-
-def T2(x):
-    x &= 0xFFFFFFFF
-    xsq = x * x
-    ret = (x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053) & 0xFFFFFFFF
-    unTDict[ret] = x
-    return ret
-
-
-def tryUnT(x):
-    try:
-        return T(unTDict[x])
-    except KeyError:
-        return x
-
-
-def mix(x, y):
-    return T(x) + y + 0x10f874f3
-
-
-def mix2(x, y):
-    return (T2(x) + y + 0x10f874f3) & 0xFFFFFFFF
+from freezecrypt import (
+    T,
+    T2,
+    tryUnT,
+    mix,
+    mix2,
+    unT2,
+    unmix
+)
 
 
 # Storm-related things
+
 
 stormRelocateAmount = EUDVariable()
 
@@ -84,116 +72,8 @@ def getMapHandleEPD():
 
 
 # Helpers
-class L(list):
-    """ Hashable list """
-
-    def __hash__(self):
-        return id(self)
 
 
-def obfuscatedValueAssigner(v, vInsert):
-    """ 'v := vInsert' in an obfuscated way  """
-    # (+, v, a, vI-a)   v := a + (vInsert - a)
-    # (^, v, a, vI^a)   v := a ^ (vInsert ^ a)
-    # (-, v, vI+a, a)   v := (vInsert + a) - a
-    # (&, v, a, b)      v := (a | vInsert) & (b | vInsert)  ( a & b == 0 )
-    # (|, v, a, b)      v := (a & vInsert) | (b & vInsert)  ( a|b = 0xFFFFFFFF)
-
-    assert IsConstExpr(vInsert)
-
-    desiredOperationCount = random.randint(32, 96)
-    t = random.randint(0, 0xFFFFFFFF)
-    operations = [L(['+', v, vInsert + t, -t])]
-    constantHavingOperation = {operations[0]}
-
-    # Operation expander
-    while len(operations) < desiredOperationCount:
-        # Pick random operation
-        targetOperation = random.sample(constantHavingOperation, 1)[0]
-        targetOperationIndex = operations.index(targetOperation)
-        opType, dst, src1, src2 = targetOperation
-        assert IsConstExpr(src1) or IsConstExpr(src2)
-
-        # Pick value to flatten
-        srcVariable = EUDVariable()
-        if IsConstExpr(src1):
-            targetOperation[2] = srcVariable
-            targetValue = src1
-        else:
-            targetOperation[3] = srcVariable
-            targetValue = src2
-
-        if not (
-            IsConstExpr(targetOperation[2]) or
-            IsConstExpr(targetOperation[3])
-        ):
-            constantHavingOperation.remove(targetOperation)
-
-        targetValue = targetValue & 0xFFFFFFFF
-        t1 = T2(random.randint(0, 0xFFFFFFFF))
-        t2 = random.randint(0, 0xFFFFFFFF)
-
-        optype = random.randint(0, 4)
-        if optype == 0:
-            operation = ['+', srcVariable, t1, targetValue - t1]
-        elif optype == 1:
-            operation = ['^', srcVariable, t1, targetValue ^ t1]
-        elif optype == 2:
-            operation = ['-', srcVariable, targetValue + t1, t1]
-        elif optype == 3:
-            t2 &= random.randint(0, 0xFFFFFFFF)
-            a = t1 & t2
-            b = ~t1 & t2
-            operation = ['&', srcVariable, a | targetValue, b | targetValue]
-        elif optype == 4:
-            t2 &= random.randint(0, 0xFFFFFFFF)
-            a = t1 | t2
-            b = ~t1 | t2
-            operation = ['|', srcVariable, a & targetValue, b & targetValue]
-
-        operation = L(operation)
-
-        constantHavingOperation.add(operation)
-        operations.insert(random.randint(0, targetOperationIndex), operation)
-
-    return operations
-
-
-def assignerMerge(op1, op2):
-    """ Merge 2 assigner randomly. """
-    dst = [1] * len(op1) + [2] * len(op2)
-    random.shuffle(dst)
-
-    op1i, op2i = 0, 0
-    for i in range(len(dst)):
-        if dst[i] == 1:
-            dst[i] = op1[op1i]
-            op1i += 1
-        else:
-            dst[i] = op2[op2i]
-            op2i += 1
-
-    op1[:] = dst
-
-
-def writeAssigner(operations):
-    """ Write assigner. """
-    for optype, dst, src1, src2 in operations:
-        if isinstance(src1, int):
-            src1 = tryUnT(src1)
-        if isinstance(src2, int):
-            src2 = tryUnT(src2)
-
-        if optype == '+':
-            dst << src1 + src2
-        elif optype == '^':
-            dst << (src1 ^ src2)
-        elif optype == '-':
-            dst << src1 - src2
-        elif optype == '&':
-            dst << (src1 & src2)
-        elif optype == '|':
-            dst << (src1 | src2)
 
 
 # EUDFuncN modifier
@@ -476,56 +356,6 @@ def unFreeze():
         Trigger(kIndex == 4, kIndex.SetNumber(0))
         cryptKey2 << cryptKey2 + 0x46b8622c
     EUDEndInfLoop()
-
-    # Trigger modifier
-    def getTriggerExecutingPlayers(bTrigger):
-        if bTrigger[320 + 2048 + 4 + 17] != 0:
-            playerExecutesTrigger = [True] * 8
-
-        else:  # Should check manually
-            playerExecutesTrigger = [False] * 8
-            # By player
-            for player in range(8):
-                if bTrigger[320 + 2048 + 4 + player] != 0:
-                    playerExecutesTrigger[player] = True
-
-            # By force
-            playerForce = [0] * 8
-            for player in range(8):
-                playerForce[player] = GetPlayerInfo(player).force
-
-            for force in range(4):
-                if bTrigger[320 + 2048 + 4 + 18 + force] != 0:
-                    for player in range(8):
-                        if playerForce[player] == force:
-                            playerExecutesTrigger[player] = True
-
-        return playerExecutesTrigger
-
-    def getExpectedTriggerCount():
-        chkt = GetChkTokenized()
-        trigSection = chkt.getsection('TRIG')
-        count = [4] * 8
-        for i in range(0, len(trigSection), 2400):
-            bTrigger = trigSection[i:i + 2400]
-
-            # Check for inline_eudplib code
-            inlPC = GetInlineCodePlayerList(bTrigger)
-            if inlPC:
-                dummyTrigger = bytes(320 + 2048 + 4) + b''.join([
-                    b'\x01' if inlPC & (1 << p) else b'\0' for p in range(27)
-                ]) + b'\0'
-                tExcPlayers = getTriggerExecutingPlayers(dummyTrigger)
-
-            # For normal triggers
-            else:
-                tExcPlayers = getTriggerExecutingPlayers(bTrigger)
-
-            for i in range(8):
-                if tExcPlayers[i]:
-                    count[i] += 1
-
-        return count
 
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
     tCount = EUDVariable()

@@ -11,6 +11,7 @@ build_exe_options = {
     "include_files": [
         "StormLib32.dll",
         "mpq.exc",
+        "license.txt",
         "plugins"
     ],
     'zip_include_packages': ['*'],
