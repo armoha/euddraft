@@ -36,7 +36,9 @@ from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
 from freeze import (
     unFreeze,
     decryptOffsets,
-    encryptOffsets
+    encryptOffsets,
+    obfpatch,
+    obfunpatch,
 )
 
 
@@ -57,6 +59,7 @@ def createPayloadMain(pluginList, pluginFuncDict):
         if ep.EUDInfLoop()():
             if isFreezeIssued():
                 decryptOffsets()
+                obfpatch()
 
             for pluginName in pluginList:
                 beforeTriggerExec = pluginFuncDict[pluginName][1]
@@ -69,6 +72,7 @@ def createPayloadMain(pluginList, pluginFuncDict):
                 afterTriggerExec()
 
             if isFreezeIssued():
+                obfunpatch()
                 encryptOffsets()
 
             ep.EUDDoEvents()
