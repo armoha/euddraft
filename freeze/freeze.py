@@ -28,152 +28,42 @@ import random
 
 # Basic mixer
 
-from eudplib.core.eudfunc.eudfuncn import EUDFuncN
-from .freezeTrigHelper import (
-    getTriggerExecutingPlayers,
+
+from .trigutils import (
     getExpectedTriggerCount
 )
 
-from .freezehelper import (
+from .utils import (
     obfuscatedValueAssigner,
     assignerMerge,
     writeAssigner
 )
 
-from .freezecrypt import (
-    T,
-    T2,
-    tryUnT,
+from .crypt import (
     mix,
     mix2,
-    unT2,
-    unmix2
+)
+
+from .mpqh import getMapHandleEPD
+
+from .obfjump import (
+    initOffsets,
+    encryptOffsets,
+    decryptOffsets,
+    ObfuscatedJump,
+    cryptKey
 )
 
 
-# Storm-related things
 
-
-stormRelocateAmount = EUDVariable()
-
-
-def getStormBaseAddr():
-    # Read base address from import table
-    SStrLen = f_dwread_epd_safe(EPD(0x4FE544))
-    stormRelocateAmount << (SStrLen - 0x15021A00) // 4
-
-
-def stormepd(epd):
-    return EPD(epd) + stormRelocateAmount
-
-
-def getMapHandleEPD():
-    return f_epdread_epd_safe(stormepd(0x1505ADFC))
-
-
-# Helpers
-
-
-
-
-# EUDFuncN modifier
-
-
-oJumper = []
-oJumperSet = set()
-tKeys = None
-
-
-def clearOJumper():
-    oJumper.clear()
-    oJumperSet.clear()
-
-
-RegisterCreatePayloadCallback(clearOJumper)
-
-
-class OJumperBuffer(EUDObject):
-
-    def __init__(self):
-        super().__init__()
-
-    def GetDataSize(self):
-        return (len(oJumper) + 1) * 4
-
-    def WritePayload(self, pbuf):
-        for ra in oJumper:
-            pbuf.WriteDword(EPD(ra + 4))
-
-        pbuf.WriteDword(0)
-
-
-class CallerProxy(ConstExpr):
-    def __init__(self, ptr, jumper):
-        super().__init__(self)
-        self.ptr = ptr
-        self.index = len(oJumper)
-        self.jumper = jumper
-
-    def Evaluate(self):
-        # Calculate value
-        if self not in oJumperSet:
-            self.index = len(oJumper)
-            oJumper.append(self.jumper)
-            oJumperSet.add(self)
-
-            keyIndex = self.index % 4
-
-            # mix & apply
-            tKeys[keyIndex] = mix2(tKeys[keyIndex], self.index)
-            self.modv = tKeys[keyIndex]
-
-        ptrV = Evaluate(self.ptr)
-        ep_assert(ptrV.rlocmode == 4, "Invalid ptrV.rlocmode")
-        ptrV.rlocmode = 0  # Force unrelocate
-
-        return ptrV - self.modv
-
-
-def ObfuscatedJump():
-    oJumper = Forward()
-    pdst = Forward()
-
-    cProxy = CallerProxy(pdst, oJumper)
-    oJumper << RawTrigger(
-        nextptr=cProxy,
-    )
-    pdst << NextTrigger()
-
-
-class RlocInt04(ConstExpr):
-    # Due to bug in eudplib, we can't directly put RlocInt(0, 4)
-    # Put by proxy
-    def __init__(self):
-        super().__init__(self)
-
-    def Evaluate(self):
-        return RlocInt(0, 4)
-
-
-oldcall = EUDFuncN.__call__
-
-
-def newcall(self, *args):
-    ObfuscatedJump()
-    return oldcall(self, *args)
 
 
 g_seedKey = None
 
 
-oJumperArray = OJumperBuffer()
-cryptKey = EUDVariable()
-
 
 def unFreeze():
     global tKeys
-
-    getStormBaseAddr()
 
     mpqEPD = getMapHandleEPD()
 
@@ -326,36 +216,7 @@ def unFreeze():
     # now seedKey should be equal to destKey.
 
     # Modify tables!
-    r = random.randint(0, 0xFFFFFFFF)
-    rv = EUDVariable()
-    writeAssigner(obfuscatedValueAssigner(rv, r))
-
-    tKeys = [mix2(k, r) for k in destKeyVal]
-    seedKeyArray = EUDArray(4)
-    for i in range(4):
-        seedKeyArray[i] = mix(seedKey[i], rv)
-
-    # Table modifier
-    kIndex = EUDVariable()
-    oJumperIndex = EUDVariable()
-    cryptKey2 = EUDVariable()
-    cryptKey2 << cryptKey
-
-    defOffset = RlocInt04()
-    if EUDInfLoop()():
-        jumperEPD = f_dwread_epd(EPD(oJumperArray) + oJumperIndex)
-        EUDBreakIf(jumperEPD == 0)
-
-        key = mix(seedKeyArray[kIndex], oJumperIndex)
-        v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, v + key + defOffset)
-        seedKeyArray[kIndex] = key
-
-        oJumperIndex += 1
-        kIndex += 1
-        Trigger(kIndex == 4, kIndex.SetNumber(0))
-        cryptKey2 << cryptKey2 + 0x46b8622c
-    EUDEndInfLoop()
+    initOffsets(seedKey, destKeyVal, cryptKey)
 
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
     tCount = EUDVariable()
@@ -381,7 +242,6 @@ def unFreeze():
 
     # Reset key memory after usage
     for i in range(4):
-        seedKeyArray[i] = random.randint(0, 0xFFFFFFFF)
         seedKey[i].makeL().Assign(0)
 
     global g_seedKey
@@ -390,45 +250,3 @@ def unFreeze():
     encryptOffsets()
 
 
-def decryptOffsets():
-    # Table modifier
-    oJumperPtr = EUDVariable()
-    oJumperPtr << EPD(oJumperArray)
-    cryptKey2 = EUDVariable()
-    cryptKey2 << cryptKey
-
-    if EUDInfLoop()():
-        jumperEPD = f_dwread_epd(oJumperPtr)
-        EUDBreakIf(jumperEPD == 0)
-
-        v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, (v ^ cryptKey2) + cryptKey)
-
-        oJumperPtr += 1
-        cryptKey2 << cryptKey2 + 0x46b8622c
-    EUDEndInfLoop()
-
-    EUDFuncN.__call__ = newcall  # OK
-
-
-def encryptOffsets():
-    EUDFuncN.__call__ = oldcall  # Revert
-
-    # Table modifier
-    oJumperPtr = EUDVariable()
-    oJumperPtr << EPD(oJumperArray)
-    cryptKeyInv = EUDVariable()
-    cryptKeyInv << -cryptKey
-    cryptKey2 = EUDVariable()
-    cryptKey2 << cryptKey
-
-    if EUDInfLoop()():
-        jumperEPD = f_dwread_epd(oJumperPtr)
-        EUDBreakIf(jumperEPD == 0)
-
-        v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, (v + cryptKeyInv) ^ cryptKey2)
-
-        oJumperPtr += 1
-        cryptKey2 << cryptKey2 + 0x46b8622c
-    EUDEndInfLoop()
