@@ -33,8 +33,6 @@ from .utils import (
 
 from .crypt import mix2, mix
 
-from eudplib.core.eudfunc.eudfuncn import EUDFuncN
-
 
 cryptKey = EUDVariable()
 oJumper = []
@@ -103,26 +101,7 @@ def ObfuscatedJump():
     pdst << NextTrigger()
 
 
-class RlocInt04(ConstExpr):
-    # Due to bug in eudplib, we can't directly put RlocInt(0, 4)
-    # Put by proxy
-    def __init__(self):
-        super().__init__(self)
-
-    def Evaluate(self):
-        return RlocInt(0, 4)
-
-
 oJumperArray = OJumperBuffer()
-
-
-
-oldcall = EUDFuncN.__call__
-
-
-def newcall(self, *args):
-    ObfuscatedJump()
-    return oldcall(self, *args)
 
 
 def initOffsets(seedKey, destKeyVal, cryptKey):
@@ -144,14 +123,13 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
     cryptKey2 = EUDVariable()
     cryptKey2 << cryptKey
 
-    defOffset = RlocInt04()
     if EUDInfLoop()():
         jumperEPD = f_dwread_epd(EPD(oJumperArray) + oJumperIndex)
         EUDBreakIf(jumperEPD == 0)
 
         key = mix(seedKeyArray[kIndex], oJumperIndex)
         v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, v + key + defOffset)
+        f_dwwrite_epd(jumperEPD, v + key + RlocInt(0, 4))
         seedKeyArray[kIndex] = key
 
         oJumperIndex += 1
@@ -162,9 +140,6 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
 
     for i in range(4):
         seedKeyArray[i] = f_dwrand()
-
-    EUDFuncN.__call__ = newcall  # OK
-
 
 
 def decryptOffsets():
@@ -185,11 +160,8 @@ def decryptOffsets():
         cryptKey2 << cryptKey2 + 0x46b8622c
     EUDEndInfLoop()
 
-    EUDFuncN.__call__ = newcall  # OK
-
 
 def encryptOffsets():
-    EUDFuncN.__call__ = oldcall  # Revert
 
     # Table modifier
     oJumperPtr = EUDVariable()
