@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="mpqcrypt.cpp" />
+    <ClCompile Include="mpqread.cpp" />
+    <ClCompile Include="mpqwrite.cpp" />
+    <ClCompile Include="comp\exp.c">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\huffman.cpp">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\imp.c">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\scomp.cpp">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\serr.cpp">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\smem.cpp">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\wave.cpp">
+      <Filter>comp</Filter>
+    </ClCompile>
+    <ClCompile Include="applyWavComp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mpqcrypt.h" />
+    <ClInclude Include="mpqread.h" />
+    <ClInclude Include="mpqtypes.h" />
+    <ClInclude Include="mpqwrite.h" />
+    <ClInclude Include="comp\huffman.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\pklib.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\scomp.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\serr.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\smem.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\wave.h">
+      <Filter>comp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="comp">
+      <UniqueIdentifier>{ca9b596c-f423-4fb5-8ea5-5224d2950303}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
