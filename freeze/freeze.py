@@ -49,17 +49,19 @@ from .mpqh import getMapHandleEPD
 from .obfjump import (
     initOffsets,
     encryptOffsets,
-    decryptOffsets,
     ObfuscatedJump,
     cryptKey
 )
 
-
-
-
+from .obfpatch import (
+    obfpatch,
+    obfunpatch
+)
 
 g_seedKey = None
 
+
+# Call patching
 
 
 def unFreeze():
@@ -217,6 +219,7 @@ def unFreeze():
 
     # Modify tables!
     initOffsets(seedKey, destKeyVal, cryptKey)
+    obfpatch()
 
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
     tCount = EUDVariable()
@@ -247,6 +250,5 @@ def unFreeze():
     global g_seedKey
     g_seedKey = seedKey
 
+    obfunpatch()
     encryptOffsets()
-
-
