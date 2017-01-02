@@ -10,11 +10,13 @@
 #include <assert.h>
 #include <utility>
 
+#include "cmpdcmp.h"
+
 using HashTable = std::vector<HashTableEntry>;
 using BlockTable = std::vector<BlockTableEntry>;
 using BlockDataTable = std::vector<std::string>;
 
-extern bool bEnableMpaq;
+bool bEnableMpaq = false;
 
 // Hashers
 
@@ -33,8 +35,6 @@ uint32_t unmix_ch(uint32_t seed, uint32_t seed0) {
     // ch = seed - T(seed0) - C
     return seed - T(seed0) - 0x10f874f3;
 }
-
-std::string applyWaveCompression(const BlockTableEntry& blockEntry, const std::string& blockContent);
 
 std::string createEncryptedMPQ(MpqReadPtr mr) {
     // Generate new hash table
@@ -61,7 +61,18 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 		std::string blockData = mr->getBlockContent(blockEntry);
         auto newBlockEntry = *blockEntry;
 
-		if(bEnableMpaq) blockData = applyWaveCompression(newBlockEntry, blockData);
+		if (bEnableMpaq) {
+			auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
+
+			// If wave data -> try recompression
+			if (memcmp(fdata.data(), "RIFF", 4) == 0 &&
+				memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
+				auto cmpdata = compressToBlock(fdata,
+					MAFA_COMPRESS_STANDARD | MAFA_COMPRESS_WAVECOMP_HUFFMAN,
+					MAFA_COMPRESS_WAVE);
+				if (cmpdata.size() < blockData.size()) blockData = cmpdata;
+			}
+		}
 		newBlockEntry.blockSize = blockData.size();
 
     	blockDataTable.push_back(blockData);

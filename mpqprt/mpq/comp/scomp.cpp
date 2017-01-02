@@ -41,8 +41,8 @@
 #endif
 #endif
 
-typedef void (__fastcall *FCOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
-typedef void (__fastcall *FDECOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+typedef void (__fastcall *FCOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+typedef void (__fastcall *FDECOMPRESS)(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
 
 struct CompressFunc {
 	DWORD dwFlag;
@@ -54,26 +54,26 @@ struct DecompressFunc {
 	FDECOMPRESS fnDecompress;
 };
 
-void __fastcall CompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
-void __fastcall CompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
-void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall CompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall CompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 #ifdef USE_ZLIB
-void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 #endif
-void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 #ifdef USE_BZIP2
-void __fastcall CompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
+void __fastcall CompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel);
 #endif
 
-void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
-void __fastcall DecompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
-void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall DecompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
 #ifdef USE_ZLIB
-void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
 #endif
-void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
 #ifdef USE_BZIP2
-void __fastcall DecompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize);
+void __fastcall DecompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize);
 #endif
 
 void __fastcall InitWaveCompress(DWORD dwCompressLevel, LPDWORD *lplpdwCompressionSubType, LPDWORD lpdwCompressionSubType);
@@ -82,7 +82,7 @@ typedef struct {
 	LPVOID lpvDestinationMem;
 	DWORD dwDestStart;
 	DWORD dwDestLen;
-	LPVOID lpvSourceMem;
+	LPCVOID lpvSourceMem;
 	DWORD dwSrcStart;
 	DWORD dwSrcLen;
 } BUFFERINFO;
@@ -143,10 +143,11 @@ const DWORD nDecompFunctions = sizeof(DecompressionFunctions) / sizeof(Decompres
 CompressFunc *lpLastCompressMethod = &CompressionFunctions[nCompFunctions-1];
 DecompressFunc *lpLastDecompressMethod = &DecompressionFunctions[nDecompFunctions-1];
 
-BOOL WINAPI SCompCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, DWORD dwCompressionType, DWORD dwCompressionSubType, DWORD dwCompressLevel)
+BOOL WINAPI SCompCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, DWORD dwCompressionType, DWORD dwCompressionSubType, DWORD dwCompressLevel)
 {
 	DWORD dwCompressCount,dwCurFlag,dwTempFlags,dwInSize,dwOutSize;
-	LPVOID lpvInBuffer,lpvOutBuffer,lpvWorkBuffer,lpvAllocBuffer;
+	LPCVOID lpvInBuffer;
+	LPVOID lpvOutBuffer,lpvWorkBuffer,lpvAllocBuffer;
 	CompressFunc *lpCFuncTable;
 
 	if (!lpdwCompressedSize) {
@@ -275,7 +276,7 @@ BOOL WINAPI SCompCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, 
 	return TRUE;
 }
 
-BOOL WINAPI SCompDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+BOOL WINAPI SCompDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	DWORD dwDecompressedSize, dwOutSize, dwCompressTypes, dwCurFlag, dwTempFlags,dwCompressCount;
 	LPVOID lpvInBuffer,lpvOutBuffer,lpvWorkBuffer,lpvTempBuffer;
@@ -407,19 +408,19 @@ void __fastcall InitWaveCompress(DWORD dwCompressLevel, LPDWORD *lplpdwCompressi
 	*lpdwCompressionSubType = 7;
 }
 
-void __fastcall CompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+void __fastcall CompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
 	InitWaveCompress(dwCompressLevel,&lpdwCompressionSubType,lpdwCompressionSubType);
 	*lpdwCompressedSize = CompressWave((LPBYTE)lpvDestinationMem,*lpdwCompressedSize,(short *)lpvSourceMem,dwDecompressedSize,1,(unsigned int)lpdwCompressionSubType & 0xFF);
 }
 
-void __fastcall CompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+void __fastcall CompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
 	InitWaveCompress(dwCompressLevel,&lpdwCompressionSubType,lpdwCompressionSubType);
 	*lpdwCompressedSize = CompressWave((LPBYTE)lpvDestinationMem,*lpdwCompressedSize,(short *)lpvSourceMem,dwDecompressedSize,2,(unsigned int)lpdwCompressionSubType & 0xFF);
 }
 
-void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
 	THuffmannTree *ht;                  // Huffmann tree for compression
 	TOutputStream os;                   // Output stream
@@ -502,7 +503,7 @@ void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LP
 
 #endif
 
-void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
 	BUFFERINFO BufferInfo;
 	unsigned int dwCompType, dwDictSize;
@@ -558,17 +559,17 @@ void __fastcall CompressBZ2(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize
 
 #endif
 
-void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+void __fastcall DecompressWaveMono(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	*lpdwDecompressedSize = DecompressWave((LPBYTE)lpvDestinationMem,*lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize,1);
 }
 
-void __fastcall DecompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+void __fastcall DecompressWaveStereo(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	*lpdwDecompressedSize = DecompressWave((LPBYTE)lpvDestinationMem,*lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize,2);
 }
 
-void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	THuffmannTree *ht;
 	TInputStream  is;
@@ -642,7 +643,7 @@ void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, 
 
 #endif
 
-void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	BUFFERINFO BufferInfo;
 	LPVOID lpvWorkBuffer;

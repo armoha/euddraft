@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mpqcrypt.cpp" />
-    <ClCompile Include="mpqread.cpp" />
-    <ClCompile Include="mpqwrite.cpp" />
     <ClCompile Include="comp\exp.c">
       <Filter>comp</Filter>
     </ClCompile>
@@ -26,13 +23,24 @@
     <ClCompile Include="comp\wave.cpp">
       <Filter>comp</Filter>
     </ClCompile>
-    <ClCompile Include="applyWavComp.cpp" />
+    <ClCompile Include="cmpdcmp.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
+    <ClCompile Include="mpqcrypt.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
+    <ClCompile Include="mpqread.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
+    <ClCompile Include="mpqwrite.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
+    <ClCompile Include="test_main.cpp" />
+    <ClCompile Include="test\test_cmpdcmp.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mpqcrypt.h" />
-    <ClInclude Include="mpqread.h" />
-    <ClInclude Include="mpqtypes.h" />
-    <ClInclude Include="mpqwrite.h" />
     <ClInclude Include="comp\huffman.h">
       <Filter>comp</Filter>
     </ClInclude>
@@ -51,10 +59,32 @@
     <ClInclude Include="comp\wave.h">
       <Filter>comp</Filter>
     </ClInclude>
+    <ClInclude Include="cmpdcmp.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
+    <ClInclude Include="mpqcrypt.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
+    <ClInclude Include="mpqread.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
+    <ClInclude Include="mpqtypes.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
+    <ClInclude Include="mpqwrite.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
+    <ClInclude Include="doctest.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="comp">
       <UniqueIdentifier>{ca9b596c-f423-4fb5-8ea5-5224d2950303}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="mpqrw">
+      <UniqueIdentifier>{fc288462-9934-4787-b657-b8222f431258}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{18cdaa3a-b076-4151-b65b-ac66ee40ee9d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -185,6 +185,3 @@ std::string MpqRead::getBlockContent(const BlockTableEntry *blockEntry) const {
 MpqReadPtr readMPQ(const std::string& mpqName) {
     return std::make_shared<MpqRead>(mpqName);
 }
-
-
-

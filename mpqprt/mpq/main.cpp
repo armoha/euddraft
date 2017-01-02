@@ -2,7 +2,7 @@
 #include "mpqwrite.h"
 #include <fstream>
 
-bool bEnableMpaq = false;
+extern bool bEnableMpaq;
 
 int main(int argc, char** argv) {
     if(argc != 2 && argc != 3) return -1;
