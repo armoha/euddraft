@@ -6,6 +6,7 @@
 #include "mpqread.h"
 #include "mpqtypes.h"
 #include "mpqcrypt.h"
+#include "cmpdcmp.h"
 #include <vector>
 #include <fstream>
 
@@ -177,7 +178,16 @@ const BlockTableEntry* MpqRead::getBlockEntry(int index) const { return pimpl->g
 const BlockTableEntry* MpqRead::getBlockEntry(const std::string &fname) const { return pimpl->getBlockEntry(fname); }
 
 std::string MpqRead::getBlockContent(const BlockTableEntry *blockEntry) const {
-    return pimpl->getDecryptedBlockContent(blockEntry);
+	return pimpl->getDecryptedBlockContent(blockEntry);
+}
+
+std::string MpqRead::getFileContent(const BlockTableEntry *blockEntry) const {
+    std::string content = pimpl->getDecryptedBlockContent(blockEntry);
+	if(blockEntry->fileFlag & BLOCK_COMPRESSED)
+	{
+		content = decompressBlock(blockEntry->fileSize, content);
+	}
+	return content;
 }
 
 /////////////////////////////

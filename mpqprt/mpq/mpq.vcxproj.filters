@@ -39,6 +39,9 @@
     <ClCompile Include="test\test_cmpdcmp.cpp">
       <Filter>test</Filter>
     </ClCompile>
+    <ClCompile Include="keycalc.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="comp\huffman.h">
@@ -75,6 +78,9 @@
       <Filter>mpqrw</Filter>
     </ClInclude>
     <ClInclude Include="doctest.h" />
+    <ClInclude Include="keycalc.h">
+      <Filter>mpqrw</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="comp">

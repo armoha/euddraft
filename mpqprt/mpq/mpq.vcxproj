@@ -105,9 +105,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.exc</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_TEST|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -232,6 +234,7 @@
     <ClCompile Include="comp\serr.cpp" />
     <ClCompile Include="comp\smem.cpp" />
     <ClCompile Include="comp\wave.cpp" />
+    <ClCompile Include="keycalc.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_TEST|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -253,6 +256,7 @@
     <ClInclude Include="comp\smem.h" />
     <ClInclude Include="comp\wave.h" />
     <ClInclude Include="doctest.h" />
+    <ClInclude Include="keycalc.h" />
     <ClInclude Include="mpqcrypt.h" />
     <ClInclude Include="mpqread.h" />
     <ClInclude Include="mpqtypes.h" />
