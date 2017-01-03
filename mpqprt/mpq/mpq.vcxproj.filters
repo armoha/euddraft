@@ -42,6 +42,9 @@
     <ClCompile Include="keycalc.cpp">
       <Filter>mpqrw</Filter>
     </ClCompile>
+    <ClCompile Include="modchk.cpp">
+      <Filter>mpqrw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="comp\huffman.h">

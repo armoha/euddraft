@@ -238,6 +238,7 @@
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_TEST|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="modchk.cpp" />
     <ClCompile Include="mpqcrypt.cpp" />
     <ClCompile Include="mpqread.cpp" />
     <ClCompile Include="mpqwrite.cpp" />
