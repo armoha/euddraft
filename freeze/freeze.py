@@ -99,6 +99,7 @@ def unFreeze():
 
     # Calculate key using file data
     keycalc(seedKey, fileCursor)
+    # now seedKey should be equal to destKey.
 
     # Modify tables!
     initOffsets(seedKey, destKeyVal, cryptKey)
