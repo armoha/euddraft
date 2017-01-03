@@ -73,7 +73,6 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
     print("euddraft v0.7.3 : Simple eudplib plugin system")
-    sys.argv.append("test.eds")
 
     if len(sys.argv) != 2:
         raise RuntimeError("Usage : euddraft [setting file]")
