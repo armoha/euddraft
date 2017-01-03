@@ -23,41 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
-from eudplib import (
-    f_dwepdread_epd_safe,
-    f_epdread_epd_safe,
-    f_dwread_epd_safe,
-    f_dwread_epd,
-    EUDVariable,
-
-    EUDInfLoop,
-    EUDBreakIf,
-    MemoryEPD,
-    Exactly,
-    EUDEndInfLoop,
-
-    EUDLoopRange,
-    EUDWhile,
-    EUDEndWhile,
-    EUDLoopN,
-    EUDEndLoopN,
-
-    EUDIf,
-    EUDElse,
-    EUDEndIf,
-
-    EPD,
-    Db,
-    Memory,
-)
-
+from eudplib import *
 from .mpqh import getMapHandleEPD
 from .crypt import mix
 import random
 
 
 def keycalc(seedKey, fileCursor):
-    chkHandle, chkHandleEPD = f_dwepdread_epd_safe(0x6D0F24)
+    chkHandle, chkHandleEPD = f_dwepdread_epd_safe(EPD(0x6D0F24))
 
     mpqHeaderEPD = EUDVariable()
     blockTableEPD = EUDVariable()
@@ -73,8 +46,8 @@ def keycalc(seedKey, fileCursor):
     if EUDIf()(Memory(0x6D0F14, Exactly, 0)):  # On game
         mpqEPD = getMapHandleEPD()
         mpqHeaderEPD << f_epdread_epd_safe(mpqEPD + (0x130 // 4))
-        blockTableEPD << f_epdread_epd_safe(mpqEPD + (0x134 // 4)).makeR()
-        hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4)).makeR()
+        blockTableEPD << f_epdread_epd_safe(mpqEPD + (0x134 // 4))
+        hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4))
 
         # Basic check
         mpqArchiveSize << f_dwread_epd_safe(mpqHeaderEPD + (0x08 // 4))
@@ -118,6 +91,8 @@ def keycalc(seedKey, fileCursor):
         chkBlockEntryEPD << EPD(Db(bytes(16)))
 
     EUDEndIf()
+
+    DoActions(SetDeaths(0, SetTo, 5678, 0))
 
     def feedSample(sample, inplace=True):
         nonlocal seedKey
