@@ -11,30 +11,13 @@
 #include <utility>
 
 #include "cmpdcmp.h"
+#include "keycalc.h"
 
 using HashTable = std::vector<HashTableEntry>;
 using BlockTable = std::vector<BlockTableEntry>;
 using BlockDataTable = std::vector<std::string>;
 
 bool bEnableMpaq = false;
-
-// Hashers
-
-uint32_t T(uint32_t x) {
-    auto xsq = x * x;
-    return x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053;
-}
-
-
-uint32_t mix(uint32_t seed, uint32_t ch) {
-    return T(seed) + ch + 0x10f874f3;
-}
-
-uint32_t unmix_ch(uint32_t seed, uint32_t seed0) {
-    // seed = T(seed0) + ch + C
-    // ch = seed - T(seed0) - C
-    return seed - T(seed0) - 0x10f874f3;
-}
 
 std::string createEncryptedMPQ(MpqReadPtr mr) {
     // Generate new hash table
@@ -117,6 +100,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     }
 
     // Adjust hash table
+	auto initialBlockIndex = (blockTableOffset >> 4);
     for(auto& hashEntry : hashTable) {
         if(hashEntry.blockIndex <= 0xFFFFFFFE) hashEntry.blockIndex += (blockTableOffset >> 4);
     }
@@ -167,7 +151,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // Write decrypted data
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
-    memcpy(archiveBuffer.data() + cursor, "freeze02 protect", 16);
+    memcpy(archiveBuffer.data() + cursor, "freeze03 protect", 16);
     cursor += 16;
     DecryptData(archiveBuffer.data(), cursor, blockTableKey);
 
@@ -184,63 +168,28 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
         }
         memcpy(keyDwords, keyFile.data() + 8, 36);
 
-        auto feedSample = [&](uint32_t sample) {
-            keyDwords[0] = mix(keyDwords[0], sample);
-            keyDwords[1] = mix(keyDwords[1], keyDwords[0]);
-            keyDwords[2] = mix(keyDwords[2], keyDwords[1]);
-            keyDwords[3] = mix(keyDwords[3], keyDwords[2]);
-        };
+		const uint32_t* dwData = reinterpret_cast<uint32_t*>(archiveBuffer.data());
 
-        const uint32_t* dwData = reinterpret_cast<uint32_t*>(archiveBuffer.data());
+		uint32_t seedKey[4], destKey[4];
+		memcpy(seedKey, keyDwords + 0, sizeof(uint32_t) * 4);
+		memcpy(destKey, keyDwords + 4, sizeof(uint32_t) * 4);
+		uint32_t fileCursor = keyDwords[8];
 
-        // 1. Feed MPQ header - 8 operationM
-        for(int i = 0 ; i < 8 ; i++) {
-            feedSample(reinterpret_cast<uint32_t*>(&header)[i]);
-        }
-        for(int i = 0 ; i < 8 ; i++) {
-            feedSample(dwData[i]);
-        }
+    	keycalc(
+			seedKey,
+			destKey,
+			fileCursor,
+			outputDwords,
 
-        // 2. Feed HET - 1024 operation
-        for(int i = 0 ; i < hashEntryCount ; i++) {
-            feedSample(dwData[hashTableOffset / 4 + i * 4 + 3]);
-        }
-
-        // 3. Feed BET - maybe ~60 operation
-        for(size_t i = 0 ; i < blockTable.size() ; i++) {
-            feedSample(dwData[blockTableOffset / 4 + i * 4]);
-        }
-
-        // 4. Feed scenario.chk sectorOffsetTable
-        auto& chkBlockEntry = blockTable[0];
-        auto chkSectorNum = (chkBlockEntry.fileSize + 4095) / 4096;
-        for(size_t i = 0 ; i < chkSectorNum + 1 ; i += 3) {
-            feedSample(dwData[8 + i]);
-        }
-
-        // 5. Feed entire mpq file
-        const int SAMPLEN = 2048;
-        int mpqDwordN = header.mpqSize / 4 - 4;
-        uint32_t fileCursor = keyDwords[8];
-        for(int i = 0 ; i < 4 ; i++) {
-            for(uint32_t j = 0 ; j < SAMPLEN / 4 ; j++) {
-                keyDwords[i] = keyDwords[i] * 3 + dwData[fileCursor % mpqDwordN];
-                fileCursor = mix(fileCursor, j);
-            }
-        }
-
-        // 6. Final feedback
-        for(int i = 0 ; i < 64 ; i++) {
-            keyDwords[0] = mix(keyDwords[0], keyDwords[3]);
-            keyDwords[1] = mix(keyDwords[1], keyDwords[0]);
-            keyDwords[2] = mix(keyDwords[2], keyDwords[1]);
-        }
-
-        // 7. Great! calculate outputDwords
-        outputDwords[0] = unmix_ch(keyDwords[4], keyDwords[0]);
-        outputDwords[1] = unmix_ch(keyDwords[5], keyDwords[1]);
-        outputDwords[2] = unmix_ch(keyDwords[6], keyDwords[2]);
-        outputDwords[3] = unmix_ch(keyDwords[7], keyDwords[3]);
+			dwData,
+			header,
+			header.mpqSize,
+			header.hashTableEntryCount,
+			header.hashTableOffset,
+			header.blockTableEntryCount,
+			initialBlockIndex,
+			blockTable[0]
+		);
     }
     memcpy(archiveBuffer.data() + cursor, outputDwords, 16);
     cursor += 16;

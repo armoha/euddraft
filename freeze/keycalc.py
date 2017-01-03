@@ -92,8 +92,6 @@ def keycalc(seedKey, fileCursor):
 
     EUDEndIf()
 
-    DoActions(SetDeaths(0, SetTo, 5678, 0))
-
     def feedSample(sample, inplace=True):
         nonlocal seedKey
         if inplace:
