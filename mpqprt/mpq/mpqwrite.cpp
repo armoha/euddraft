@@ -19,7 +19,32 @@ using BlockDataTable = std::vector<std::string>;
 
 bool bEnableMpaq = false;
 
+std::string modChk(
+	const std::string& chkContent,
+	const uint32_t seedKey[4],
+	const uint32_t destKey[4],
+	uint32_t fileCursor);
+
 std::string createEncryptedMPQ(MpqReadPtr mr) {
+	// Read map keys
+	uint32_t keyDwords[9];
+	auto keyFileEntry = mr->getBlockEntry("(keyfile)");
+	if (keyFileEntry == nullptr) throw std::runtime_error("No keyfile");
+	auto keyFile = mr->getBlockContent(keyFileEntry);
+	if (keyFile.size() != 8 + 36) {   // 8 : sectorshifttable
+		throw std::runtime_error("Key not sufficiently random : " + std::to_string(keyFile.size()));
+	}
+	memcpy(keyDwords, keyFile.data() + 8, 36);
+
+	uint32_t seedKey[4], destKey[4];
+	memcpy(seedKey, keyDwords + 0, sizeof(uint32_t) * 4);
+	memcpy(destKey, keyDwords + 4, sizeof(uint32_t) * 4);
+	uint32_t fileCursor = keyDwords[8];
+
+	
+	/////////////////
+
+
     // Generate new hash table
     auto hashEntryCount = mr->getHashEntryCount();
     HashTable hashTable;
@@ -44,10 +69,10 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 		std::string blockData = mr->getBlockContent(blockEntry);
         auto newBlockEntry = *blockEntry;
 
+		// If mpaq -> compress wave file
 		if (bEnableMpaq) {
 			auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
 
-			// If wave data -> try recompression
 			if (memcmp(fdata.data(), "RIFF", 4) == 0 &&
 				memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
 				auto cmpdata = compressToBlock(fdata,
@@ -81,6 +106,20 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
             break;
         }
     }
+
+	// Modify scenario.chk block
+	{
+		std::string rawchk = decompressBlock(blockTable[0].fileSize, blockDataTable[0]);
+		std::string newchk = modChk(rawchk, seedKey, destKey, fileCursor);
+		blockDataTable[0] = compressToBlock(
+			newchk,
+			MAFA_COMPRESS_STANDARD,
+			MAFA_COMPRESS_STANDARD
+		);
+		printf("%d -> %d\n", rawchk.size(), newchk.size());
+		blockTable[0].fileSize = newchk.size();
+		blockTable[0].blockSize = blockDataTable[0].size();
+	}
 
     // Get file size & prepare buffer for it
     size_t newArchiveSize = sizeof(MPQHeader);
@@ -156,42 +195,26 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     DecryptData(archiveBuffer.data(), cursor, blockTableKey);
 
     // Output hash data here
-    uint32_t outputDwords[4] = {0};
-    {
-        // Read map keys
-        uint32_t keyDwords[9];
-        auto keyFileEntry = mr->getBlockEntry("(keyfile)");
-        if(keyFileEntry == nullptr) throw std::runtime_error("No keyfile");
-        auto keyFile = mr->getBlockContent(keyFileEntry);
-        if(keyFile.size() != 8 + 36) {   // 8 : sectorshifttable
-            throw std::runtime_error("Key not sufficiently random : " + std::to_string(keyFile.size()));
-        }
-        memcpy(keyDwords, keyFile.data() + 8, 36);
+	uint32_t outputDwords[4] = { 0 };
+	const uint32_t* dwData = reinterpret_cast<uint32_t*>(archiveBuffer.data());
 
-		const uint32_t* dwData = reinterpret_cast<uint32_t*>(archiveBuffer.data());
+    keycalc(
+		seedKey,
+		destKey,
+		fileCursor,
+		outputDwords,
 
-		uint32_t seedKey[4], destKey[4];
-		memcpy(seedKey, keyDwords + 0, sizeof(uint32_t) * 4);
-		memcpy(destKey, keyDwords + 4, sizeof(uint32_t) * 4);
-		uint32_t fileCursor = keyDwords[8];
+		dwData,
+		header,
+		header.mpqSize,
+		header.hashTableEntryCount,
+		header.hashTableOffset,
+		header.blockTableEntryCount,
+		initialBlockIndex,
+		blockTable[0]
+	);
 
-    	keycalc(
-			seedKey,
-			destKey,
-			fileCursor,
-			outputDwords,
-
-			dwData,
-			header,
-			header.mpqSize,
-			header.hashTableEntryCount,
-			header.hashTableOffset,
-			header.blockTableEntryCount,
-			initialBlockIndex,
-			blockTable[0]
-		);
-    }
-    memcpy(archiveBuffer.data() + cursor, outputDwords, 16);
+	memcpy(archiveBuffer.data() + cursor, outputDwords, 16);
     cursor += 16;
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
 
