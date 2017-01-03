@@ -80,7 +80,6 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 						MAFA_COMPRESS_STANDARD,
 						MAFA_COMPRESS_WAVE);
 					if (cmpdata.size() < blockData.size()) blockData = cmpdata;
-					printf("%08X %08X\n", hashEntry.hashA, hashEntry.hashB);
 				}
 			} catch(std::runtime_error e) {}
 		}

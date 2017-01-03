@@ -42,7 +42,7 @@ def getExpectedTriggerCount():
     """
     chkt = GetChkTokenized()
     trigSection = chkt.getsection('TRIG')
-    count = [4] * 8
+    count = [221] * 8
     for i in range(0, len(trigSection), 2400):
         bTrigger = trigSection[i:i + 2400]
 
@@ -88,4 +88,3 @@ def getTriggerExecutingPlayers(bTrigger):
                         playerExecutesTrigger[player] = True
 
     return playerExecutesTrigger
-
