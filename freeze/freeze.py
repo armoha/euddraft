@@ -40,7 +40,7 @@ from .utils import (
 )
 
 from .crypt import (
-    mix,
+    mix, mix2
 )
 
 from .mpqh import getMapHandleEPD
@@ -56,6 +56,13 @@ from .obfpatch import (
     obfpatch,
     obfunpatch
 )
+
+'''
+from .trigcrypt import (
+    encryptTriggers,
+    decryptTrigger
+)
+'''
 
 from .keycalc import keycalc
 
@@ -97,6 +104,13 @@ def unFreeze():
     cryptKey << mix(cryptKey, seedKey[3])
     cryptKey << mix(cryptKey, 0)
 
+    cryptKeyVal = 0
+    cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[0])
+    cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[1])
+    cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[2])
+    cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[3])
+    cryptKeyVal = mix2(cryptKeyVal, 0)
+
     # Calculate key using file data
     keycalc(seedKey, fileCursor)
     # now seedKey should be equal to destKey.
@@ -105,22 +119,25 @@ def unFreeze():
     initOffsets(seedKey, destKeyVal, cryptKey)
     obfpatch()
 
+    # Modify triggers
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
     tCount = EUDVariable()
 
     ObfuscatedJump()
+    # encryptTriggers(cryptKeyVal)
 
     for player in EUDLoopRange(8):
         tbegin = TrigTriggerBegin(player)
+        # triggerKey = EUDVariable()
+        # triggerKey << cryptKey
         if EUDIfNot()(tbegin == 0):
             tend = TrigTriggerEnd(player)
             tCount << 0
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
-                propv = f_dwread_epd(epd + (8 + 320 + 2048) // 4)
-                if EUDIfNot()(propv == 8):
-                    tCount += 1
-                EUDEndIf()
+                # decryptTrigger(epd, triggerKey, tCount)
+                # triggerKey << mix(triggerKey, tCount)
+                tCount += 1
             ObfuscatedJump()
             if EUDIfNot()(tCount == desiredTriggerCount[player]):
                 cryptKey << cryptKey + 1

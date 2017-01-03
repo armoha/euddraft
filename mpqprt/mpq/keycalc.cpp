@@ -1,6 +1,5 @@
 #include "mpqtypes.h"
 #include <string.h>
-#include <cstdio>
 
 uint32_t T(uint32_t x) {
 	auto xsq = x * x;
