@@ -70,16 +70,19 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
         auto newBlockEntry = *blockEntry;
 
 		// If mpaq -> compress wave file
-		if (bEnableMpaq) {
-			auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
+		if (bEnableMpaq && newBlockEntry.fileFlag & BLOCK_COMPRESSED) {
+			try {
+				auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
 
-			if (memcmp(fdata.data(), "RIFF", 4) == 0 &&
-				memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
-				auto cmpdata = compressToBlock(fdata,
-					MAFA_COMPRESS_STANDARD | MAFA_COMPRESS_WAVECOMP_HUFFMAN,
-					MAFA_COMPRESS_WAVE);
-				if (cmpdata.size() < blockData.size()) blockData = cmpdata;
-			}
+				if (memcmp(fdata.data(), "RIFF", 4) == 0 &&
+					memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
+					auto cmpdata = compressToBlock(fdata,
+						MAFA_COMPRESS_STANDARD,
+						MAFA_COMPRESS_WAVE);
+					if (cmpdata.size() < blockData.size()) blockData = cmpdata;
+					printf("%08X %08X\n", hashEntry.hashA, hashEntry.hashB);
+				}
+			} catch(std::runtime_error e) {}
 		}
 		newBlockEntry.blockSize = blockData.size();
 
@@ -109,16 +112,24 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 	// Modify scenario.chk block
 	{
-		std::string rawchk = decompressBlock(blockTable[0].fileSize, blockDataTable[0]);
+		if(blockTable[0].fileFlag & BLOCK_IMPLODED)
+		{
+			throw std::runtime_error("Cannot decompress imploded block");
+		}
+
+		std::string rawchk =
+			(blockTable[0].fileFlag & BLOCK_COMPRESSED) ?
+			decompressBlock(blockTable[0].fileSize, blockDataTable[0]) :
+			blockDataTable[0];
 		std::string newchk = modChk(rawchk, seedKey, destKey, fileCursor);
 		blockDataTable[0] = compressToBlock(
 			newchk,
 			MAFA_COMPRESS_STANDARD,
 			MAFA_COMPRESS_STANDARD
 		);
-		printf("%d -> %d\n", rawchk.size(), newchk.size());
 		blockTable[0].fileSize = newchk.size();
 		blockTable[0].blockSize = blockDataTable[0].size();
+		blockTable[0].fileFlag |= BLOCK_COMPRESSED;
 	}
 
     // Get file size & prepare buffer for it

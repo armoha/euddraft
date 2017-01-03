@@ -139,9 +139,8 @@ uint32_t GetFileDecryptKey(const uint32_t* encryptedOffsetTable, uint32_t fileSi
             DecryptData(decryptedOffsetTable.data(), offsetTableLength, dwKey);
 
             // Last table
-            if(decryptedOffsetTable[sectorNum] != blockSize) {
-                continue;
-            }
+			if (decryptedOffsetTable[0] != offsetTableLength) continue;
+			if (decryptedOffsetTable[sectorNum] != blockSize) continue;
             for(size_t i = 0 ; i < sectorNum ; i++)
                 if(decryptedOffsetTable[i] > decryptedOffsetTable[i + 1]) return 0xFFFFFFFF;
 
