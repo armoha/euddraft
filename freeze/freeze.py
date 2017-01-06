@@ -69,7 +69,7 @@ g_seedKey = None
 
 
 def unFreeze():
-    global tKeys
+    global tKeys, cryptKey
 
     # Generate key
     keys = [random.randint(0, 0xFFFFFFFF) for _ in range(9)]
@@ -124,8 +124,12 @@ def unFreeze():
 
     # Modify triggers
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
+    encryptedTriggerCount = EUDArray(
+        encryptTriggers(mix2(triggerKeyVal, cryptKeyVal))
+    )
     tCount = EUDVariable()
     tInternalCount = EUDVariable()
+    decryptedCount = EUDVariable()
 
     ObfuscatedJump()
     encryptTriggers(mix2(triggerKeyVal, cryptKeyVal))
@@ -137,9 +141,10 @@ def unFreeze():
             tend = TrigTriggerEnd(player)
             tCount << 0
             tInternalCount << 0
+            decryptedCount << 0
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
-                decryptTrigger(epd, triggerKey, tCount)
+                decryptedCount += decryptTrigger(epd, triggerKey, tCount)
                 propv = f_dwread_epd(epd + (8 + 320 + 2048) // 4)
                 if EUDIfNot()(propv == 8):
                     tCount += 1
@@ -147,12 +152,11 @@ def unFreeze():
                     tInternalCount += 1
                 EUDEndIf()
             ObfuscatedJump()
-            if EUDIfNot()([
+            Trigger([
                 tCount == desiredTriggerCount[player],
                 tInternalCount == 217
-            ]):
-                cryptKey << cryptKey + 1
-            EUDEndIf()
+            ], cryptKey.AddNumber(1))
+            cryptKey += decryptedCount - encryptedTriggerCount[player]
         EUDEndIf()
 
     # Reset key memory after usage
