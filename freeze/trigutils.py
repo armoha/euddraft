@@ -42,7 +42,7 @@ def getExpectedTriggerCount():
     """
     chkt = GetChkTokenized()
     trigSection = chkt.getsection('TRIG')
-    count = [221] * 8
+    count = [4] * 8
     for i in range(0, len(trigSection), 2400):
         bTrigger = trigSection[i:i + 2400]
 

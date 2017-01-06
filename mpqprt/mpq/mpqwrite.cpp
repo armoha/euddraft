@@ -6,12 +6,14 @@
 #include "mpqwrite.h"
 #include "mpqcrypt.h"
 #include <vector>
+#include <set>
 #include <cstring>
 #include <assert.h>
 #include <utility>
 
 #include "cmpdcmp.h"
 #include "keycalc.h"
+#include <random>
 
 using HashTable = std::vector<HashTableEntry>;
 using BlockTable = std::vector<BlockTableEntry>;
@@ -24,6 +26,17 @@ std::string modChk(
 	const uint32_t seedKey[4],
 	const uint32_t destKey[4],
 	uint32_t fileCursor);
+
+
+bool hashMatch(const HashTableEntry* hashEntry, const char* filename)
+{
+	uint32_t hashA1 = HashString(filename, MPQ_HASH_NAME_A);
+	uint32_t hashB1 = HashString(filename, MPQ_HASH_NAME_B);
+	return hashEntry->hashA == hashA1 && hashEntry->hashB == hashB1;
+}
+
+void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex);
+
 
 std::string createEncryptedMPQ(MpqReadPtr mr) {
 	// Read map keys
@@ -46,12 +59,12 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 
     // Generate new hash table
-    auto hashEntryCount = mr->getHashEntryCount();
     HashTable hashTable;
-    for(int i = 0 ; i < hashEntryCount ; i++) {
+	auto hashEntryCount = mr->getHashEntryCount();
+	for(int i = 0 ; i < hashEntryCount ; i++) {
         auto hashEntry = mr->getHashEntry(i);
         // remove (keyfile)
-        if(hashEntry->hashA == 0x1A3398DE && hashEntry->hashB == 0xFEAAAFAA) {
+        if(hashMatch(hashEntry, "(keyfile)") || hashMatch(hashEntry, "(listfile)")) {
             HashTableEntry deletedEntry;
             memset(&deletedEntry, 0, sizeof(HashTableEntry));
             deletedEntry.blockIndex = 0xFFFFFFFE;
@@ -74,7 +87,8 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 			try {
 				auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
 
-				if (memcmp(fdata.data(), "RIFF", 4) == 0 &&
+				if (fdata.size() >= 12 &&
+					memcmp(fdata.data(), "RIFF", 4) == 0 &&
 					memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
 					auto cmpdata = compressToBlock(fdata,
 						MAFA_COMPRESS_STANDARD,
@@ -154,6 +168,9 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
         if(hashEntry.blockIndex <= 0xFFFFFFFE) hashEntry.blockIndex += (blockTableOffset >> 4);
     }
 
+	// Garbagify hash table
+	garbagifyHashTable(hashTable, initialBlockIndex + blockDataTable.size());
+
     // Prepare buffer
     std::vector<char> archiveBuffer(newArchiveSize);
     size_t cursor = 32;
@@ -200,7 +217,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // Write decrypted data
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
-    memcpy(archiveBuffer.data() + cursor, "freeze03 protect", 16);
+    memcpy(archiveBuffer.data() + cursor, "freeze04 protect", 16);
     cursor += 16;
     DecryptData(archiveBuffer.data(), cursor, blockTableKey);
 
@@ -229,4 +246,35 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
 
     return std::string(archiveBuffer.begin(), archiveBuffer.end());
+}
+
+
+void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex)
+{
+	// Garbagify hash table
+	std::set<uint32_t> nameHashSet;
+	for (auto& hashEntry: hashTable)
+	{
+		nameHashSet.insert(hashEntry.hashA);
+		nameHashSet.insert(hashEntry.hashB);
+	}
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis;
+	auto randomPick = [&]()
+	{
+		uint32_t rv = dis(gen);
+		while (nameHashSet.find(rv) != nameHashSet.end()) rv = dis(gen);
+		return rv;
+	};
+
+	for (auto& hashEntry : hashTable)
+	{
+		if (hashEntry.blockIndex >= 0xFFFFFFFE)
+		{
+			hashEntry.hashA = randomPick();
+			hashEntry.hashB = randomPick();
+			hashEntry.blockIndex = dis(gen) % (maxBlockIndex);
+		}
+	}
 }
