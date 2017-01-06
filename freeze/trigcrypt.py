@@ -44,7 +44,11 @@ def bseti4(b, pos, dw):
 
 # Trigger encryption
 
-tabCount = 1
+tabCount = 16
+
+
+def hexdump(b):
+    print(''.join('%02X' % ch for ch in b))
 
 
 def encryptTrigger(bTrigger_, key):
@@ -66,13 +70,16 @@ def encryptTrigger(bTrigger_, key):
 
     wlist = []
     for i in range(tabCount):
-        wlist.append(r % (2368 // 4))
+        wlist.append(r % (2368 // 32))
         r = mix2(r, key + i)
 
     for i in range(tabCount - 1, -1, -1):
         w = wlist[i]
-        dw = b2i4(bTrigger, w * 4)
-        bseti4(bTrigger, w * 4, unmix2(dw, flag - i))
+        adddw = mix2(w, i)
+        for j in range(8):
+            dw = b2i4(bTrigger, w * 4)
+            bseti4(bTrigger, w * 4, dw - adddw)
+            w += 2368 // 32
 
     return bTrigger
 
@@ -83,20 +90,14 @@ def encryptTriggers(cryptKey):
     p = 0.05
 
     # Pre-crypt.
-    for i in range(218):
-        cryptKey = mix2(cryptKey, i)
-
-    tIndex = 218
     bSet = []
     for i in range(0, len(trigSection), 2400):
         bTrigger = trigSection[i: i + 2400]
         # Only non-inline code can be crypted
         if not GetInlineCodePlayerList(bTrigger):
-            if True or random.random() < p:
+            if random.random() < p:
                 bTrigger = encryptTrigger(bTrigger, cryptKey)
         bSet.append(bTrigger)
-        cryptKey = mix2(cryptKey, tIndex)
-        tIndex += 1
 
     chkt.setsection('TRIG', b''.join(bSet))
 
@@ -114,8 +115,14 @@ def decryptTrigger(triggerEPD, key, index):
         r = mix(r, key).makeR()
 
         for i in EUDLoopRange(tabCount):
-            w = r % (2368 // 4)
-            dw = f_dwread_epd(triggerEPD + w)
-            f_dwwrite_epd(triggerEPD + w, mix(dw, flag - i))
+            w = r % (2368 // 32)
+            adddw = mix(w, i)
+            oldcp = f_getcurpl()
+            f_setcurpl(triggerEPD + w)
+            DoActions([[
+                SetDeaths(CurrentPlayer, Add, adddw, 0),
+                SetMemory(0x6509B0, Add, 2368 // 32)
+            ] for _ in range(8)])
+            f_setcurpl(oldcp)
             r << mix(r, key + i)
     EUDEndIf()

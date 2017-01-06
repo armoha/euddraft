@@ -43,8 +43,6 @@ from .crypt import (
     mix, mix2
 )
 
-from .mpqh import getMapHandleEPD
-
 from .obfjump import (
     initOffsets,
     encryptOffsets,
@@ -57,12 +55,10 @@ from .obfpatch import (
     obfunpatch
 )
 
-'''
 from .trigcrypt import (
     encryptTriggers,
     decryptTrigger
 )
-'''
 
 from .keycalc import keycalc
 
@@ -82,6 +78,9 @@ def unFreeze():
     fileCursorVal = keys[8]
     MPQAddFile('(keyfile)', b''.join(i2b4(k) for k in keys))
 
+    triggerKeyVal = random.randint(0, 0xFFFFFFFF)
+    triggerKey = EUDVariable()
+
     # Insert key to file.
     seedKey = EUDCreateVariables(len(seedKeyVal))
     fileCursor = EUDVariable()
@@ -95,6 +94,10 @@ def unFreeze():
     assignerMerge(
         assigner,
         obfuscatedValueAssigner(fileCursor, fileCursorVal)
+    )
+    assignerMerge(
+        assigner,
+        obfuscatedValueAssigner(triggerKey, triggerKeyVal)
     )
     writeAssigner(assigner)
 
@@ -122,24 +125,32 @@ def unFreeze():
     # Modify triggers
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
     tCount = EUDVariable()
+    tInternalCount = EUDVariable()
 
     ObfuscatedJump()
-    # encryptTriggers(cryptKeyVal)
+    encryptTriggers(mix2(triggerKeyVal, cryptKeyVal))
+    triggerKey = mix(triggerKey, cryptKey)
 
     for player in EUDLoopRange(8):
         tbegin = TrigTriggerBegin(player)
-        # triggerKey = EUDVariable()
-        # triggerKey << cryptKey
         if EUDIfNot()(tbegin == 0):
             tend = TrigTriggerEnd(player)
             tCount << 0
+            tInternalCount << 0
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
-                # decryptTrigger(epd, triggerKey, tCount)
-                # triggerKey << mix(triggerKey, tCount)
-                tCount += 1
+                decryptTrigger(epd, triggerKey, tCount)
+                propv = f_dwread_epd(epd + (8 + 320 + 2048) // 4)
+                if EUDIfNot()(propv == 8):
+                    tCount += 1
+                if EUDElse()():
+                    tInternalCount += 1
+                EUDEndIf()
             ObfuscatedJump()
-            if EUDIfNot()(tCount == desiredTriggerCount[player]):
+            if EUDIfNot()([
+                tCount == desiredTriggerCount[player],
+                tInternalCount == 217
+            ]):
                 cryptKey << cryptKey + 1
             EUDEndIf()
         EUDEndIf()
