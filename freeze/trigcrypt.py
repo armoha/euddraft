@@ -33,7 +33,7 @@ from .crypt import (
     unmix2,
 )
 
-
+from .trigutils import getTriggerExecutingPlayers
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
 
 
@@ -89,6 +89,8 @@ def encryptTriggers(cryptKey):
     trigSection = chkt.getsection('TRIG')
     p = 0.05
 
+    encryptedCount = [0] * 8
+
     # Pre-crypt.
     bSet = []
     for i in range(0, len(trigSection), 2400):
@@ -96,10 +98,15 @@ def encryptTriggers(cryptKey):
         # Only non-inline code can be crypted
         if not GetInlineCodePlayerList(bTrigger):
             if random.random() < p:
+                pExc = getTriggerExecutingPlayers(bTrigger)
+                for i in range(8):
+                    if pExc[i]:
+                        encryptedCount[i] += 1
                 bTrigger = encryptTrigger(bTrigger, cryptKey)
         bSet.append(bTrigger)
 
     chkt.setsection('TRIG', b''.join(bSet))
+    return encryptedCount
 
 
 @EUDFunc
@@ -125,4 +132,7 @@ def decryptTrigger(triggerEPD, key, index):
             ] for _ in range(8)])
             f_setcurpl(oldcp)
             r << mix(r, key + i)
+
+        EUDReturn(1)
     EUDEndIf()
+    EUDReturn(0)
