@@ -10,6 +10,7 @@ build_exe_options = {
     "include_msvcr": True,
     "include_files": [
         "StormLib32.dll",
+        "libepScriptLib.dll",
         "mpq.exc",
         "license.txt",
         "plugins"
@@ -21,7 +22,7 @@ build_exe_options = {
 
 setup(
     name="euddraft",
-    version='0.7.4',
+    version='0.7.5',
     description="euddraft compilication system",
     options={
         "build_exe": build_exe_options

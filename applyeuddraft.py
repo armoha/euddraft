@@ -117,7 +117,7 @@ def applyEUDDraft(sfname):
 
         print('---------- Loading plugins... ----------')
         ep.LoadMap(ifname)
-        pluginList, pluginFuncDict = loadPluginsFromConfig(config)
+        pluginList, pluginFuncDict = loadPluginsFromConfig(ep, config)
 
         print('--------- Injecting plugins... ---------')
 

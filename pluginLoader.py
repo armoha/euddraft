@@ -24,8 +24,9 @@ THE SOFTWARE.
 '''
 
 import os
-import runpy as rp
+from importlib.machinery import SourceFileLoader
 import sys
+import types
 
 
 # Get absolute path of current executable
@@ -42,11 +43,15 @@ def getGlobalPluginDirectory():
 
 
 def getPluginPath(pluginName):
-    if pluginName[-3:] == '.py':
-        pluginPath = pluginName
+    if pluginName[-3:] == '.py' or pluginName[-4:] == '.eps':
+        pluginPath = os.path.abspath(pluginName)
     else:
+        # Try eps
         pluginPath = os.path.join(
-            basepath, 'plugins', '%s.py' % pluginName)
+            basepath, 'plugins', '%s.eps' % pluginName)
+        if not os.path.exists(pluginPath):
+            pluginPath = os.path.join(
+                basepath, 'plugins', '%s.py' % pluginName)
 
     return pluginPath
 
@@ -67,7 +72,7 @@ def isMpaqIssued():
     return mpaq_enabled
 
 
-def loadPluginsFromConfig(config):
+def loadPluginsFromConfig(ep, config):
     global freeze_enabled, mpaq_enabled
 
     """ Load plugin from config file """
@@ -95,7 +100,7 @@ def loadPluginsFromConfig(config):
 
             continue
 
-        pluginSettings = {'settings': config[pluginName]}
+        pluginSettings = config[pluginName]
 
         print('Loading plugin %s...' % pluginName)
 
@@ -103,11 +108,22 @@ def loadPluginsFromConfig(config):
         pluginPath = getPluginPath(pluginName)
 
         try:
-            pluginDir, _ = os.path.split(pluginPath)
+            pluginDir = os.path.dirname(pluginPath)
             if pluginDir and pluginDir not in sys.path:
-                sys.path.append(os.path.abspath(pluginDir))
+                sys.path.insert(1, os.path.abspath(pluginDir))
 
-            pluginDict = rp.run_path(pluginPath, pluginSettings, pluginName)
+            moduleName = os.path.splitext(os.path.basename(pluginPath))[0]
+            pluginModule = types.ModuleType(moduleName)
+            pluginModule.__dict__['settings'] = pluginSettings
+
+            if pluginPath.endswith('.eps'):
+                loader = ep.EPSLoader(moduleName, pluginPath)
+            else:
+                loader = SourceFileLoader(moduleName, pluginPath)
+
+            loader.exec_module(pluginModule)
+
+            pluginDict = pluginModule.__dict__
 
             if pluginDict:
                 onPluginStart = pluginDict.get('onPluginStart', empty)
