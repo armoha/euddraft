@@ -93,12 +93,16 @@ class CallerProxy(ConstExpr):
 def ObfuscatedJump():
     oJumper = Forward()
     pdst = Forward()
+    r = random.randint(0, 0xFFFFFFFF)
 
-    cProxy = CallerProxy(pdst, oJumper)
+    cProxy = CallerProxy(pdst - r, oJumper)
     oJumper << RawTrigger(
         nextptr=cProxy,
+        actions=SetMemory(oJumper + 4, Add, r)
     )
-    pdst << NextTrigger()
+    pdst << RawTrigger(
+        actions=SetMemory(oJumper + 4, Add, -r)
+    )
 
 
 oJumperArray = OJumperBuffer()
