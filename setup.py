@@ -22,7 +22,7 @@ build_exe_options = {
 
 setup(
     name="euddraft",
-    version='0.7.5',
+    version='0.7.7',
     description="euddraft compilication system",
     options={
         "build_exe": build_exe_options

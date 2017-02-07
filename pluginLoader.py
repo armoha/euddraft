@@ -60,7 +60,7 @@ def empty():
     pass
 
 
-freeze_enabled = False
+freeze_enabled = True
 mpaq_enabled = False
 
 

@@ -30,6 +30,7 @@ from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
 import ctypes
+from readconfig import readconfig
 
 
 GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
@@ -52,27 +53,34 @@ def applyEUDDraft(fname, queue=None):
             raise
 
 
+def isFileModified(path, since):
+    try:
+        mtime = max(
+            os.path.getmtime(path),
+            os.path.getctime(path)
+        )
+        if mtime > since:
+            return True
+    except OSError:
+        pass
+    return False
+
+
 def hasModifiedFile(dirname, since):
     for root, dirs, files in os.walk(dirname):
-        dirs[:] = [d for d in dirs if d[:1] != '.']
+        dirs[:] = [d for d in dirs if d[0] != '.']
         for f in files:
             finalpath = os.path.join(root, f)
-            try:
-                mtime = max(
-                    os.path.getmtime(finalpath),
-                    os.path.getctime(finalpath)
-                )
-                if mtime > since:
-                    return True
-            except OSError:
-                pass
+            if isFileModified(finalpath, since):
+                return True
     return False
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
-    print("euddraft v0.7.4 : Simple eudplib plugin system")
+    print("euddraft v0.7.7 : Simple eudplib plugin system")
+    print(" - This program follows MIT License. See license.txt")
 
     # sys.argv.append('test.eds')
 
@@ -100,13 +108,25 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
         globalPluginDir = getGlobalPluginDirectory()
 
         try:
+            inputMap = None
+
+            def isModifiedFiles():
+                return (
+                    hasModifiedFile(globalPluginDir, lasttime) or
+                    hasModifiedFile('.', lasttime) or
+                    isFileModified(sfname, lasttime) or
+                    (inputMap and isFileModified(inputMap, lasttime))
+                )
+
             while True:
+                # input map may change with edd update. We re-read inputMap
+                # every time here.
+                config = readconfig(sfname)
+                mainSection = config['main']
+                inputMap = mainSection['input']
+
                 # Wait for changes
-                while (
-                    lasttime and
-                    not hasModifiedFile(globalPluginDir, lasttime) and
-                    not hasModifiedFile('.', lasttime)
-                ):
+                while lasttime and not isModifiedFiles():
                     if GetAsyncKeyState(0x11) and GetAsyncKeyState(ord('R')):
                         break
                     time.sleep(1)
@@ -116,10 +136,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                 while True:
                     lasttime = time.time()
                     time.sleep(0.5)
-                    if not (
-                        hasModifiedFile(globalPluginDir, lasttime) or
-                        hasModifiedFile('.', lasttime)
-                    ):
+                    if not isModifiedFiles():
                         break
 
                 print(
