@@ -117,6 +117,12 @@ def applyEUDDraft(sfname):
         if ifname == ofname:
             raise RuntimeError('input and output file should be different.')
 
+        try:
+            if mainSection['debug']:
+                ep.EPS_SetDebug(True)
+        except KeyError:
+            pass
+
         print('---------- Loading plugins... ----------')
         ep.LoadMap(ifname)
         pluginList, pluginFuncDict = loadPluginsFromConfig(ep, config)
