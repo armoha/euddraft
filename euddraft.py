@@ -26,13 +26,31 @@ THE SOFTWARE.
 import sys
 import os
 import time
+import eudplib as ep
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
 import ctypes
 from readconfig import readconfig
 
+
 GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
+
+
+def applylib():
+    if getattr(sys, 'frozen', False):
+        # The application is frozen
+        datadir = os.path.dirname(sys.executable)
+    else:
+        # The application is not frozen
+        # Change this bit to match where you store your data files:
+        datadir = os.path.dirname(__file__)
+
+    libdir = os.path.join(datadir, 'lib')
+    sys.path.append(libdir)
+
+
+applylib()
 
 
 def applyEUDDraft(fname, queue=None):
@@ -75,10 +93,13 @@ def hasModifiedFile(dirname, since):
     return False
 
 
+version = "0.8.1.1"
+
+
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
 
-    print("euddraft v0.8.0.0 : Simple eudplib plugin system")
+    print("euddraft v%s : Simple eudplib plugin system" % version)
     print(" - This program follows MIT License. See license.txt")
 
     # sys.argv.append('test.eds')

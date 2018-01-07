@@ -1,5 +1,7 @@
 import sys
 from cx_Freeze import setup, Executable
+from euddraft import version
+
 
 sys.argv.append('build_exe')
 
@@ -13,7 +15,8 @@ build_exe_options = {
         "libepScriptLib.dll",
         "mpq.exc",
         "license.txt",
-        "plugins"
+        "plugins",
+        'lib',
     ],
     'zip_include_packages': ['*'],
     'zip_exclude_packages': []
@@ -22,7 +25,7 @@ build_exe_options = {
 
 setup(
     name="euddraft",
-    version='0.8.0.0',
+    version=version,
     description="euddraft compilication system",
     options={
         "build_exe": build_exe_options
