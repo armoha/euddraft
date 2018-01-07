@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 
 '''
@@ -26,15 +27,10 @@ THE SOFTWARE.
 import sys
 import os
 import time
-import eudplib as ep
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
-import ctypes
 from readconfig import readconfig
-
-
-GetAsyncKeyState = ctypes.windll.user32.GetAsyncKeyState
 
 
 def applylib():
@@ -147,8 +143,6 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
                 # Wait for changes
                 while lasttime and not isModifiedFiles():
-                    if GetAsyncKeyState(0x11) and GetAsyncKeyState(ord('R')):
-                        break
                     time.sleep(1)
 
                 # epscript can alter other files if some file changes.
