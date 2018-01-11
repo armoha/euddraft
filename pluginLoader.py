@@ -82,22 +82,13 @@ def loadPluginsFromConfig(ep, config):
     initialDirectory = os.getcwd()
     initialPath = sys.path[:]
 
-    freeze_enabled = False
-
+    freeze_enabled = True
+    print("[Note] Freeze protector is enabled by default.")
     for pluginName in pluginList:
         if pluginName == 'freeze':
-            freeze_enabled = True
-            print("""\
-                          *                                         *
-        *                                        *
-                        [[ freeze activated ]]
-                                  *                       *
-                *                                                          *\
-""")
-            print("Freeze plugin loaded")
             if 'mpaq' in config[pluginName]:
                 mpaq_enabled = True
-
+                print(" - mpaq enabled ")
             continue
 
         pluginSettings = config[pluginName]
