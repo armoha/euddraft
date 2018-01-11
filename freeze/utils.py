@@ -37,6 +37,9 @@ from .crypt import (
 class L(list):
     """ Hashable list """
 
+    def __eq__(self, other):
+        return self is other
+
     def __hash__(self):
         return id(self)
 
@@ -60,8 +63,7 @@ def obfuscatedValueAssigner(v, vInsert):
     while len(operations) < desiredOperationCount:
         # Pick random operation
         targetOperation = random.sample(constantHavingOperation, 1)[0]
-        targetOperationIndex = next(i for i, op in enumerate(operations)
-                                    if op is targetOperation)
+        targetOperationIndex = operations.index(targetOperation)
         opType, dst, src1, src2 = targetOperation
         assert IsConstExpr(src1) or IsConstExpr(src2)
 

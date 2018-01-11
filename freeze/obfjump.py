@@ -67,7 +67,6 @@ class CallerProxy(ConstExpr):
     def __init__(self, ptr, jumper):
         super().__init__(self)
         self.ptr = ptr
-        self.index = len(oJumper)
         self.jumper = jumper
 
     def Evaluate(self):
@@ -85,9 +84,7 @@ class CallerProxy(ConstExpr):
 
         ptrV = Evaluate(self.ptr)
         ep_assert(ptrV.rlocmode == 4, "Invalid ptrV.rlocmode")
-        ptrV.rlocmode = 0  # Force unrelocate
-
-        return ptrV - self.modv
+        return RlocInt(ptrV.offset - self.modv, 0)
 
 
 def ObfuscatedJump():
@@ -132,8 +129,7 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
         EUDBreakIf(jumperEPD == 0)
 
         key = mix(seedKeyArray[kIndex], oJumperIndex)
-        v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, v + key + RlocInt(0, 4))
+        f_dwadd_epd(jumperEPD, key + RlocInt(0, 4))
         seedKeyArray[kIndex] = key
 
         oJumperIndex += 1
@@ -166,7 +162,6 @@ def decryptOffsets():
 
 
 def encryptOffsets():
-
     # Table modifier
     oJumperPtr = EUDVariable()
     oJumperPtr << EPD(oJumperArray)

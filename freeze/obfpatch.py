@@ -3,7 +3,6 @@ from eudplib import trigger
 from eudplib import ctrlstru
 from .obfjump import ObfuscatedJump
 import random
-from math import sqrt
 
 patchList = []
 
@@ -11,18 +10,9 @@ patchList = []
 def issuePatcher(parent, attrname, ratio):
     oldcall = getattr(parent, attrname)
 
-    maxcalln = 1000 * sqrt(ratio)
-    calln = 0
-
-    def oldcall2(*args, **kwargs):
-        pass
-
     def newcall(*args, **kwargs):
-        nonlocal calln
-        ratio2 = ratio * (maxcalln - calln) / maxcalln
-        if random.random() < ratio2:
+        if random.random() < ratio:
             ObfuscatedJump()
-        calln += 1
         return oldcall(*args, **kwargs)
     patchList.append((parent, attrname, oldcall, newcall))
 
