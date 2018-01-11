@@ -134,6 +134,7 @@ def applyEUDDraft(sfname):
         ep.SaveMap(ofname, payloadMain)
 
         if isFreezeIssued():
+            print("[Stage 4/3] Applying freeze mpq modification...")
             if isMpaqIssued():
                 ret = subprocess.call([mpqFreezePath, ofname, 'mpaq'])
             else:
