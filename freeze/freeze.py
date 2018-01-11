@@ -120,7 +120,6 @@ def unFreeze():
 
     # Modify tables!
     initOffsets(seedKey, destKeyVal, cryptKey)
-    obfpatch()
 
     # Modify triggers
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
@@ -166,5 +165,4 @@ def unFreeze():
     global g_seedKey
     g_seedKey = seedKey
 
-    obfunpatch()
     encryptOffsets()
