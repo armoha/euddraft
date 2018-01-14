@@ -30,30 +30,17 @@ import random
 
 
 def keycalc(seedKey, fileCursor):
-    chkHandle, chkHandleEPD = f_dwepdread_epd_safe(EPD(0x6D0F24))
-
-    mpqHeaderEPD = EUDVariable()
-    blockTableEPD = EUDVariable()
-
-    mpqArchiveSize = EUDVariable()
-    mpqHashTableOffset = EUDVariable()
-    mpqHashTableSize = EUDVariable()
-    mpqBlockTableSize = EUDVariable()
-
-    initialBlockIndex = EUDVariable()
-    chkBlockEntryEPD = EUDVariable()
-
     if EUDIf()(Memory(0x6D0F14, Exactly, 0)):  # On game
         mpqEPD = getMapHandleEPD()
-        mpqHeaderEPD << f_epdread_epd_safe(mpqEPD + (0x130 // 4))
-        blockTableEPD << f_epdread_epd_safe(mpqEPD + (0x134 // 4))
+        mpqHeaderEPD = f_epdread_epd_safe(mpqEPD + (0x130 // 4))
+        blockTableEPD = f_epdread_epd_safe(mpqEPD + (0x134 // 4))
         hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4))
 
         # Basic check
-        mpqArchiveSize << f_dwread_epd_safe(mpqHeaderEPD + (0x08 // 4))
-        mpqHashTableOffset << f_dwread_epd_safe(mpqHeaderEPD + (0x10 // 4))
-        mpqHashTableSize << f_dwread_epd_safe(mpqHeaderEPD + (0x18 // 4))
-        mpqBlockTableSize << f_dwread_epd_safe(mpqHeaderEPD + (0x1C // 4))
+        mpqArchiveSize = f_dwread_epd_safe(mpqHeaderEPD + (0x08 // 4))
+        mpqHashTableOffset = f_dwread_epd_safe(mpqHeaderEPD + (0x10 // 4))
+        mpqHashTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x18 // 4))
+        mpqBlockTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x1C // 4))
         # EUDJumpIfNot(mpqBlockTableOffset == 0, hell1) - This should match
         # EUDJumpIfNot(mpqBlockTableSize == mpqArchiveSize // 16, hell2)
 
@@ -73,23 +60,19 @@ def keycalc(seedKey, fileCursor):
             chkHashOffset << ((chkHashOffset + 1) & (mpqHashTableSize - 1))
         EUDEndInfLoop()
 
-        initialBlockIndex << f_dwread_epd_safe(chkHashEntryEPD + 3)
-        chkBlockEntryEPD << blockTableEPD + initialBlockIndex * 4
+        initialBlockIndex = f_dwread_epd_safe(chkHashEntryEPD + 3)
+        chkBlockEntryEPD = blockTableEPD + initialBlockIndex * 4
 
     if EUDElse()():  # On replay
-        chkBlockSize = f_dwread_epd(chkHandleEPD - 4)
-
-        mpqHeaderEPD << chkHandleEPD
-        blockTableEPD << chkHandleEPD
-
-        mpqArchiveSize << chkBlockSize
-        mpqHashTableOffset << 0
-        mpqHashTableSize << 0
-        mpqBlockTableSize << chkBlockSize // 16
-
-        initialBlockIndex << mpqBlockTableSize - 32
-        chkBlockEntryEPD << EPD(Db(bytes(16)))
-
+        DoActions([
+            [
+                SetCurrentPlayer(pl),
+                DisplayText("Freeze protection doesn't support replay mode"),
+            ] for pl in range(8)
+        ])
+        if EUDInfLoop()():
+            EUDDoEvents()
+        EUDEndInfLoop()
     EUDEndIf()
 
     def feedSample(sample, inplace=True):
