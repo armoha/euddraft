@@ -217,7 +217,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // Write decrypted data
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
-    memcpy(archiveBuffer.data() + cursor, "freeze04 protect", 16);
+    memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
     cursor += 16;
     DecryptData(archiveBuffer.data(), cursor, blockTableKey);
 
