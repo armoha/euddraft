@@ -123,7 +123,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;DOCTEST_CONFIG_DISABLE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -234,6 +234,21 @@
     <ClCompile Include="comp\serr.cpp" />
     <ClCompile Include="comp\smem.cpp" />
     <ClCompile Include="comp\wave.cpp" />
+    <ClCompile Include="comp\zlib\adler32.c" />
+    <ClCompile Include="comp\zlib\compress.c" />
+    <ClCompile Include="comp\zlib\crc32.c" />
+    <ClCompile Include="comp\zlib\deflate.c" />
+    <ClCompile Include="comp\zlib\gzclose.c" />
+    <ClCompile Include="comp\zlib\gzlib.c" />
+    <ClCompile Include="comp\zlib\gzread.c" />
+    <ClCompile Include="comp\zlib\gzwrite.c" />
+    <ClCompile Include="comp\zlib\infback.c" />
+    <ClCompile Include="comp\zlib\inffast.c" />
+    <ClCompile Include="comp\zlib\inflate.c" />
+    <ClCompile Include="comp\zlib\inftrees.c" />
+    <ClCompile Include="comp\zlib\trees.c" />
+    <ClCompile Include="comp\zlib\uncompr.c" />
+    <ClCompile Include="comp\zlib\zutil.c" />
     <ClCompile Include="keycalc.cpp" />
     <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_TEST|Win32'">true</ExcludedFromBuild>
@@ -256,6 +271,17 @@
     <ClInclude Include="comp\serr.h" />
     <ClInclude Include="comp\smem.h" />
     <ClInclude Include="comp\wave.h" />
+    <ClInclude Include="comp\zlib\crc32.h" />
+    <ClInclude Include="comp\zlib\deflate.h" />
+    <ClInclude Include="comp\zlib\gzguts.h" />
+    <ClInclude Include="comp\zlib\inffast.h" />
+    <ClInclude Include="comp\zlib\inffixed.h" />
+    <ClInclude Include="comp\zlib\inflate.h" />
+    <ClInclude Include="comp\zlib\inftrees.h" />
+    <ClInclude Include="comp\zlib\trees.h" />
+    <ClInclude Include="comp\zlib\zconf.h" />
+    <ClInclude Include="comp\zlib\zlib.h" />
+    <ClInclude Include="comp\zlib\zutil.h" />
     <ClInclude Include="doctest.h" />
     <ClInclude Include="keycalc.h" />
     <ClInclude Include="mpqcrypt.h" />

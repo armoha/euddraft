@@ -8,6 +8,8 @@
 #include "mpqcrypt.h"
 #include "cmpdcmp.h"
 #include <vector>
+#include <set>
+#include <sstream>
 #include <fstream>
 
 class MpqReadImpl;
@@ -25,13 +27,14 @@ public:
     int getHashEntryCount() const;
     int getBlockEntryCount() const;
 
-    const HashTableEntry* getHashEntry(int index) const;
-    const BlockTableEntry* getBlockEntry(const std::string& fname) const;
+	const HashTableEntry* getHashEntry(int index) const;
+	const HashTableEntry* getHashEntry(const std::string& fname) const;
     const BlockTableEntry* getBlockEntry(int index) const;
-    std::string getDecryptedBlockContent(const BlockTableEntry *blockEntry) const;
+    std::string getDecryptedBlockContent(const HashTableEntry* hte, const BlockTableEntry *blockEntry) const;
 
 private:
     MPQHeader header;
+	std::set<std::string> knownFileNames;
     std::vector<HashTableEntry> hashTable;
     std::vector<BlockTableEntry> blockTable;
     size_t fileCount;
@@ -76,6 +79,30 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
         for (auto &entry: blockTable) {
             if (entry.blockSize != 0) fileCount++;
         }
+
+		// Read listfile
+		knownFileNames.insert("(listfile)");
+		auto listFileHashEntry = getHashEntry("(listfile)");
+		if (listFileHashEntry) {
+			auto listFileBlockEntry = getBlockEntry(listFileHashEntry->blockIndex);
+			auto listFile = getDecryptedBlockContent(listFileHashEntry, listFileBlockEntry);
+			if (listFileBlockEntry->fileFlag & BLOCK_COMPRESSED) {
+				listFile = decompressBlock(listFileBlockEntry->fileSize, listFile);
+			}
+			const char* p = listFile.data();
+			const char* pend = listFile.data() + listFile.size();
+			const char* fnStart = p;
+			while (true) {
+				if (p == pend || *p == 0 || *p == '\r' || *p == '\n') {
+					if (fnStart != p) {
+						knownFileNames.insert(std::string(fnStart, p));
+					}
+					fnStart = p + 1;
+				}
+				if (p == pend) break;
+				p++;
+			}
+		}
     } catch(std::ifstream::failure e) {
         throw std::runtime_error(std::string("Error reading file : ") + e.what());
     }
@@ -94,33 +121,33 @@ int MpqReadImpl::getBlockEntryCount() const {
 }
 
 const HashTableEntry* MpqReadImpl::getHashEntry(int index) const {
-    return &hashTable[index];
+	return &hashTable[index];
 }
 
-
-const BlockTableEntry* MpqReadImpl::getBlockEntry(const std::string& _fname) const {
-    auto fname = _fname.c_str();
-    auto hashA = HashString(fname, MPQ_HASH_NAME_A);
-    auto hashB = HashString(fname, MPQ_HASH_NAME_B);
-    auto hashKey = HashString(fname, MPQ_HASH_TABLE_OFFSET);
-    auto initialFindIndex = hashKey & (hashTable.size() - 1);
-    auto index = initialFindIndex;
-    do {
-        const auto& hashTableEntry = hashTable[index];
-        if(hashTableEntry.blockIndex == 0xFFFFFFFF) return nullptr;
-        else if(hashTableEntry.hashA == hashA && hashTableEntry.hashB == hashB) {
-            return &blockTable[hashTableEntry.blockIndex];
-        }
-        index = (index + 1) & (hashTable.size() - 1);
-    }while(index != initialFindIndex);
+const HashTableEntry* MpqReadImpl::getHashEntry(const std::string& _fname) const {
+	auto fname = _fname.c_str();
+	auto hashA = HashString(fname, MPQ_HASH_NAME_A);
+	auto hashB = HashString(fname, MPQ_HASH_NAME_B);
+	auto hashKey = HashString(fname, MPQ_HASH_TABLE_OFFSET);
+	auto initialFindIndex = hashKey & (hashTable.size() - 1);
+	auto index = initialFindIndex;
+	do {
+		auto hashTableEntry = &hashTable[index];
+		if (hashTableEntry->blockIndex == 0xFFFFFFFF) return nullptr;
+		else if (hashTableEntry->hashA == hashA && hashTableEntry->hashB == hashB) {
+			return hashTableEntry;
+		}
+		index = (index + 1) & (hashTable.size() - 1);
+	} while (index != initialFindIndex);
 	return nullptr;
 }
+
 
 const BlockTableEntry* MpqReadImpl::getBlockEntry(int index) const {
     return &blockTable[index];
 }
 
-std::string MpqReadImpl::getDecryptedBlockContent(const BlockTableEntry *blockEntry) const {
+std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntry, const BlockTableEntry *blockEntry) const {
     is.seekg(blockEntry->blockOffset, std::ios_base::beg);
 
     if(!(blockEntry->fileFlag & BLOCK_ENCRYPTED)) {
@@ -129,40 +156,75 @@ std::string MpqReadImpl::getDecryptedBlockContent(const BlockTableEntry *blockEn
         is.read(buf.data(), blockEntry->blockSize);
         return std::string(buf.begin(), buf.end());
     }
-    else {
-        // Encrypted file. Should get file key.
-        if(!(blockEntry->fileFlag & (BLOCK_COMPRESSED | BLOCK_IMPLODED))) {
-            throw std::runtime_error("Cannot get key of non-compressed encrypted block");
-        }
-        // Get encrypted SectorOffsetTable
-        const size_t sectorSize = 512u << header.sectorSizeShift;
-        size_t sectorNum = (blockEntry->fileSize + sectorSize - 1) / sectorSize;
-        std::vector<uint32_t> encryptedOffsetTable(sectorNum + 1);
-        is.read(reinterpret_cast<char*>(encryptedOffsetTable.data()), 4 * (sectorNum + 1));
+	else {
+		// Encrypted file. Should get file key.
+		uint32_t fileKey = 0xFFFFFFFF;
+		const size_t sectorSize = 512u << header.sectorSizeShift;
+		size_t sectorNum = (blockEntry->fileSize + sectorSize - 1) / sectorSize;
+		std::vector<uint32_t> encryptedOffsetTable(sectorNum + 1);
 
-        // Get decryption key
-        const auto fileKey = GetFileDecryptKey(encryptedOffsetTable.data(), blockEntry->fileSize, blockEntry->blockSize, sectorSize);
-        if(fileKey == 0xFFFFFFFF) throw std::runtime_error("Key-extraction from encrypted block failed!");
+		// Get encrypted SectorOffsetTable
+		is.read(reinterpret_cast<char*>(encryptedOffsetTable.data()), 4 * (sectorNum + 1));
+
+		for (const auto& s : knownFileNames) {
+			if (HashString(s.c_str(), MPQ_HASH_NAME_A) == hashEntry->hashA &&
+				HashString(s.c_str(), MPQ_HASH_NAME_B) == hashEntry->hashB) {
+				fileKey = HashString(s.c_str(), MPQ_HASH_FILE_KEY);
+				if (blockEntry->fileFlag & 0x00020000) {  // File key adjusted
+					fileKey = (fileKey + blockEntry->blockOffset) ^ blockEntry->fileSize;
+				}
+				break;
+			}
+		}
+
+		if (fileKey == 0xFFFFFFFF) {
+			if (blockEntry->fileFlag & (BLOCK_COMPRESSED | BLOCK_IMPLODED)) {
+				// Get decryption key
+				fileKey = GetFileDecryptKey(encryptedOffsetTable.data(), blockEntry->fileSize, blockEntry->blockSize, sectorSize);
+				if (fileKey == 0xFFFFFFFF) throw std::runtime_error("Key-extraction from encrypted block failed!");
+			}
+			else {
+				printf("Cannot get key of non-compressed encrypted block\n");
+				printf(" - HASHA %08X, HASHB %08X, BLOCK %08X\n", hashEntry->hashA, hashEntry->hashB, hashEntry->blockIndex);
+				throw std::runtime_error("Cannot get key of non-compressed encrypted block");
+			}
+		}
 
         // Read entire block
         is.seekg(blockEntry->blockOffset, std::ios_base::beg);
         std::vector<char> buf(blockEntry->blockSize);
         is.read(buf.data(), blockEntry->blockSize);
 
-        // Decrypt sectorOffsetTable
-        DecryptData(buf.data(), 4 * (sectorNum + 1), fileKey - 1);
-        uint32_t* sectorOffsetTable = reinterpret_cast<uint32_t*>(buf.data());
+		// Compressed data have sectorOffsetTable.
+		if (blockEntry->fileFlag & (BLOCK_COMPRESSED)) {
+			// Decrypt sectorOffsetTable
+			DecryptData(buf.data(), 4 * (sectorNum + 1), fileKey - 1);
+			uint32_t* sectorOffsetTable = reinterpret_cast<uint32_t*>(buf.data());
 
-        // Decrypt file data
-        for(size_t sectorIndex = 0 ; sectorIndex < sectorNum ; sectorIndex++) {
-            size_t thisSectorOffset = sectorOffsetTable[sectorIndex];
-            size_t thisSectorSize = sectorOffsetTable[sectorIndex + 1] - sectorOffsetTable[sectorIndex];
-            DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
-        }
+			// Decrypt file data
+			for (size_t sectorIndex = 0; sectorIndex < sectorNum; sectorIndex++) {
+				size_t thisSectorOffset = sectorOffsetTable[sectorIndex];
+				size_t thisSectorSize = sectorOffsetTable[sectorIndex + 1] - sectorOffsetTable[sectorIndex];
+				DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
+			}
 
-        // Return block data
-        return std::string(buf.begin(), buf.end());
-    }
+			// Return block data
+			return std::string(buf.begin(), buf.end());
+		}
+
+		// Non-compressed data don't
+		else {
+			// Decrypt file data
+			for (size_t sectorIndex = 0; sectorIndex < sectorNum; sectorIndex++) {
+				size_t thisSectorOffset = sectorSize * sectorIndex;
+				size_t thisSectorSize = min(sectorSize, blockEntry->blockSize - thisSectorOffset);
+				DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
+			}
+
+			// Return block data
+			return std::string(buf.begin(), buf.end());
+		}
+	}
 }
 
 /////////////////////////////
@@ -174,15 +236,17 @@ int MpqRead::getFileCount() const { return pimpl->getFileCount(); }
 int MpqRead::getHashEntryCount() const { return pimpl->getHashEntryCount(); }
 int MpqRead::getBlockEntryCount() const { return pimpl->getBlockEntryCount(); }
 const HashTableEntry* MpqRead::getHashEntry(int index) const { return pimpl->getHashEntry(index); }
+const HashTableEntry* MpqRead::getHashEntry(const std::string &fname) const { return pimpl->getHashEntry(fname); }
 const BlockTableEntry* MpqRead::getBlockEntry(int index) const { return pimpl->getBlockEntry(index); }
-const BlockTableEntry* MpqRead::getBlockEntry(const std::string &fname) const { return pimpl->getBlockEntry(fname); }
 
-std::string MpqRead::getBlockContent(const BlockTableEntry *blockEntry) const {
-	return pimpl->getDecryptedBlockContent(blockEntry);
+std::string MpqRead::getBlockContent(const HashTableEntry *hashEntry) const {
+	auto blockEntry = pimpl->getBlockEntry(hashEntry->blockIndex);
+	return pimpl->getDecryptedBlockContent(hashEntry, blockEntry);
 }
 
-std::string MpqRead::getFileContent(const BlockTableEntry *blockEntry) const {
-    std::string content = pimpl->getDecryptedBlockContent(blockEntry);
+std::string MpqRead::getFileContent(const HashTableEntry *hashEntry) const {
+	auto blockEntry = pimpl->getBlockEntry(hashEntry->blockIndex);
+	std::string content = pimpl->getDecryptedBlockContent(hashEntry, blockEntry);
 	if(blockEntry->fileFlag & BLOCK_COMPRESSED)
 	{
 		content = decompressBlock(blockEntry->fileSize, content);

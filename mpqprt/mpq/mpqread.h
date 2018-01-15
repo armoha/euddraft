@@ -20,10 +20,10 @@ public:
     int getHashEntryCount() const;
     int getBlockEntryCount() const;
     const HashTableEntry* getHashEntry(int index) const;
-    const BlockTableEntry* getBlockEntry(const std::string& fname) const;
-    const BlockTableEntry* getBlockEntry(int index) const;
-	std::string getBlockContent(const BlockTableEntry *blockEntry) const;
-	std::string getFileContent(const BlockTableEntry *blockEntry) const;
+    const HashTableEntry* getHashEntry(const std::string& fname) const;
+	const BlockTableEntry* getBlockEntry(int index) const;
+	std::string getBlockContent(const HashTableEntry *hashEntry) const;
+	std::string getFileContent(const HashTableEntry *hashEntry) const;
 
 private:
     MpqReadImpl* pimpl;

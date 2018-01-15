@@ -22,15 +22,7 @@
 #include "wave.h"
 #include "huffman.h"
 
-#ifdef USE_ZLIB
-#ifndef __SYS_ZLIB
-#define ZLIB_INTERNAL
 #include "zlib/zlib.h"
-#else
-#include <zlib.h>
-#endif
-#endif
-
 #include "pklib.h"
 
 #ifdef USE_BZIP2
@@ -480,9 +472,7 @@ void __fastcall HuffmanCompress(LPVOID lpvDestinationMem, LPDWORD lpdwCompressed
 */
 }
 
-#ifdef USE_ZLIB
-
-void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
+void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
 	if (*lpdwCompressionSubType == 0) {
 		switch (dwCompressLevel) {
@@ -500,8 +490,6 @@ void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LP
 	compress2((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwCompressedSize,(LPBYTE)lpvSourceMem,dwDecompressedSize,dwCompressLevel);
 	*lpdwCompressionSubType = 0;
 }
-
-#endif
 
 void __fastcall Implode(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LPCVOID lpvSourceMem, DWORD dwDecompressedSize, LPDWORD lpdwCompressionSubType, DWORD dwCompressLevel)
 {
@@ -634,14 +622,10 @@ void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompre
 	SMemFree(ht);
 }
 
-#ifdef USE_ZLIB
-
-void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPVOID lpvSourceMem, DWORD dwCompressedSize)
+void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
 	uncompress((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize);
 }
-
-#endif
 
 void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {

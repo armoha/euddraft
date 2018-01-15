@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+
+#define USE_ZLIB
+#define ZLIB_INTERNAL
+
 #define MAFA_COMPRESS_STANDARD 0x08 //Standard PKWare DCL compression
 #define MAFA_COMPRESS_WAVE     0x81 //Standard wave compression
 #define MAFA_COMPRESS_WAVE2    0x41 //Unused wave compression
