@@ -31,6 +31,7 @@ from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
 from readconfig import readconfig
+import eudplib as ep
 
 
 def applylib():
@@ -117,7 +118,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
-        print(" - Daemon mode. Ctrl+C to quit, Ctrl+R to force recompile")
+        print(" - Daemon mode. Ctrl+C to quit.")
         mp.set_start_method('spawn')
         lasttime = None
 
@@ -179,6 +180,24 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
         except KeyboardInterrupt:
             pass
+
+    # Freeze protection
+    elif sfname[-4:].lower() == '.scx':
+        print(" - Freeze protector mode.")
+        import applyeuddraft
+        import pluginLoader
+        import subprocess
+
+        pluginLoader.freeze_enabled = True
+
+        ep.LoadMap(sfname)
+        payloadMain = applyeuddraft.createPayloadMain([], {})
+        ep.CompressPayload(True)
+        ofname = sfname[:-4] + ' prt.scx'
+        ep.SaveMap(ofname, payloadMain)
+        ret = subprocess.call([applyeuddraft.mpqFreezePath, ofname])
+        if ret != 0:
+            raise RuntimeError("Error on mpq protection")
 
     else:
         print("Invalid extension %s" % os.path.splitext(sfname)[1])

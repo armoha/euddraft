@@ -140,7 +140,7 @@ def applyEUDDraft(sfname):
             else:
                 ret = subprocess.call([mpqFreezePath, ofname])
             if ret != 0:
-                raise RuntimeError("Error on mpq protection")
+                raise RuntimeError("Error on mpq protection (%d)" % ret)
 
         MessageBeep(MB_OK)
 
