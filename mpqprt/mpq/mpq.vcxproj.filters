@@ -45,6 +45,51 @@
     <ClCompile Include="modchk.cpp">
       <Filter>mpqrw</Filter>
     </ClCompile>
+    <ClCompile Include="comp\zlib\adler32.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\compress.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\crc32.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\deflate.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\gzclose.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\gzlib.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\gzread.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\gzwrite.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\infback.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\inffast.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\inflate.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\inftrees.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\trees.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\uncompr.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="comp\zlib\zutil.c">
+      <Filter>comp\zlib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="comp\huffman.h">
@@ -84,6 +129,39 @@
     <ClInclude Include="keycalc.h">
       <Filter>mpqrw</Filter>
     </ClInclude>
+    <ClInclude Include="comp\zlib\crc32.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\deflate.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\gzguts.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\inffast.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\inffixed.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\inflate.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\inftrees.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\trees.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\zconf.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\zlib.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="comp\zlib\zutil.h">
+      <Filter>comp\zlib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="comp">
@@ -94,6 +172,9 @@
     </Filter>
     <Filter Include="test">
       <UniqueIdentifier>{18cdaa3a-b076-4151-b65b-ac66ee40ee9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="comp\zlib">
+      <UniqueIdentifier>{c70d3fc8-d75a-4d65-a3fb-b11189257e99}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

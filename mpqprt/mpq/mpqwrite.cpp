@@ -41,7 +41,7 @@ void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockInde
 std::string createEncryptedMPQ(MpqReadPtr mr) {
 	// Read map keys
 	uint32_t keyDwords[9];
-	auto keyFileEntry = mr->getBlockEntry("(keyfile)");
+	auto keyFileEntry = mr->getHashEntry("(keyfile)");
 	if (keyFileEntry == nullptr) throw std::runtime_error("No keyfile");
 	auto keyFile = mr->getBlockContent(keyFileEntry);
 	if (keyFile.size() != 8 + 36) {   // 8 : sectorshifttable
@@ -79,7 +79,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     for(auto& hashEntry: hashTable) {
         if(hashEntry.blockIndex >= 0xFFFFFFFE) continue;
         auto blockEntry = mr->getBlockEntry(hashEntry.blockIndex);
-		std::string blockData = mr->getBlockContent(blockEntry);
+		std::string blockData = mr->getBlockContent(&hashEntry);
         auto newBlockEntry = *blockEntry;
 
 		// If mpaq -> compress wave file
