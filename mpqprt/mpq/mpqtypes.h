@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include <packon.h>
+#pragma pack(push, 1)
 
 typedef struct {
 	uint32_t magic; //0x1A51504D
@@ -46,7 +46,7 @@ typedef struct {
 	uint32_t fileFlag;
 }BlockTableEntry;
 
-#include <packoff.h>
+#pragma pack(pop)
 
 static_assert(sizeof(MPQHeader) == 32, "header size mismatch");
 static_assert(sizeof(HashTableEntry) == 16, "het size mismatch");

@@ -17,10 +17,10 @@ def issuePatcher(parent, attrname, ratio):
     patchList.append((parent, attrname, oldcall, newcall))
 
 
-issuePatcher(EUDFuncN, '__call__', 0.7)
-issuePatcher(trigger, 'Trigger', 0.05)
-issuePatcher(trigger, 'EUDBranch', 0.03)
-issuePatcher(ctrlstru, 'EUDSwitch', 0.8)  # for TRIG encryption
+# issuePatcher(EUDFuncN, '__call__', 0.7)
+# issuePatcher(trigger, 'Trigger', 0.05)
+# issuePatcher(trigger, 'EUDBranch', 0.03)
+# issuePatcher(ctrlstru, 'EUDSwitch', 0.8)  # for TRIG encryption
 
 
 def obfpatch():
