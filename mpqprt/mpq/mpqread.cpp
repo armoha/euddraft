@@ -12,6 +12,10 @@
 #include <sstream>
 #include <fstream>
 
+
+using std::min;
+
+
 class MpqReadImpl;
 
 

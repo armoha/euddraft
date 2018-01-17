@@ -1,6 +1,7 @@
 #include "mpqread.h"
 #include "mpqwrite.h"
 #include <fstream>
+#include <cstring>
 
 extern bool bEnableMpaq;
 

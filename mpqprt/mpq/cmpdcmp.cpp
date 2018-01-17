@@ -1,6 +1,7 @@
 #include "comp/scomp.h"
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "mpqtypes.h"
 
 
@@ -78,13 +79,4 @@ std::string compressToBlock(const std::string& fileContent, uint8_t cmpType1, ui
 
 	*p_sot = outp - output.data();
 	return std::string(output.data(), outp);
-}
-
-
-
-#include "doctest.h"
-
-TEST_CASE("Compression")
-{
-	
 }
