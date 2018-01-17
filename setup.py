@@ -1,3 +1,5 @@
+import os
+import zipfile
 import sys
 from cx_Freeze import setup, Executable
 from euddraft import version
@@ -34,3 +36,22 @@ setup(
         Executable("euddraft.py", base="Console")
     ]
 )
+
+
+# Package them to latest/ folder
+
+
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file))
+
+
+with zipfile.ZipFile('latest/euddraft.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+    os.chdir('build/exe.win32-3.6')
+    zipdir('.', zipf)
+    os.chdir('../..')
+
+with open('latest/VERSION', 'w') as f:
+    f.write(version)
