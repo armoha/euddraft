@@ -12,6 +12,8 @@ from urllib.request import urlopen
 from urllib.error import URLError
 
 import msgbox
+import time
+import re
 
 
 VERSION_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/VERSION'
@@ -29,18 +31,25 @@ def download(url):
 def getLatestUpdateCheckpoint():
     try:
         dataDir = os.path.dirname(sys.executable)
-        with open(os.path.join(dataDir, 'vcheckpoint.txt'), 'r') as vchp:
-            return vchp.read()
+        with open(os.path.join(dataDir, 'vcheckpoint.dat'), 'r') as vchp:
+            vstr = vchp.read()
+            match = re.match(".+ \d+", vstr)
+            if not match:
+                raise OSError
+            v = match.group(1)
+            t = int(match.group(2))
+            return v, t
+
     except OSError:
         from euddraft import version
-        return version
+        return version, 0
 
 
 def writeVersionCheckpoint(version):
     try:
         dataDir = os.path.dirname(sys.executable)
-        with open(os.path.join(dataDir, 'vcheckpoint.txt'), 'w') as vchp:
-            vchp.write(version)
+        with open(os.path.join(dataDir, 'vcheckpoint.dat'), 'w') as vchp:
+            vchp.write('%s %d' % (version, int(time.time())))
     except OSError:
         pass
 
@@ -59,11 +68,6 @@ def versionLt(version1, version2):
     return normalize(version1) < normalize(version2)
 
 
-def requireUpdate(latestVersion):
-    version = getLatestUpdateCheckpoint()
-    return latestVersion and versionLt(version, latestVersion)
-
-
 def getRelease(version):
     return download(RELEASE_URL % version)
 
@@ -74,31 +78,45 @@ def checkUpdate():
     if not msgbox.isWindows or not getattr(sys, 'frozen', False):
         return False
 
+    lastCheckedVersion, lastCheckedTime = getLatestUpdateCheckpoint()
+
+    # Alert user only once a week, max
+    if time.time() - lastCheckedTime < 7 * 24 * 60 * 60:
+        return lastCheckedVersion, False
+
+    # Re-write checkpoint time
     latestVersion = getLatestVersion()
-    if requireUpdate(latestVersion):
-        MB_YESNO = 0x00000004
-        IDYES = 6
+    if not versionLt(lastCheckedVersion, latestVersion):
+        writeVersionCheckpoint(lastCheckedVersion)
 
-        if msgbox.MessageBox(
-            'New version',
-            'A new version %s is found. Would you like to update?' %
-            latestVersion,
-            MB_YESNO
-        ) == IDYES:
-            # Download the needed data
-            print("Downloading euddraft %s" % latestVersion)
-            release = getRelease(latestVersion)
-            if not release:
-                msgbox.MessageBox('Update failed', 'Cannot get update file.')
+    # Ask user whether to update
+    MB_YESNO = 0x00000004
+    IDYES = 6
+    if msgbox.MessageBox(
+        'New version',
+        'A new version %s is found. Would you like to update?' %
+        latestVersion,
+        MB_YESNO
+    ) != IDYES:
+        # User don't want to update. Update checkpoint file
+        writeVersionCheckpoint(latestVersion)
+        return
 
-            dataDir = os.path.dirname(sys.executable)
-            updateDir = os.path.join(dataDir, '_update')
+    # Download the needed data
+    print("Downloading euddraft %s" % latestVersion)
+    release = getRelease(latestVersion)
+    if not release:
+        msgbox.MessageBox('Update failed', 'Cannot get update file.')
 
-            with zipfile.ZipFile(io.BytesIO(release), 'r') as zipf:
-                zipf.extractall(updateDir)
+    dataDir = os.path.dirname(sys.executable)
+    updateDir = os.path.join(dataDir, '_update')
 
-            with open(os.path.join(dataDir, '_update.bat'), 'w') as batf:
-                batf.write('''\
+    with zipfile.ZipFile(io.BytesIO(release), 'r') as zipf:
+        zipf.extractall(updateDir)
+
+    # Write an auto-update script. This script will run after euddraft exits
+    with open(os.path.join(dataDir, '_update.bat'), 'w') as batf:
+        batf.write('''\
 @echo off
 echo Updating euddraft.
 xcopy _update . /e /y /q
@@ -107,13 +125,10 @@ echo Update completed
 del _update.bat /q
 ''')
 
-            def onExit():
-                from subprocess import Popen
-                Popen('_update.bat')
-            atexit.register(onExit)
-
-        else:
-            writeVersionCheckpoint(currentVersion)
+    def onExit():
+        from subprocess import Popen
+        Popen('_update.bat')
+    atexit.register(onExit)
 
 
 def issueAutoUpdate():
