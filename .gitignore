@@ -364,3 +364,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+
+# Cmake
+cmake-build-*/
+.idea

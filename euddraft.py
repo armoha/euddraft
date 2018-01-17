@@ -81,16 +81,18 @@ def isFileModified(path, since):
 
 
 def hasModifiedFile(dirname, since):
+    ret = False
     for root, dirs, files in os.walk(dirname):
         dirs[:] = [d for d in dirs if d[0] != '.']
         for f in files:
             finalpath = os.path.join(root, f)
             if isFileModified(finalpath, since):
-                return True
-    return False
+                print("[File modified] %s" % finalpath)
+                ret = True
+    return ret
 
 
-version = "0.8.1.5"
+version = "0.8.1.6"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
