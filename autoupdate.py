@@ -59,9 +59,9 @@ def versionLt(version1, version2):
     return normalize(version1) < normalize(version2)
 
 
-def requireUpdate(currentVersion):
+def requireUpdate(latestVersion):
     version = getLatestUpdateCheckpoint()
-    return currentVersion and versionLt(version, currentVersion)
+    return latestVersion and versionLt(version, latestVersion)
 
 
 def getRelease(version):
@@ -74,19 +74,20 @@ def checkUpdate():
     if not msgbox.isWindows or not getattr(sys, 'frozen', False):
         return False
 
-    currentVersion = getLatestVersion()
-    if requireUpdate(currentVersion):
+    latestVersion = getLatestVersion()
+    if requireUpdate(latestVersion):
         MB_YESNO = 0x00000004
         IDYES = 6
 
         if msgbox.MessageBox(
             'New version',
             'A new version %s is found. Would you like to update?' %
-            currentVersion,
+            latestVersion,
             MB_YESNO
         ) == IDYES:
             # Download the needed data
-            release = getRelease(currentVersion)
+            print("Downloading euddraft %s" % latestVersion)
+            release = getRelease(latestVersion)
             if not release:
                 msgbox.MessageBox('Update failed', 'Cannot get update file.')
 
@@ -100,8 +101,7 @@ def checkUpdate():
                 batf.write('''\
 @echo off
 echo Updating euddraft.
-xcopy _update . /e /y
-del /s /f /q _update\*.*
+xcopy _update . /e /y /q
 rd _update /s /q
 echo Update completed
 del _update.bat /q
