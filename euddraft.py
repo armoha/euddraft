@@ -27,6 +27,7 @@ THE SOFTWARE.
 import sys
 import os
 import time
+import autoupdate
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
@@ -92,13 +93,14 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.1.6"
+version = "0.8.1.5"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
+    autoupdate.issueAutoUpdate()
 
-    print("euddraft v%s : Simple eudplib plugin system" % version)
+    print("euddraft %s : Simple eudplib plugin system" % version)
     print(" - This program follows MIT License. See license.txt")
 
     # sys.argv.append('test.eds')

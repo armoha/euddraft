@@ -30,14 +30,16 @@ try:
     from winsound import MB_OK, MB_ICONHAND, MessageBeep
 
     def MessageBox(title, text, style=0):
-        print("[%s]\n%s\n" % (title, text))
+        print("[%s]\n%s" % (title, text))
 
         """ Helper function """
         hWnd = ctypes.windll.kernel32.GetConsoleWindow()
         ctypes.windll.user32.SetForegroundWindow(hWnd)
         ctypes.windll.user32.BringWindowToTop(hWnd)
         ctypes.windll.user32.SetForegroundWindow(hWnd)
-        ctypes.windll.user32.MessageBoxW(0, text, title, style)
+        return ctypes.windll.user32.MessageBoxW(0, text, title, style)
+
+    isWindows = True
 
 except ImportError:
     MB_OK = 1
@@ -49,3 +51,5 @@ except ImportError:
 
     def MessageBox(title, text, style=0):
         print("[%s]\n%s\n" % (title, text))
+
+    isWindows = False
