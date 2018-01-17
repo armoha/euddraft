@@ -5,6 +5,8 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
+beta = True
+
 sys.argv.append('build_exe')
 
 # Dependencies are automatically detected, but it might need fine tuning.
@@ -41,21 +43,21 @@ setup(
 # Package them to latest/ folder
 
 
-def zipdir(path, ziph):
-    # ziph is zipfile handle
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            ziph.write(os.path.join(root, file))
+if not beta:
+    def zipdir(path, ziph):
+        # ziph is zipfile handle
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                ziph.write(os.path.join(root, file))
 
+    with zipfile.ZipFile(
+        'latest/euddraft%s.zip' % version,
+        'w',
+        zipfile.ZIP_DEFLATED
+    ) as zipf:
+        os.chdir('build/exe.win32-3.6')
+        zipdir('.', zipf)
+        os.chdir('../..')
 
-with zipfile.ZipFile(
-    'latest/euddraft%s.zip' % version,
-    'w',
-    zipfile.ZIP_DEFLATED
-) as zipf:
-    os.chdir('build/exe.win32-3.6')
-    zipdir('.', zipf)
-    os.chdir('../..')
-
-with open('latest/VERSION', 'w') as f:
-    f.write(version)
+    with open('latest/VERSION', 'w') as f:
+        f.write(version)

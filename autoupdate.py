@@ -118,10 +118,8 @@ def checkUpdate():
     with open(os.path.join(dataDir, '_update.bat'), 'w') as batf:
         batf.write('''\
 @echo off
-echo Updating euddraft.
 xcopy _update . /e /y /q
 rd _update /s /q
-echo Update completed
 del _update.bat /q
 ''')
 
@@ -129,6 +127,7 @@ del _update.bat /q
         from subprocess import Popen
         Popen('_update.bat')
     atexit.register(onExit)
+    print("Update downloaded. Update will begin after you close the euddraft.")
 
 
 def issueAutoUpdate():
