@@ -48,7 +48,11 @@ def zipdir(path, ziph):
             ziph.write(os.path.join(root, file))
 
 
-with zipfile.ZipFile('latest/euddraft.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+with zipfile.ZipFile(
+    'latest/euddraft%s.zip' % version,
+    'w',
+    zipfile.ZIP_DEFLATED
+) as zipf:
     os.chdir('build/exe.win32-3.6')
     zipdir('.', zipf)
     os.chdir('../..')
