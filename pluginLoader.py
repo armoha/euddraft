@@ -27,6 +27,7 @@ import os
 from importlib.machinery import SourceFileLoader
 import sys
 import types
+import msgbox
 
 
 # Get absolute path of current executable
@@ -85,6 +86,9 @@ def loadPluginsFromConfig(ep, config):
     freeze_enabled = False
     for pluginName in pluginList:
         if pluginName == 'freeze':
+            if not msgbox.isWindows:
+                raise RuntimeError(
+                    "Freeze protection is only supported on windows")
             freeze_enabled = True
             print("""\
                           *                                         *
