@@ -608,7 +608,7 @@ THTreeItem * THuffmannTree::Call1500E740(unsigned int nValue)
         pItem1->prev = ppItem[1];
         // edi = pItem305C;
         pPrev = ppItem[1];      // ecx
-        if(pPrev <= 0)
+        if(PTR_INT(pPrev) <= 0)
         {
             pPrev = PTR_NOT(pPrev);
             pPrev->next = pItem1;
@@ -980,7 +980,7 @@ _1500E549:
         if(nDcmpByte == 0x101)          // Huffman tree needs to be modified
         {
             n8Bits = is->Get8Bits();
-            pItem1 = (pLast <= 0) ? NULL : pLast;
+            pItem1 = (PTR_INT(pLast) <= 0) ? NULL : pLast;
 
             pItem2 = Call1500E740(1);
             pItem2->parent    = pItem1;

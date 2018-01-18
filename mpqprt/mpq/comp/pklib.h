@@ -11,7 +11,12 @@
 #ifndef __PKLIB_H__
 #define __PKLIB_H__
 
-#include <Windows.h>
+#if (defined(_WIN32) || defined(WIN32)) && !defined(NO_WINDOWS_H)
+#include <windows.h>
+#else
+#include "wintypes.h"
+#endif
+
 
 //-----------------------------------------------------------------------------
 // Defines

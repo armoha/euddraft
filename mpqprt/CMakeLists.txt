@@ -20,6 +20,7 @@ set(SOURCE_FILES
     mpq/comp/serr.cpp
     mpq/comp/smem.cpp
     mpq/comp/wave.cpp
+    mpq/comp/winfuncs.c
     mpq/comp/exp.c
     mpq/comp/imp.c
     mpq/comp/zlib/adler32.c
