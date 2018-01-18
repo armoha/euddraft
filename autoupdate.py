@@ -33,7 +33,7 @@ def getLatestUpdateCheckpoint():
         dataDir = os.path.dirname(sys.executable)
         with open(os.path.join(dataDir, 'vcheckpoint.dat'), 'r') as vchp:
             vstr = vchp.read()
-            match = re.match(".+ \d+", vstr)
+            match = re.match("(.+) (\d+)", vstr)
             if not match:
                 raise OSError
             v = match.group(1)
