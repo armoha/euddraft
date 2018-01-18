@@ -88,6 +88,7 @@ def checkUpdate():
     latestVersion = getLatestVersion()
     if not versionLt(lastCheckedVersion, latestVersion):
         writeVersionCheckpoint(lastCheckedVersion)
+        return
 
     # Ask user whether to update
     MB_YESNO = 0x00000004
