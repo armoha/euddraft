@@ -29,6 +29,7 @@ def download(url):
 
 
 def getLatestUpdateCheckpoint():
+    from euddraft import version
     try:
         dataDir = os.path.dirname(sys.executable)
         with open(os.path.join(dataDir, 'vcheckpoint.dat'), 'r') as vchp:
@@ -38,10 +39,15 @@ def getLatestUpdateCheckpoint():
                 raise OSError
             v = match.group(1)
             t = int(match.group(2))
+
+            # If user has manually updated the game, then
+            # v can be less than version.
+            if versionLt(v, version):
+                v = version
+                t = 0
             return v, t
 
     except OSError:
-        from euddraft import version
         return version, 0
 
 
