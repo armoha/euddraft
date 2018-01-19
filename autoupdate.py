@@ -87,7 +87,7 @@ def checkUpdate():
     lastCheckedVersion, lastCheckedTime = getLatestUpdateCheckpoint()
 
     # Alert user only once a week, max
-    if time.time() - lastCheckedTime < 7 * 24 * 60 * 60:
+    if time.time() - lastCheckedTime < 24 * 60 * 60:
         return lastCheckedVersion, False
 
     # Re-write checkpoint time
