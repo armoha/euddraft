@@ -369,3 +369,8 @@ $RECYCLE.BIN/
 # Cmake
 cmake-build-*/
 .idea
+
+# profile related
+profile.json
+*.lprof
+lprof_log.txt
