@@ -28,6 +28,7 @@ import sys
 import os
 import time
 import autoupdate
+import msgbox
 from pluginLoader import getGlobalPluginDirectory
 
 import multiprocessing as mp
@@ -93,8 +94,16 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.1.8"
+version = "0.8.1.9"
 
+
+if msgbox.isWindows:
+    import win32api
+    from ctypes import c_int, WINFUNCTYPE, windll
+    from ctypes.wintypes import HWND, LPCSTR, UINT
+    prototype = WINFUNCTYPE(HWND)
+    GetForegroundWindow = prototype(("GetForegroundWindow", windll.user32))
+    GetConsoleWindow = prototype(("GetConsoleWindow", windll.kernel32))
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
@@ -122,7 +131,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
-        print(" - Daemon mode. Ctrl+C to quit.")
+        print(" - Daemon mode. Ctrl+C to quit. R to recompile (windows only)")
         mp.set_start_method('spawn')
         lasttime = None
 
@@ -148,6 +157,13 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
                 # Wait for changes
                 while lasttime and not isModifiedFiles():
+                    if msgbox.isWindows:
+                        if (
+                            GetForegroundWindow() == GetConsoleWindow() and
+                            win32api.GetAsyncKeyState(ord('R'))
+                        ):
+                            print("[Forced recompile issued]")
+                            break
                     time.sleep(1)
 
                 # epscript can alter other files if some file changes.
