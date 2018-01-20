@@ -151,7 +151,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                 while lasttime and not isModifiedFiles():
                     if msgbox.isWindows:
                         if (
-                            msgbox.GetForegroundWindow() == msgbox.GetConsoleWindow() and
+                            msgbox.IsThisForeground() and
                             msgbox.GetAsyncKeyState(ord('R'))
                         ):
                             print("[Forced recompile issued]")

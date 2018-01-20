@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = True
+beta = False
 
 sys.argv.append('build_exe')
 

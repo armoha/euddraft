@@ -51,6 +51,9 @@ try:
     SetForegroundWindow = prototype(("SetForegroundWindow", windll.user32))
     GetAsyncKeyState = win32api.GetAsyncKeyState
 
+    def IsThisForeground():
+        return GetForegroundWindow() == GetConsoleWindow()
+
 except ImportError:
     MB_OK = 1
     MB_ICONHAND = 2
