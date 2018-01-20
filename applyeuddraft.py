@@ -30,7 +30,8 @@ import os
 import subprocess
 from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig, isFreezeIssued, isMpaqIssued
-from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
+from msgbox import MessageBeep, MB_OK, MB_ICONHAND
+import msgbox
 
 
 from freeze import (
@@ -162,4 +163,6 @@ def applyEUDDraft(sfname):
                 in_eudplib_code = False
             formatted_excs.append(exc)
 
-        MessageBox("[Error] %s" % e, ''.join(formatted_excs))
+        print("[Error] %s" % e, ''.join(formatted_excs))
+        if msgbox.isWindows:
+            msgbox.SetForegroundWindow(msgbox.GetConsoleWindow())

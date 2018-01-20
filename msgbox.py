@@ -41,6 +41,16 @@ try:
 
     isWindows = True
 
+    import win32api
+    from ctypes import WINFUNCTYPE, windll
+    from ctypes.wintypes import HWND
+    prototype = WINFUNCTYPE(HWND)
+    GetForegroundWindow = prototype(("GetForegroundWindow", windll.user32))
+    GetConsoleWindow = prototype(("GetConsoleWindow", windll.kernel32))
+    prototype = WINFUNCTYPE(HWND, HWND)
+    SetForegroundWindow = prototype(("SetForegroundWindow", windll.user32))
+    GetAsyncKeyState = win32api.GetAsyncKeyState
+
 except ImportError:
     MB_OK = 1
     MB_ICONHAND = 2

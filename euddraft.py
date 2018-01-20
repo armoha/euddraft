@@ -97,14 +97,6 @@ def hasModifiedFile(dirname, since):
 version = "0.8.1.9"
 
 
-if msgbox.isWindows:
-    import win32api
-    from ctypes import c_int, WINFUNCTYPE, windll
-    from ctypes.wintypes import HWND, LPCSTR, UINT
-    prototype = WINFUNCTYPE(HWND)
-    GetForegroundWindow = prototype(("GetForegroundWindow", windll.user32))
-    GetConsoleWindow = prototype(("GetConsoleWindow", windll.kernel32))
-
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
     mp.freeze_support()
     autoupdate.issueAutoUpdate()
@@ -159,8 +151,8 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                 while lasttime and not isModifiedFiles():
                     if msgbox.isWindows:
                         if (
-                            GetForegroundWindow() == GetConsoleWindow() and
-                            win32api.GetAsyncKeyState(ord('R'))
+                            msgbox.GetForegroundWindow() == msgbox.GetConsoleWindow() and
+                            msgbox.GetAsyncKeyState(ord('R'))
                         ):
                             print("[Forced recompile issued]")
                             break
