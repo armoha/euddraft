@@ -1,10 +1,24 @@
 import os
+import shutil
 import zipfile
 from cx_Freeze import setup, Executable
 from euddraft import version
 
 
 beta = True
+
+buildDir = "build/exe.win32-3.6"
+
+for the_file in os.listdir(buildDir):
+    fpath = os.path.join(buildDir, the_file)
+    try:
+        if os.path.isfile(fpath):
+            os.unlink(fpath)
+        elif os.path.isdir(fpath):
+            shutil.rmtree(fpath)
+    except Exception as e:
+        print(e)
+
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
@@ -53,7 +67,7 @@ if not beta:
         'w',
         zipfile.ZIP_DEFLATED
     ) as zipf:
-        os.chdir('build/exe.win32-3.6')
+        os.chdir(buildDir)
         zipdir('.', zipf)
         os.chdir('../..')
 
