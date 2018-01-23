@@ -38,7 +38,7 @@ public:
 
 private:
     MPQHeader header;
-	std::set<std::string> knownFileNames;
+	mutable std::set<std::string> knownFileNames;
     std::vector<HashTableEntry> hashTable;
     std::vector<BlockTableEntry> blockTable;
     size_t fileCount;
@@ -139,6 +139,7 @@ const HashTableEntry* MpqReadImpl::getHashEntry(const std::string& _fname) const
 		auto hashTableEntry = &hashTable[index];
 		if (hashTableEntry->blockIndex == 0xFFFFFFFF) return nullptr;
 		else if (hashTableEntry->hashA == hashA && hashTableEntry->hashB == hashB) {
+			knownFileNames.insert(_fname);
 			return hashTableEntry;
 		}
 		index = (index + 1) & (hashTable.size() - 1);
@@ -221,7 +222,7 @@ std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntr
 			// Decrypt file data
 			for (size_t sectorIndex = 0; sectorIndex < sectorNum; sectorIndex++) {
 				size_t thisSectorOffset = sectorSize * sectorIndex;
-				size_t thisSectorSize = min(sectorSize, blockEntry->blockSize - thisSectorOffset);
+				size_t thisSectorSize = min(sectorSize, blockEntry->fileSize - thisSectorOffset);
 				DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
 			}
 
