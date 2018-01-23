@@ -94,6 +94,7 @@ else:
 
 globalPluginPath = os.path.join(basepath, 'plugins').lower()
 epPath = os.path.dirname(ep.__file__).lower()
+edPath = basepath.lower()
 mpqFreezePath = os.path.join(basepath, "mpq.exc")
 
 
@@ -101,6 +102,7 @@ def isEpExc(s):
     s = s.lower()
     return (
         epPath in s or
+        edPath in s or
         (basepath in s and globalPluginPath not in s) or
         'runpy.py' in s or
         s.startswith('  file "eudplib')
