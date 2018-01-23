@@ -70,6 +70,10 @@ def applyEUDDraft(fname, queue=None):
 
 
 def isFileModified(path, since):
+    # Ignore profile things
+    if path.endswith(".epmap") or path.endswith(".epmap.prof"):
+        return False
+
     try:
         mtime = max(
             os.path.getmtime(path),
@@ -94,7 +98,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.1.9"
+version = "0.8.2.0"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
@@ -123,7 +127,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
-        print(" - Daemon mode. Ctrl+C to quit. R to recompile (windows only)")
+        print(" - Daemon mode. Ctrl+C to quit. R to recompile (windows only)\n\n")
         mp.set_start_method('spawn')
         lasttime = None
 
@@ -167,7 +171,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                         break
 
                 print(
-                    "\n\n[[Updating on %s]]" %
+                    "[[Updating on %s]]" %
                     time.strftime("%Y-%m-%d %H:%M:%S"))
 
                 compileStatus = False
@@ -184,9 +188,9 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                         print("# Compile failed [%d/%d]" % (count, 5))
 
                 if count == 5:
-                    print('Unexpected error!')
+                    print('Unexpected error!\n\n')
                 else:
-                    print("Done!")
+                    print("Done!\n\n")
                 lasttime = time.time()
                 time.sleep(1)
 

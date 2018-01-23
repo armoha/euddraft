@@ -1,13 +1,10 @@
 import os
 import zipfile
-import sys
 from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = False
-
-sys.argv.append('build_exe')
+beta = True
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
@@ -21,6 +18,7 @@ build_exe_options = {
         "license.txt",
         "plugins",
         'lib',
+        'epTrace.exe',
     ],
     'zip_include_packages': ['*'],
     'zip_exclude_packages': []
