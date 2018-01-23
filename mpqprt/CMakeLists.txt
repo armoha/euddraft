@@ -46,5 +46,8 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
     message("release mode - static linked")
     if (WIN32)
         target_link_libraries(euddraft_freeze -static)
+        add_custom_command(TARGET euddraft_freeze POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:euddraft_freeze>" "C:/gitclones/euddraft/mpq.exc"
+                COMMENT "Copying to main project")
     endif()
 endif()

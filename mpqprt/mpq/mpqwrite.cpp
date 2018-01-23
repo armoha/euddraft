@@ -63,7 +63,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 	auto hashEntryCount = mr->getHashEntryCount();
 	for(int i = 0 ; i < hashEntryCount ; i++) {
         auto hashEntry = mr->getHashEntry(i);
-        // remove (keyfile)
+        // remove (keyfile) and (listfile)
         if(hashMatch(hashEntry, "(keyfile)") || hashMatch(hashEntry, "(listfile)")) {
             HashTableEntry deletedEntry;
             memset(&deletedEntry, 0, sizeof(HashTableEntry));
