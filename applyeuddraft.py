@@ -152,17 +152,11 @@ def applyEUDDraft(sfname):
         MessageBeep(MB_ICONHAND)
         exc_type, exc_value, exc_traceback = sys.exc_info()
         excs = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        in_eudplib_code = False
         formatted_excs = []
 
         for i, exc in enumerate(excs):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1:-1]):
-                if in_eudplib_code:
-                    continue
-                in_eudplib_code = True
-                exc = '<euddraft/eudplib internal code> \n'
-            else:
-                in_eudplib_code = False
+                continue
             formatted_excs.append(exc)
 
         print("[Error] %s" % e, ''.join(formatted_excs))

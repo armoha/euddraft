@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = True
+beta = False
 
 buildDir = "build/exe.win32-3.6"
 
@@ -57,6 +57,8 @@ setup(
 
 
 if not beta:
+    print("Packaging data...")
+
     def zipdir(path, ziph):
         # ziph is zipfile handle
         for root, dirs, files in os.walk(path):
