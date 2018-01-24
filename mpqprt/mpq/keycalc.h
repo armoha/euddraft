@@ -11,7 +11,6 @@ void keycalc(
 	// Auxilarry data
 	const uint32_t* dwData,
 	const MPQHeader& header,
-	uint32_t mpqSize,
 	uint32_t hashEntryCount,
 	uint32_t hashTableOffset,
 	uint32_t blockEntryCount,
