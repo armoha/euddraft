@@ -37,12 +37,9 @@ def keycalc(seedKey, fileCursor):
         hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4))
 
         # Basic check
-        mpqArchiveSize = f_dwread_epd_safe(mpqHeaderEPD + (0x08 // 4))
         mpqHashTableOffset = f_dwread_epd_safe(mpqHeaderEPD + (0x10 // 4))
         mpqHashTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x18 // 4))
         mpqBlockTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x1C // 4))
-        # EUDJumpIfNot(mpqBlockTableOffset == 0, hell1) - This should match
-        # EUDJumpIfNot(mpqBlockTableSize == mpqArchiveSize // 16, hell2)
 
         # To find first real block index, seek scenario.chk.
         # Find scenario.chk in hash table
@@ -117,10 +114,10 @@ def keycalc(seedKey, fileCursor):
         i_ += 3
     EUDEndWhile()
 
-    # 5. Feed entire mpq file
+    # 5. Feed entire block table
     # For speed, we employ more simpler expression here instead of T function.
     SAMPLEN = 2048
-    n = mpqArchiveSize // 4 - 4
+    n = mpqBlockTableSize * 4 - 4
     for i in range(4):
         for j in EUDLoopRange(SAMPLEN // 4):
             sample = f_dwread_epd(blockTableEPD + fileCursor % n)

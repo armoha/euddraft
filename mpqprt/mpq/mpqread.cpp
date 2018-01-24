@@ -74,6 +74,9 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
 
         is.open(mpqName, std::ios_base::in | std::ios_base::binary);
         is.read(reinterpret_cast<char*>(&header), sizeof(header));
+        if(header.sectorSizeShift != 3) {
+            throw std::runtime_error("Invalid sectorSizeShift");
+        }
 
         // Get hash table
         readTable(is, header.hashTableOffset, header.hashTableEntryCount, "(hash table)", hashTable);

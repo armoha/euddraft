@@ -34,7 +34,6 @@ std::string modChk(
 
 		reinterpret_cast<const uint32_t*>(chk.data()),
 		*(reinterpret_cast<const MPQHeader*>(chk.data())),
-		chk.size(),
 		0,
 		0,
 		chk.size() / 16,

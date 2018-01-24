@@ -63,14 +63,16 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 	auto hashEntryCount = mr->getHashEntryCount();
 	for(int i = 0 ; i < hashEntryCount ; i++) {
         auto hashEntry = mr->getHashEntry(i);
-        // remove (keyfile) and (listfile)
+        // remove (keyfile) and (listfile
         if(hashMatch(hashEntry, "(keyfile)") || hashMatch(hashEntry, "(listfile)")) {
             HashTableEntry deletedEntry;
             memset(&deletedEntry, 0, sizeof(HashTableEntry));
             deletedEntry.blockIndex = 0xFFFFFFFE;
             hashTable.push_back(deletedEntry);
         }
-        else hashTable.push_back(*hashEntry);
+        else {
+			hashTable.push_back(*hashEntry);
+		}
     }
 
     // Get blocks & block data
@@ -94,10 +96,10 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 						MAFA_COMPRESS_STANDARD,
 						MAFA_COMPRESS_WAVE);
 					if (cmpdata.size() < blockData.size()) blockData = cmpdata;
+                    newBlockEntry.blockSize = blockData.size();
 				}
-			} catch(std::runtime_error e) {}
+            } catch(std::runtime_error e) {}
 		}
-		newBlockEntry.blockSize = blockData.size();
 
     	blockDataTable.push_back(blockData);
 		newBlockEntry.fileFlag &= ~(BLOCK_ENCRYPTED | BLOCK_KEY_ADJUSTED);  // No longer encrypted
@@ -125,14 +127,16 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 	// Modify scenario.chk block
 	{
-		if(blockTable[0].fileFlag & BLOCK_IMPLODED)
+        auto& scenarioBlock = blockTable[0];
+
+		if(scenarioBlock.fileFlag & BLOCK_IMPLODED)
 		{
 			throw std::runtime_error("Cannot decompress imploded block");
 		}
 
 		std::string rawchk =
-			(blockTable[0].fileFlag & BLOCK_COMPRESSED) ?
-			decompressBlock(blockTable[0].fileSize, blockDataTable[0]) :
+			(scenarioBlock.fileFlag & BLOCK_COMPRESSED) ?
+			decompressBlock(scenarioBlock.fileSize, blockDataTable[0]) :
 			blockDataTable[0];
 		std::string newchk = modChk(rawchk, seedKey, destKey, fileCursor);
 		blockDataTable[0] = compressToBlock(
@@ -140,19 +144,21 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 			MAFA_COMPRESS_STANDARD,
 			MAFA_COMPRESS_STANDARD
 		);
-		blockTable[0].fileSize = newchk.size();
-		blockTable[0].blockSize = blockDataTable[0].size();
-		blockTable[0].fileFlag |= BLOCK_COMPRESSED;
+		scenarioBlock.fileSize = newchk.size();
+		scenarioBlock.blockSize = blockDataTable[0].size();
+		scenarioBlock.fileFlag |= BLOCK_COMPRESSED;
 	}
 
     // Get file size & prepare buffer for it
+
+	// ** SC:R won't accept large block tables. To prevent that from happening we will only overlap the block table
+	// with scenario.chk section, and send .ogg data behind the block table.
     size_t newArchiveSize = sizeof(MPQHeader);
     uint32_t hashTableOffset, blockTableOffset;
     {
-        for (size_t i = 0 ; i < blockDataTable.size() ; i++) {
-            blockTable[i].blockOffset = newArchiveSize;
-            newArchiveSize += blockDataTable[i].size();
-        }
+		// Add first block (scenario.chk) between MPQ header and Block/Hash table
+		blockTable[0].blockOffset = newArchiveSize;
+		newArchiveSize += blockDataTable[0].size();
 
         hashTableOffset = newArchiveSize;
         newArchiveSize += hashTable.size() * 16;
@@ -160,7 +166,13 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
         blockTableOffset = newArchiveSize;
         newArchiveSize += (blockDataTable.size() + 2) * 16;  // Extra 2 entries for block data table
-    }
+
+		// Rest of the block are resource blocks. Put them.
+		for (size_t i = 1 ; i < blockDataTable.size() ; i++) {
+			blockTable[i].blockOffset = newArchiveSize;
+			newArchiveSize += blockDataTable[i].size();
+		}
+	}
 
     // Adjust hash table
 	auto initialBlockIndex = (blockTableOffset >> 4);
@@ -186,14 +198,15 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     header.hashTableOffset = hashTableOffset;
     header.blockTableOffset = 0;
     header.hashTableEntryCount = hashTable.size();
-    header.blockTableEntryCount = newArchiveSize >> 4;
+    header.blockTableEntryCount = (blockTableOffset >> 4) + blockDataTable.size() + 2;
     memcpy(archiveBuffer.data(), &header, sizeof(MPQHeader));
 
-    // Write file data
-    for(const auto& blockData : blockDataTable) {
-        memcpy(archiveBuffer.data() + cursor, blockData.data(), blockData.size());
-        cursor += blockData.size();
-    }
+    // Write scenario.chk
+	{
+		const auto& scenarioChkBlock = blockDataTable[0];
+		memcpy(archiveBuffer.data() + cursor, scenarioChkBlock.data(), scenarioChkBlock.size());
+		cursor += scenarioChkBlock.size();
+	}
 
     // Write hash data
     const uint32_t hashTableKey = HashString("(hash table)", MPQ_HASH_FILE_KEY);
@@ -214,14 +227,16 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
         memcpy(archiveBuffer.data() + cursor, &blockEntry, sizeof(blockEntry));
         cursor += sizeof(blockEntry);
     }
+	EncryptData(archiveBuffer.data(), cursor, blockTableKey);
 
-    // Write decrypted data
-    EncryptData(archiveBuffer.data(), cursor, blockTableKey);
+    // Write "freeze05 protect" header. Note that this header is a part of block table header, but should
+	// be visible as a plaintext in MPQ file. We skip additional encryption/decryption stage here.
     memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
     cursor += 16;
-    DecryptData(archiveBuffer.data(), cursor, blockTableKey);
 
     // Output hash data here
+	DecryptData(archiveBuffer.data(), cursor, blockTableKey);
+
 	uint32_t outputDwords[4] = { 0 };
 	const uint32_t* dwData = reinterpret_cast<uint32_t*>(archiveBuffer.data());
 
@@ -233,7 +248,6 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 		dwData,
 		header,
-		header.mpqSize,
 		header.hashTableEntryCount,
 		header.hashTableOffset,
 		header.blockTableEntryCount,
@@ -245,7 +259,15 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     cursor += 16;
     EncryptData(archiveBuffer.data(), cursor, blockTableKey);
 
-    return std::string(archiveBuffer.begin(), archiveBuffer.end());
+	// Write resource files
+	for(int i = 1 ; i < blockDataTable.size() ; i++) {
+		const auto& blockData = blockDataTable[i];
+		memcpy(archiveBuffer.data() + cursor, blockData.data(), blockData.size());
+		cursor += blockData.size();
+	}
+
+
+	return std::string(archiveBuffer.begin(), archiveBuffer.end());
 }
 
 
@@ -260,7 +282,7 @@ void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockInde
 	}
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> dis;
+	std::uniform_int_distribution<uint32_t> dis;
 	auto randomPick = [&]()
 	{
 		uint32_t rv = dis(gen);

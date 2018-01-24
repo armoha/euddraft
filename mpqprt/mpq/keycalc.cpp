@@ -26,7 +26,6 @@ void keycalc(
 	// Auxilarry data
 	const uint32_t* dwData,
 	const MPQHeader& header,
-	uint32_t mpqSize,
 	uint32_t hashEntryCount,
 	uint32_t hashTableOffset,
 	uint32_t blockEntryCount,
@@ -68,7 +67,7 @@ void keycalc(
 
 	// 5. Feed entire mpq file
 	const int SAMPLEN = 2048;
-	int mpqDwordN = mpqSize / 4 - 4;
+	int mpqDwordN = blockEntryCount * 4 - 4;
 	for (size_t i = 0; i < 4; i++) {
 		for (uint32_t j = 0; j < SAMPLEN / 4; j++) {
 			keyDwords[i] = keyDwords[i] * 3 + dwData[fileCursor % mpqDwordN];
