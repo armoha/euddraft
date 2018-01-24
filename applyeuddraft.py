@@ -30,7 +30,7 @@ import os
 import subprocess
 from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig, isFreezeIssued, isMpaqIssued
-from msgbox import MessageBeep, MB_OK, MB_ICONHAND
+from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
 import msgbox
 
 
@@ -93,8 +93,10 @@ else:
     basepath = os.path.dirname(os.path.realpath(__file__))
 
 globalPluginPath = os.path.join(basepath, 'plugins').lower()
-epPath = os.path.dirname(ep.__file__).lower()
-edPath = basepath.lower()
+# cx_Freeze modifies ep.__file__ to library.zip. So we use this convoluted
+# way of getting eudplib install path.
+epPath = os.path.dirname(ep.eudplibVersion.__code__.co_filename).lower()
+edPath = os.path.dirname(MessageBox.__code__.co_filename).lower()
 mpqFreezePath = os.path.join(basepath, "mpq.exc")
 
 
