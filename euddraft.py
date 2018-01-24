@@ -211,6 +211,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
         ep.CompressPayload(True)
         ofname = sfname[:-4] + ' prt.scx'
         ep.SaveMap(ofname, payloadMain)
+        print("[Stage 4/3] Applying freeze mpq modification...")
         ret = subprocess.call([applyeuddraft.mpqFreezePath, ofname])
         if ret != 0:
             raise RuntimeError("Error on mpq protection")

@@ -9,15 +9,16 @@ beta = True
 
 buildDir = "build/exe.win32-3.6"
 
-for the_file in os.listdir(buildDir):
-    fpath = os.path.join(buildDir, the_file)
-    try:
-        if os.path.isfile(fpath):
-            os.unlink(fpath)
-        elif os.path.isdir(fpath):
-            shutil.rmtree(fpath)
-    except Exception as e:
-        print(e)
+if not beta:
+    for the_file in os.listdir(buildDir):
+        fpath = os.path.join(buildDir, the_file)
+        try:
+            if os.path.isfile(fpath):
+                os.unlink(fpath)
+            elif os.path.isdir(fpath):
+                shutil.rmtree(fpath)
+        except Exception as e:
+            print(e)
 
 
 # Dependencies are automatically detected, but it might need fine tuning.
