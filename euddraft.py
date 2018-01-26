@@ -89,7 +89,7 @@ def isFileModified(path, since):
 def hasModifiedFile(dirname, since):
     ret = False
     for root, dirs, files in os.walk(dirname):
-        dirs[:] = [d for d in dirs if d[0] != '.']
+        dirs[:] = [d for d in dirs if d[0] != '.' and d[0] != '_']
         for f in files:
             finalpath = os.path.join(root, f)
             if isFileModified(finalpath, since):
