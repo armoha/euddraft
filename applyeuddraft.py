@@ -148,6 +148,7 @@ def applyEUDDraft(sfname):
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 
         MessageBeep(MB_OK)
+        return True
 
     except Exception as e:
         print("==========================================")
@@ -164,3 +165,4 @@ def applyEUDDraft(sfname):
         print("[Error] %s" % e, ''.join(formatted_excs))
         if msgbox.isWindows:
             msgbox.SetForegroundWindow(msgbox.GetConsoleWindow())
+        return False

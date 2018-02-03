@@ -55,9 +55,10 @@ applylib()
 def applyEUDDraft(fname, queue=None):
     try:
         import applyeuddraft
-        applyeuddraft.applyEUDDraft(fname)
+        ret = applyeuddraft.applyEUDDraft(fname)
         if queue:
             queue.put(True)
+        return ret
     except ImportError as e:
         if queue:
             if str(e).startswith('DLL load failed:'):
@@ -125,7 +126,8 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     # Use simple setting system
     if sfname[-4:] == '.eds':
-        applyEUDDraft(sfname)
+        if not applyEUDDraft(sfname):
+            input("Press Enter to continue...")
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
