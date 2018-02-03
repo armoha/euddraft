@@ -57,29 +57,17 @@ setup(
 if not beta:
     print("Packaging data...")
 
-    def zipdir(path, ziph):
-        # ziph is zipfile handle
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                ziph.write(os.path.join(root, file))
+    def package_zip(fname):
+        with zipfile.ZipFile(fname, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            os.chdir(buildDir)
+            for root, dirs, files in os.walk('.'):
+                for file in files:
+                    zipf.write(os.path.join(root, file))
+            zipf.writestr('VERSION', str(version))
+            os.chdir('../../')
 
-    with zipfile.ZipFile(
-        'latest/euddraft%s.zip' % version,
-        'w',
-        zipfile.ZIP_DEFLATED
-    ) as zipf:
-        os.chdir(buildDir)
-        zipdir('.', zipf)
-        os.chdir('../..')
-
-    with zipfile.ZipFile(
-        'latest/euddraft_latest.zip' % version,
-        'w',
-        zipfile.ZIP_DEFLATED
-    ) as zipf:
-        os.chdir(buildDir)
-        zipdir('.', zipf)
-        os.chdir('../..')
+    package_zip('latest/euddraft%s.zip' % version)
+    package_zip('latest/euddraft_latest.zip')
 
     with open('latest/VERSION', 'w') as f:
         f.write(version)
