@@ -1,4 +1,5 @@
-# We omitted cryptographic checks intentionally, cause that would be handled properly by GitHub
+# We omitted cryptographic checks intentionally.
+# That would be handled properly by https protocol used by GitHub
 
 import re
 import sys
@@ -13,7 +14,6 @@ from urllib.error import URLError
 
 import msgbox
 import time
-import re
 
 
 VERSION_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/VERSION'
@@ -85,9 +85,12 @@ def checkUpdate():
         return False
 
     lastCheckedVersion, lastCheckedTime = getLatestUpdateCheckpoint()
+    timeSinceLastCheck = time.time() - lastCheckedTime
 
-    # Alert user only once a week, max
-    if time.time() - lastCheckedTime < 24 * 60 * 60:
+    if (
+        not msgbox.GetAsyncKeyState(0x10) and  # VK_SHIFT
+        timeSinceLastCheck < 24 * 60 * 60
+    ):
         return lastCheckedVersion, False
 
     # Re-write checkpoint time

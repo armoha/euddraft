@@ -107,6 +107,8 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     print("euddraft %s : Simple eudplib plugin system" % version)
     print(" - This program follows MIT License. See license.txt")
+    if msgbox.isWindows:
+        print(" - Press SHIFT to force check update while opening euddraft.")
 
     # sys.argv.append('test.eds')
 
@@ -127,7 +129,9 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
     # Daemoning system
     elif sfname[-4:] == '.edd':
-        print(" - Daemon mode. Ctrl+C to quit. R to recompile (windows only)\n\n")
+        print(
+            " - Daemon mode. Ctrl+C to quit. R to recompile (windows only)\n\n"
+        )
         mp.set_start_method('spawn')
         lasttime = None
 
