@@ -72,5 +72,14 @@ if not beta:
         zipdir('.', zipf)
         os.chdir('../..')
 
+    with zipfile.ZipFile(
+        'latest/euddraft_latest.zip' % version,
+        'w',
+        zipfile.ZIP_DEFLATED
+    ) as zipf:
+        os.chdir(buildDir)
+        zipdir('.', zipf)
+        os.chdir('../..')
+
     with open('latest/VERSION', 'w') as f:
         f.write(version)
