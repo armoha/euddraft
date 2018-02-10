@@ -105,6 +105,7 @@ def isEpExc(s):
     return (
         epPath in s or
         edPath in s or
+        '<frozen ' in s or
         (basepath in s and globalPluginPath not in s) or
         'runpy.py' in s or
         s.startswith('  file "eudplib')
