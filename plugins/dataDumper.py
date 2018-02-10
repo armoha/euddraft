@@ -6,6 +6,7 @@ inputDatas = []
 class _Flag:
     pass
 
+
 copy = _Flag()
 unpatchable = _Flag()
 
@@ -17,7 +18,10 @@ def onPluginStart():
 
         # Reset?
         if unpatchable in flags:
-            assert copy not in flags, "Cannot apply both 'copy' and 'unpatchable'"
+            assert(
+                copy not in flags,
+                "Cannot apply both 'copy' and 'unpatchable'"
+            )
             for outOffset in outOffsets:
                 f_dwpatch_epd(EPD(outOffset), Db(inputData))
 
@@ -50,5 +54,6 @@ def onInit():
                 outOffsets.append(outOffset)
 
         inputDatas.append((inputData, outOffsets, flags))
+
 
 onInit()

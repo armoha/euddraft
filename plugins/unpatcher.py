@@ -20,4 +20,5 @@ def onInit():
     global resetCond
     resetCond = eval(settings['resetCond'])
 
+
 onInit()
