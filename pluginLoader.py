@@ -124,6 +124,10 @@ def loadPluginsFromConfig(ep, config):
             else:
                 loader = SourceFileLoader(moduleName, pluginPath)
 
+            pluginModule.__name__ = moduleName
+            pluginModule.__loader__ = loader
+            sys.modules[moduleName] = pluginModule
+
             loader.exec_module(pluginModule)
 
             pluginDict = pluginModule.__dict__
