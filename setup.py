@@ -5,20 +5,21 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = True
+beta = False
 
-buildDir = "build/exe.win32-3.6"
+buildDir = "build/exe.win32-3.4"
 
 if not beta:
-    for the_file in os.listdir(buildDir):
-        fpath = os.path.join(buildDir, the_file)
-        try:
-            if os.path.isfile(fpath):
-                os.unlink(fpath)
-            elif os.path.isdir(fpath):
-                shutil.rmtree(fpath)
-        except Exception as e:
-            print(e)
+    if os.path.exists(buildDir):
+        for the_file in os.listdir(buildDir):
+            fpath = os.path.join(buildDir, the_file)
+            try:
+                if os.path.isfile(fpath):
+                    os.unlink(fpath)
+                elif os.path.isdir(fpath):
+                    shutil.rmtree(fpath)
+            except Exception as e:
+                print(e)
 
 
 # Dependencies are automatically detected, but it might need fine tuning.
