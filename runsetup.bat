@@ -1,1 +1,2 @@
-python34 setup.py build_exe
+@echo off
+python setup.py build_exe
