@@ -28,6 +28,6 @@ int applyFreezeMpqModification(
     return 0;
 }
 
-PYBIND11_MODULE(example, m) {
+PYBIND11_MODULE(freezeMpq, m) {
     m.def("applyFreezeMpqModification", &applyFreezeMpqModification, "Apply freeze");
 }

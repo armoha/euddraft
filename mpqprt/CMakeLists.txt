@@ -63,7 +63,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
                 COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:euddraft_freeze>" "C:/gitclones/euddraft/mpq.exc"
                 COMMENT "Copying to main project")
         add_custom_command(TARGET freeze_pyext POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:freeze_pyext>" "../mpqprt.pyd"
+                COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:freeze_pyext>" "../../freezeMpq.pyd"
                 COMMENT "Copying to main project")
     endif()
 endif()
