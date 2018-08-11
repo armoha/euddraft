@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = False
+beta = True
 
 buildDir = "build/exe.win32-3.4"
 
@@ -28,9 +28,9 @@ build_exe_options = {
     "optimize": 2,
     "include_msvcr": True,
     "include_files": [
+        "freezeMpq.pyd",
         "StormLib32.dll",
         "libepScriptLib.dll",
-        "mpq.exc",
         "license.txt",
         "plugins",
         'lib',

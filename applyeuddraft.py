@@ -32,6 +32,7 @@ from readconfig import readconfig
 from pluginLoader import loadPluginsFromConfig, isFreezeIssued, isMpaqIssued
 from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
 import msgbox
+import freezeMpq
 
 
 from freeze import (
@@ -97,7 +98,6 @@ globalPluginPath = os.path.join(basepath, 'plugins').lower()
 # way of getting eudplib install path.
 epPath = os.path.dirname(ep.eudplibVersion.__code__.co_filename).lower()
 edPath = os.path.dirname(MessageBox.__code__.co_filename).lower()
-mpqFreezePath = os.path.join(basepath, "mpq.exc")
 
 
 def isEpExc(s):
@@ -141,10 +141,7 @@ def applyEUDDraft(sfname):
 
         if isFreezeIssued():
             print("[Stage 4/3] Applying freeze mpq modification...")
-            if isMpaqIssued():
-                ret = subprocess.call([mpqFreezePath, ofname, 'mpaq'])
-            else:
-                ret = subprocess.call([mpqFreezePath, ofname])
+            ret = freezeMpq.applyFreezeMpqModification(ofname, ofname, isMpaqIssued())
             if ret != 0:
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 

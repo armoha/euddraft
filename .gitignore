@@ -376,4 +376,4 @@ profile.json
 lprof_log.txt
 
 
-!mpqprt.pyd
+!freezeMpq.pyd
