@@ -13,23 +13,22 @@
 #include <fstream>
 
 
-using std::min;
+// I don't like using this... but I should I think.
+// mingw and vc has different method of handling min.
+// msvc uses min while gcc uses std::min
+// so this 'using namespace std' tries to resolve those differences.
 
+using namespace std;
 
 class MpqReadImpl;
 
 
 class MpqReadImpl {
 public:
-    MpqReadImpl(const std::string& mpqName);
+    explicit MpqReadImpl(const std::string& mpqName);
     ~MpqReadImpl();
 
-    int getFileCount() const {
-        return fileCount;
-    }
-
     int getHashEntryCount() const;
-    int getBlockEntryCount() const;
 
 	const HashTableEntry* getHashEntry(int index) const;
 	const HashTableEntry* getHashEntry(const std::string& fname) const;
@@ -123,10 +122,6 @@ int MpqReadImpl::getHashEntryCount() const {
     return hashTable.size();
 }
 
-int MpqReadImpl::getBlockEntryCount() const {
-    return blockTable.size();
-}
-
 const HashTableEntry* MpqReadImpl::getHashEntry(int index) const {
 	return &hashTable[index];
 }
@@ -158,13 +153,12 @@ const BlockTableEntry* MpqReadImpl::getBlockEntry(int index) const {
 std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntry, const BlockTableEntry *blockEntry) const {
     is.seekg(blockEntry->blockOffset, std::ios_base::beg);
 
-    if(!(blockEntry->fileFlag & BLOCK_ENCRYPTED)) {
+    if (!(blockEntry->fileFlag & BLOCK_ENCRYPTED)) {
         // Plain file. just read-as
         std::vector<char> buf(blockEntry->blockSize);
         is.read(buf.data(), blockEntry->blockSize);
         return std::string(buf.begin(), buf.end());
-    }
-	else {
+    } else {
 		// Encrypted file. Should get file key.
 		uint32_t fileKey = 0xFFFFFFFF;
 		const size_t sectorSize = 512u << header.sectorSizeShift;
@@ -239,10 +233,8 @@ std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntr
 
 MpqRead::MpqRead(const std::string &mpqName) : pimpl(new MpqReadImpl(mpqName)) {}
 MpqRead::~MpqRead() { delete pimpl; }
-int MpqRead::getFileCount() const { return pimpl->getFileCount(); }
 
 int MpqRead::getHashEntryCount() const { return pimpl->getHashEntryCount(); }
-int MpqRead::getBlockEntryCount() const { return pimpl->getBlockEntryCount(); }
 const HashTableEntry* MpqRead::getHashEntry(int index) const { return pimpl->getHashEntry(index); }
 const HashTableEntry* MpqRead::getHashEntry(const std::string &fname) const { return pimpl->getHashEntry(fname); }
 const BlockTableEntry* MpqRead::getBlockEntry(int index) const { return pimpl->getBlockEntry(index); }
@@ -250,16 +242,6 @@ const BlockTableEntry* MpqRead::getBlockEntry(int index) const { return pimpl->g
 std::string MpqRead::getBlockContent(const HashTableEntry *hashEntry) const {
 	auto blockEntry = pimpl->getBlockEntry(hashEntry->blockIndex);
 	return pimpl->getDecryptedBlockContent(hashEntry, blockEntry);
-}
-
-std::string MpqRead::getFileContent(const HashTableEntry *hashEntry) const {
-	auto blockEntry = pimpl->getBlockEntry(hashEntry->blockIndex);
-	std::string content = pimpl->getDecryptedBlockContent(hashEntry, blockEntry);
-	if(blockEntry->fileFlag & BLOCK_COMPRESSED)
-	{
-		content = decompressBlock(blockEntry->fileSize, content);
-	}
-	return content;
 }
 
 /////////////////////////////
