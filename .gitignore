@@ -374,3 +374,6 @@ cmake-build-*/
 profile.json
 *.lprof
 lprof_log.txt
+
+
+!mpqprt.pyd
