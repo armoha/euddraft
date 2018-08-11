@@ -23,7 +23,6 @@ public:
     const HashTableEntry* getHashEntry(const std::string& fname) const;
 	const BlockTableEntry* getBlockEntry(int index) const;
 	std::string getBlockContent(const HashTableEntry *hashEntry) const;
-	std::string getFileContent(const HashTableEntry *hashEntry) const;
 
 private:
     MpqReadImpl* pimpl;
