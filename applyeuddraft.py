@@ -141,7 +141,7 @@ def applyEUDDraft(sfname):
 
         if isFreezeIssued():
             print("[Stage 4/3] Applying freeze mpq modification...")
-            ret = freezeMpq.applyFreezeMpqModification(ofname, ofname, isMpaqIssued())
+            ret = freezeMpq.applyFreezeMpqModification(ep.u2b(ofname), ep.u2b(ofname), isMpaqIssued())
             if ret != 0:
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 
