@@ -379,3 +379,5 @@ lprof_log.txt
 !freezeMpq.pyd
 !freezeMpq.so
 
+.gitsecret/keys/random_seed
+euddraft_priv.pem
