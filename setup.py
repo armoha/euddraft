@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 from euddraft import version
 
 
-beta = False
+beta = True
 
 buildDir = "build/exe.win32-3.4"
 

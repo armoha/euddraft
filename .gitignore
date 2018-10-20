@@ -367,7 +367,7 @@ $RECYCLE.BIN/
 
 
 # Cmake
-cmake-build-*/
+cmake-*/
 .idea
 
 # profile related
@@ -377,3 +377,5 @@ lprof_log.txt
 
 
 !freezeMpq.pyd
+!freezeMpq.so
+
