@@ -27,7 +27,6 @@ import os
 from importlib.machinery import SourceFileLoader
 import sys
 import types
-import msgbox
 
 
 # Get absolute path of current executable

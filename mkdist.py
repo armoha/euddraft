@@ -1,4 +1,6 @@
 import runpy
+import sys
+import os
 
 from edpkgutil.cleanDir import cleanDirectory
 from edpkgutil.packageZip import packageZip
@@ -14,7 +16,11 @@ outputZipList = [
 # ----
 
 cleanDirectory(buildDir)
-runpy.run_module('setup')
+
+if sys.platform.startswith('win'):
+    runpy.run_module('setup')
+else:
+    os.system('wine python setup.py')
 
 for outputZipPath in outputZipList:
     print('Packaging to %s' % outputZipPath)
@@ -23,3 +29,5 @@ for outputZipPath in outputZipList:
     # Digital signing!
     signature = generateFileSignature(outputZipPath)
     open(outputZipPath + '.sig', 'w').write(signature)
+
+open('latest/VERSION', 'w').write(version)
