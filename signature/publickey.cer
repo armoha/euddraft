@@ -1,8 +1,4 @@
-from OpenSSL import crypto
-import sys
-import base64
-
-pubkey = crypto.load_certificate(crypto.FILETYPE_PEM, '''-----BEGIN CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
 MIIC3DCCAcQCCQCssHkW19B4jzANBgkqhkiG9w0BAQsFADAwMQswCQYDVQQGEwJr
 bzEhMB8GCSqGSIb3DQEJARYScGh1NTQzMjFAbmF2ZXIuY29tMB4XDTE4MTAyMDAz
 NTM1NFoXDTE4MTExOTAzNTM1NFowMDELMAkGA1UEBhMCa28xITAfBgkqhkiG9w0B
@@ -19,38 +15,4 @@ HM3Y6HBgkOK0/tBMWj2XPEB8rVN7tOBgaD+JGfs8e91akAR+7BEuFRPjkbRYz2pH
 3r9ydvAOTeLk8ky0QWLq7UvALzgMIRf03nR9dl6mEo0fQmyT5zUt/qlYjqXL+kOA
 wFcG2w7HrqWkgRPwPlzdFL/U6ReGqHYMazQF4C4tIA4iOa5mN1QT0OvsiB7O3yYZ
 mZd/fcEi06rmFswNxzOSZQ==
------END CERTIFICATE-----''')
-
-pkey = None
-
-def _loadPkey():
-    global pkey
-
-    if pkey:
-        return
-
-    key_file = open('signature/euddraft_priv.pem', 'r')
-    key = key_file.read()
-    key_file.close()
-
-    pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
-    if not pkey.check():
-        print('Invalid key')
-        sys.exit(-1)
-
-def generateFileSignature(fname):
-    _loadPkey()
-
-    data = open(fname, 'rb').read()
-    signature = crypto.sign(pkey, data, "sha256")
-    return base64.b64encode(signature).decode('ascii')
-
-def verifyFileSignature(fname, sig):
-    data = open(fname, 'rb').read()
-    sig = base64.b64decode(sig.encode('ascii'))
-    # crypto.verify throws exception if anything fails.
-    try:
-        crypto.verify(pubkey, sig, data, "sha256")
-        return True
-    except:
-        return False
+-----END CERTIFICATE-----
