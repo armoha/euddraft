@@ -120,16 +120,15 @@ def checkUpdate():
     # Download the needed data
     print("Downloading euddraft %s" % latestVersion)
     release = getRelease(latestVersion)
-    signature = getReleaseSignature(latestVersion)
-    if not (release and signature):
-        msgbox.MessageBox('Update failed', 'No release / signature')
-        return
-    if not verifyFileSignature(release, signature):
-        msgbox.MessageBox('Update failed', 'Digital signature check failed. Deny update for security')
-        return
     if not release:
-        msgbox.MessageBox('Update failed', 'Cannot get update file.')
-        return
+        return msgbox.MessageBox('Update failed', 'No release')
+    signature = getReleaseSignature(latestVersion)
+    if not signature:
+        return msgbox.MessageBox('Update failed', 'No signature')
+    if not verifyFileSignature(release, signature):
+        return msgbox.MessageBox('Update failed', 'Digital signature check failed. Deny update for security')
+    if not release:
+        return msgbox.MessageBox('Update failed', 'Cannot get update file.')
 
     dataDir = os.path.dirname(sys.executable)
     updateDir = os.path.join(dataDir, '_update')

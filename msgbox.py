@@ -41,15 +41,15 @@ try:
 
     isWindows = True
 
-    import win32api
-    from ctypes import WINFUNCTYPE, windll
-    from ctypes.wintypes import HWND
+    from ctypes import WINFUNCTYPE, windll, c_int
+    from ctypes.wintypes import HWND, SHORT
     prototype = WINFUNCTYPE(HWND)
     GetForegroundWindow = prototype(("GetForegroundWindow", windll.user32))
     GetConsoleWindow = prototype(("GetConsoleWindow", windll.kernel32))
     prototype = WINFUNCTYPE(HWND, HWND)
     SetForegroundWindow = prototype(("SetForegroundWindow", windll.user32))
-    GetAsyncKeyState = win32api.GetAsyncKeyState
+    prototype = WINFUNCTYPE(SHORT, c_int)
+    GetAsyncKeyState = prototype(("SetForegroundWindow", windll.user32))
 
     def IsThisForeground():
         return GetForegroundWindow() == GetConsoleWindow()

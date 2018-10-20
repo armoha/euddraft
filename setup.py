@@ -7,7 +7,8 @@ if 'build_exe' not in sys.argv:
 
 
 build_exe_options = {
-    "packages": ["os", "cffi", "idna", "sys", "importlib", "json", "eudplib"],
+    "packages": ["os", "cffi", "ctypes", "idna", "sys", "importlib", "json", "eudplib"],
+    "excludes": ["tkinter"],
     "optimize": 2,
     "include_msvcr": True,
     "include_files": [

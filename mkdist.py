@@ -1,7 +1,7 @@
 import runpy
 import sys
 import os
-
+import shutil
 from edpkgutil.cleanDir import cleanDirectory
 from edpkgutil.packageZip import packageZip
 from edpkgutil.verifyPkg import generateFileSignature
@@ -21,6 +21,7 @@ if sys.platform.startswith('win'):
     runpy.run_module('setup')
 else:
     os.system('wine python setup.py')
+    shutil.copy('python34.dll', os.path.join(buildDir, 'python34.dll'))
 
 for outputZipPath in outputZipList:
     print('Packaging to %s' % outputZipPath)
