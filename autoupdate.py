@@ -15,6 +15,8 @@ from urllib.error import URLError
 import msgbox
 import time
 
+from edpkgutil.verifyPkg import verifyFileSignature
+
 
 VERSION_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/VERSION'
 RELEASE_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/euddraft%s.zip'
@@ -77,6 +79,9 @@ def versionLt(version1, version2):
 def getRelease(version):
     return download(RELEASE_URL % version)
 
+def getReleaseSignature(version):
+    return download(RELEASE_URL % version + '.sig')
+
 
 def checkUpdate():
     # auto update only supports Win32 by now.
@@ -115,8 +120,16 @@ def checkUpdate():
     # Download the needed data
     print("Downloading euddraft %s" % latestVersion)
     release = getRelease(latestVersion)
+    signature = getReleaseSignature(latestVersion)
+    if not (release and signature):
+        msgbox.MessageBox('Update failed', 'No release / signature')
+        return
+    if not verifyFileSignature(release, signature):
+        msgbox.MessageBox('Update failed', 'Digital signature check failed. Deny update for security')
+        return
     if not release:
         msgbox.MessageBox('Update failed', 'Cannot get update file.')
+        return
 
     dataDir = os.path.dirname(sys.executable)
     updateDir = os.path.join(dataDir, '_update')

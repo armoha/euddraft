@@ -45,8 +45,7 @@ def generateFileSignature(fname):
     signature = crypto.sign(pkey, data, "sha256")
     return base64.b64encode(signature).decode('ascii')
 
-def verifyFileSignature(fname, sig):
-    data = open(fname, 'rb').read()
+def verifyFileSignature(data, sig):
     sig = base64.b64decode(sig.encode('ascii'))
     # crypto.verify throws exception if anything fails.
     try:

@@ -1,0 +1,12 @@
+# Most of the requirements should be manually installed
+
+# pywin32 is not available over PyPI
+pywin32
+
+# cx_Freeze doesn't seem to work when installed via PyPi.
+# Instead, get one from https://www.lfd.uci.edu/~gohlke/pythonlibs/
+cx_Freeze
+
+# These can be installed via pip
+pyopenssl
+eudplib
