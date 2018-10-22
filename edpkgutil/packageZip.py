@@ -15,6 +15,8 @@ def packageZip(buildDir, fname, version):
         os.chdir(buildDir)
         for root, dirs, files in os.walk('.'):
             for file in files:
+                if file.startswith('.'):
+                    continue
                 zipf.write(os.path.join(root, file))
         zipf.writestr('VERSION', str(version))
         os.chdir(oldDir)
