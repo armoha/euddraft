@@ -12,8 +12,8 @@ if (WIN32)
         set(CMAKE_CXX_FLAGS_RELEASE_INIT        "/MT /O2 /Ob2 /D NDEBUG")
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "/MT /Zi /O2 /Ob1 /D NDEBUG")
     else()
-        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
+        set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s -static-libgcc -static")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s -static-libgcc -static-libstdc++ -static")
     endif()
 endif()
 
@@ -50,18 +50,12 @@ set(SOURCE_FILES
     mpq/comp/zlib/zutil.c
 )
 
-add_executable(euddraft_freeze ${SOURCE_FILES} mpq/main.cpp)
-
 add_subdirectory(pybind11)
 pybind11_add_module(freeze_pyext ${SOURCE_FILES} mpq/pybindmain.cpp)
 
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     message("release mode - static linked")
     if (WIN32)
-        target_link_libraries(euddraft_freeze -static)
-        add_custom_command(TARGET euddraft_freeze POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:euddraft_freeze>" "C:/gitclones/euddraft/mpq.exc"
-                COMMENT "Copying to main project")
         add_custom_command(TARGET freeze_pyext POST_BUILD
                 COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:freeze_pyext>" "../../freezeMpq.pyd"
                 COMMENT "Copying to main project")
