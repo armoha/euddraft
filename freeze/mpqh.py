@@ -30,7 +30,7 @@ stormRelocateAmount = EUDVariable()
 
 def getStormBaseAddr():
     # Read base address from import table
-    SStrLen = f_dwread_epd_safe(EPD(0x4FE544))
+    SStrLen = f_dwread_epd(EPD(0x4FE544))
     stormRelocateAmount << (SStrLen - 0x15021A00) // 4
 
 
@@ -40,4 +40,4 @@ def stormepd(epd):
 
 def getMapHandleEPD():
     getStormBaseAddr()
-    return f_epdread_epd_safe(stormepd(0x1505ADFC))
+    return f_epdread_epd(stormepd(0x1505ADFC))
