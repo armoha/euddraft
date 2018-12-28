@@ -24,16 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
-import sys
+import multiprocessing as mp
 import os
+import sys
 import time
+
 import autoupdate
+import eudplib as ep
 import msgbox
 from pluginLoader import getGlobalPluginDirectory
-
-import multiprocessing as mp
 from readconfig import readconfig
-import eudplib as ep
 
 
 def applylib():
@@ -99,7 +99,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.2.9"
+version = "0.8.3.1"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':

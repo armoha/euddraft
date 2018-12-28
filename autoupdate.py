@@ -1,25 +1,22 @@
 # We omitted cryptographic checks intentionally.
 # That would be handled properly by https protocol used by GitHub
 
+import atexit
+import io
+import os
 import re
 import sys
-import os
-import io
+import time
 import zipfile
-import atexit
 from threading import Thread
-
-from urllib.request import urlopen
 from urllib.error import URLError
+from urllib.request import urlopen
 
 import msgbox
-import time
-
 from edpkgutil.verifyPkg import verifyFileSignature
 
-
-VERSION_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/VERSION'
-RELEASE_URL = 'https://raw.githubusercontent.com/phu54321/euddraft/master/latest/euddraft%s.zip'
+VERSION_URL = 'https://raw.githubusercontent.com/armoha/euddraft/master/latest/VERSION'
+RELEASE_URL = 'https://raw.githubusercontent.com/armoha/euddraft/master/latest/euddraft%s.zip'
 
 
 def download(url):
