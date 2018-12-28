@@ -23,23 +23,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
-from eudplib import *
-from .mpqh import getMapHandleEPD
-from .crypt import mix
 import random
+
+from eudplib import *
+
+from .crypt import mix
+from .mpqh import getMapHandleEPD
 
 
 def keycalc(seedKey, fileCursor):
     if EUDIf()(Memory(0x6D0F14, Exactly, 0)):  # On game
         mpqEPD = getMapHandleEPD()
-        mpqHeaderEPD = f_epdread_epd_safe(mpqEPD + (0x130 // 4))
-        blockTableEPD = f_epdread_epd_safe(mpqEPD + (0x134 // 4))
-        hashTableEPD = f_epdread_epd_safe(mpqEPD + (0x138 // 4))
+        mpqHeaderEPD = f_epdread_epd(mpqEPD + (0x130 // 4))
+        blockTableEPD = f_epdread_epd(mpqEPD + (0x134 // 4))
+        hashTableEPD = f_epdread_epd(mpqEPD + (0x138 // 4))
 
         # Basic check
-        mpqHashTableOffset = f_dwread_epd_safe(mpqHeaderEPD + (0x10 // 4))
-        mpqHashTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x18 // 4))
-        mpqBlockTableSize = f_dwread_epd_safe(mpqHeaderEPD + (0x1C // 4))
+        mpqHashTableOffset = f_dwread_epd(mpqHeaderEPD + (0x10 // 4))
+        mpqHashTableSize = f_dwread_epd(mpqHeaderEPD + (0x18 // 4))
+        mpqBlockTableSize = f_dwread_epd(mpqHeaderEPD + (0x1C // 4))
 
         # To find first real block index, seek scenario.chk.
         # Find scenario.chk in hash table
@@ -57,7 +59,7 @@ def keycalc(seedKey, fileCursor):
             chkHashOffset << ((chkHashOffset + 1) & (mpqHashTableSize - 1))
         EUDEndInfLoop()
 
-        initialBlockIndex = f_dwread_epd_safe(chkHashEntryEPD + 3)
+        initialBlockIndex = f_dwread_epd(chkHashEntryEPD + 3)
         chkBlockEntryEPD = blockTableEPD + initialBlockIndex * 4
 
     if EUDElse()():  # On replay
@@ -86,12 +88,12 @@ def keycalc(seedKey, fileCursor):
             seedKey[3] = mix(seedKey[3], seedKey[2]).makeL()
 
     def feedSampleByIndex(index, inplace=True):
-        sample = f_dwread_epd_safe(blockTableEPD + index)
+        sample = f_dwread_epd(blockTableEPD + index)
         feedSample(sample, inplace)
 
     # 1. Feed mpq header
     for i in range(8):
-        feedSample(f_dwread_epd_safe(mpqHeaderEPD + i))
+        feedSample(f_dwread_epd(mpqHeaderEPD + i))
 
     for i in range(8):
         feedSampleByIndex(i, random.random() >= 0.5)
@@ -107,7 +109,7 @@ def keycalc(seedKey, fileCursor):
         feedSampleByIndex(blockTableOffsetDiv4 + i * 4)
 
     # 4. Feed scenario.chk sectorOffsetTable
-    chkSectorNum = (f_dwread_epd_safe(chkBlockEntryEPD + 2) + 4095) // 4096
+    chkSectorNum = (f_dwread_epd(chkBlockEntryEPD + 2) + 4095) // 4096
     i_ = EUDVariable(0)
     if EUDWhile()(i_ <= chkSectorNum):
         feedSampleByIndex(8 + i_)
