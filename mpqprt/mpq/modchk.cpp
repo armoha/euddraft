@@ -1,9 +1,11 @@
 #include "keycalc.h"
 #include <string>
 #include <vector>
+#include "stdlib.h"
+#include "memory.h"
 
 std::string modChk(
-	const std::string& chkContent,
+	const std::string &chkContent,
 	const uint32_t seedKey[4],
 	const uint32_t destKey[4],
 	uint32_t fileCursor)
@@ -25,21 +27,20 @@ std::string modChk(
 
 	uint32_t outputDwords[4];
 
-	BlockTableEntry stubBlockEntry = { 0 };
+	BlockTableEntry stubBlockEntry = {0};
 	keycalc(
 		seedKey,
 		destKey,
 		fileCursor,
 		outputDwords,
 
-		reinterpret_cast<const uint32_t*>(chk.data()),
-		*(reinterpret_cast<const MPQHeader*>(chk.data())),
+		reinterpret_cast<const uint32_t *>(chk.data()),
+		*(reinterpret_cast<const MPQHeader *>(chk.data())),
 		0,
 		0,
 		chk.size() / 16,
 		chk.size() / 16 - 32,
-		stubBlockEntry
-	);
+		stubBlockEntry);
 	memcpy(chk.data() + chk.size() - 16, outputDwords, 16);
 	return std::string(chk.begin(), chk.end());
 }
