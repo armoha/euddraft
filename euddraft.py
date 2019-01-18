@@ -100,7 +100,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.3.3"
+version = "0.8.3.4"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
