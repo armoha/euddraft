@@ -20,6 +20,8 @@ build_exe_options = {
         'lib',
         'epTrace.exe',
     ],
+    "zip_include_packages": "*",
+    "zip_exclude_packages": ""
 }
 
 
