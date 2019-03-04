@@ -13,7 +13,7 @@ from euddraft import version
 buildDir = "build/exe.win32-3.7"
 outputZipList = [
     'latest/euddraft%s.zip' % version,
-    'latest/euddraft_latest.zip'
+    # 'latest/euddraft_latest.zip'
 ]
 
 # ----
