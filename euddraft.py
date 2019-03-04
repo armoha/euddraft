@@ -29,9 +29,8 @@ import os
 import sys
 import time
 
-import eudplib as ep
-
 import autoupdate
+import eudplib as ep
 import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
@@ -100,7 +99,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.3.6"
+version = "0.8.3.8"
 
 
 if __name__ == '__main__' or __name__ == 'euddraft__main__':
