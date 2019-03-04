@@ -122,8 +122,8 @@ def checkUpdate():
     signature = getReleaseSignature(latestVersion)
     if not signature:
         return msgbox.MessageBox('Update failed', 'No signature')
-    # if not verifyFileSignature(release, signature):
-    #     return msgbox.MessageBox('Update failed', 'Digital signature check failed. Deny update for security')
+    if not verifyFileSignature(release, signature):
+        return msgbox.MessageBox('Update failed', 'Digital signature check failed. Deny update for security')
     if not release:
         return msgbox.MessageBox('Update failed', 'Cannot get update file.')
 
