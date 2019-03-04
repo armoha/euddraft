@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-import runpy
-import sys
 import os
+import runpy
 import shutil
+import sys
+
 from edpkgutil.cleanDir import cleanDirectory
 from edpkgutil.packageZip import packageZip
 from edpkgutil.verifyPkg import generateFileSignature
 from euddraft import version
 
-buildDir = "build/exe.win32-3.4"
+buildDir = "build/exe.win32-3.7"
 outputZipList = [
     'latest/euddraft%s.zip' % version,
     'latest/euddraft_latest.zip'
