@@ -834,7 +834,7 @@ def SendQC():
                 or isUnproxyInstance(v, EUDLightVariable)
                 or isUnproxyInstance(v, EUDXVariable)
             ) and k in s:
-                s = re.sub(r"\b{}\b".format(k), "_ns.\g<0>", s)
+                s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
 
 
@@ -1045,7 +1045,7 @@ def ReceiveQC():
             if (isUnproxyInstance(v, EUDArray)
                 or isUnproxyInstance(v, EUDVArray(8))
             ) and k in s:
-                s = re.sub(r"\b{}\b".format(k), "_ns.\g<0>", s)
+                s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
 
     init_array = []
