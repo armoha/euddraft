@@ -13,6 +13,7 @@ qc_conds, qc_rets, v_conds, v_rets, deathsUnits = [], [], [], [], set()
 KeyArray, KeyOffset = EUDArray(8), set()
 MouseArray, MouseOffset = EUDArray(1), set()
 cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY = [Forward() for i in range(4)]
+isMouseMoved, useMouseLocation = EUDVariable(), False
 
 MouseButtonDict = {
     'L': 2,
@@ -233,11 +234,10 @@ def NotTyping():
     return Memory(0x68C144, Exactly, 0)
 
 
-@EUDFunc
-def MouseMoved():
-    ret = EUDVariable()
-    ret << 1
-
+def _IsMouseMoved():
+    global isMouseMoved
+    isMouseMoved << 1
+    global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
     RawTrigger(
         conditions=[
             cmpScreenX << Memory(0x62848C, Exactly, 0),
@@ -245,10 +245,12 @@ def MouseMoved():
             cmpScreenY << Memory(0x6284A8, Exactly, 0),
             cmpMouseY << Memory(0x6CDDC8, Exactly, 0),
         ],
-        actions=ret.SetNumber(0),
+        actions=isMouseMoved.SetNumber(0),
     )
+    
 
-    return ret
+def MouseMoved():
+    return isMouseMoved.Exactly(1)
 
 
 def onInit():
@@ -257,10 +259,9 @@ def onInit():
     dim, ownr = chkt.getsection('DIM'), chkt.getsection('OWNR')
     global bit_xy, map_x, map_y
     dim_x, dim_y = b2i2(dim[0:2]), b2i2(dim[2:4])
-    bit_x, bit_y = dim_x.bit_length() + 2, dim_y.bit_length() + 2
-    bit_xy = [2**(16+y) for y in range(bit_y, 15, -1)] + [2**x for x in range(bit_x, -1, -1)]
+    bit_x, bit_y = dim_x.bit_length() + 2, dim_y.bit_length() + 18
+    bit_xy = [2**y for y in range(bit_y, 15, -1)] + [2**x for x in range(bit_x, -1, -1)]
     map_x, map_y = (dim_x - 1).bit_length() + 4, (dim_y - 1).bit_length() + 4
-    map_xy = [2**(16+y) for y in range(map_y, 15, -1)] + [2**x for x in range(map_x, -1, -1)]
 
     global humans, QCUnit, QCLoc, QCPlayer, QCX, QCY, QCDebug
     global qc_conds, qc_rets, v_conds, v_rets, QCCount
@@ -318,12 +319,14 @@ def onInit():
             if cond == "마우스" or cond.lower() == "mouse":
                 try:
                     mouse_loc = GetLocationIndex(v)
-                except EPError:
+                except (EPError, KeyError):
                     try:
                         mouse_loc = int(v, 0)
                     except ValueError:
                         raise EPError("MouseLocation should be location or index.")
                 con_final.append(MouseMoved())
+                global useMouseLocation
+                useMouseLocation = True
                 ret_final = ["mouse", mouse_loc]
 
             elif cond[:8] == "KeyDown(" and cond[-1] == ")":
@@ -435,10 +438,12 @@ cp = EUDVariable()
 if QCDebug:
     QCShutdown = EUDLightVariable()
 f_mapXread_epd = f_readgen_epd(2**(map_x + 1) - 1, (0, lambda x: x))
-f_mapYread_epd = f_readgen_epd(2**(map_y + 1) - 1, (0, lambda y: y << 16))
+f_mapYread_epd = f_readgen_epd(2**(map_y + 1) - 1, (0, lambda y: y << 16), (0, lambda y: y))
 f_screenXread_epd = f_readgen_epd(0x3FF, (0, lambda x: x))
-f_screenYread_epd = f_readgen_epd(0x1FF, (0, lambda y: y << 16))
-mapMask = 2**(map_x + 1) - 1 + (2**(map_y + 1) - 1) << 16
+f_screenYread_epd = f_readgen_epd(0x1FF, (0, lambda y: y << 16), (0, lambda y: y))
+mapMask = 2**(map_x + 1) - 1 + ((2**(map_y + 1) - 1) << 16)
+f_tosread_epd = f_readgen_epd(0xFF00, (0, lambda x: x * 8))
+f_b1read_epd = f_readgen_epd(0xFF00, (0, lambda x: x >> 8))
 
 
 def EUDHumanLoop():
@@ -471,7 +476,7 @@ def EUDEndHumanLoop():
 
 
 @EUDFunc
-def epd2alphaid(epd):
+def f_epd2alphaid(epd):
     epd += 43
     ret = epd // 84
     ret -= 226
@@ -482,16 +487,85 @@ def epd2alphaid(epd):
     EUDReturn(ret)
 
 
+get_varr, fin_varr = Forward(), Forward()
+
+
+def InitVArrayGetter(varr, varr_epd, v, acts=[]):
+    global get_varr
+    if isUnproxyInstance(varr, EUDVariable) and isUnproxyInstance(varr_epd, EUDVariable):
+        nptr = Forward()
+        RawTrigger(
+            nextptr=varr.GetVTable(),
+            actions=[
+                varr.QueueAssignTo(EPD(get_varr) + 1),
+                SetNextPtr(varr.GetVTable(), varr_epd.GetVTable()),
+                varr_epd.AddNumber(1),
+                varr_epd.QueueAssignTo(EPD(get_varr) + 360 // 4 + 4),
+                SetNextPtr(varr_epd.GetVTable(), nptr),
+                SetMemory(get_varr + 328 + 20, SetTo, EPD(v.getValueAddr())),
+            ]
+        )
+        nptr << NextTrigger()
+        VProc(varr_epd, [
+            varr_epd.AddNumber(328 // 4 + 3),
+            SetMemory(varr_epd._varact + 16, Add, -8),
+            [acts],
+        ])
+    else:
+        return [
+            SetNextPtr(get_varr, varr),
+            SetMemory(get_varr + 328 + 16, SetTo, varr_epd + 328 // 4 + 4),
+            SetMemory(get_varr + 328 + 20, SetTo, EPD(v.getValueAddr())),
+            SetMemory(get_varr + 360 + 16, SetTo, varr_epd + 1),
+        ]
+
+
+def VArrayGetter(acts=[]):
+    global get_varr, fin_varr
+    if not get_varr.IsSet():
+        PushTriggerScope()
+        get_varr << RawTrigger(
+            nextptr=0,
+            actions=[
+                SetMemory(0, SetTo, 0),
+                SetNextPtr(0, fin_varr),
+            ]
+        )
+        fin_varr << RawTrigger(
+            actions=[
+                SetMemory(get_varr + 4, Add, 72),
+                SetMemory(get_varr + 328 + 16, Add, 18),
+                SetMemory(get_varr + 360 + 16, Add, 18),
+            ]
+        )
+        PopTriggerScope()
+    nptr = Forward()
+    RawTrigger(
+        nextptr=get_varr,
+        actions=[
+            SetNextPtr(fin_varr, nptr),
+            [acts],
+        ]
+    )
+    nptr << NextTrigger()
+
+
+def onPluginStart():
+    Respawn()
+
+
 @EUDFunc
 def Respawn():
-    q4, m4 = divmod(QCUnit, 4)
-    q2, m2 = divmod(QCUnit, 2)
-    q4, q2 = 4*q4, 4*q2
-    m4, m2 = 1 << (8*m4), 1 << (16*m2)
+    w4, r4 = divmod(QCUnit, 4)
+    w2, r2 = divmod(QCUnit, 2)
     LOC_TEMP, LocEPD = EUDArray(5), EPD(0x58DC60) + QCLoc * 5
     global cp
-    DoActions([  # Units.dat
-        # Unit Dimensions, Building Dimensions
+    q4, q2 = 4*w4, 4*w2
+    m4, m2 = 1 << (8*r4), 1 << (16*r2)
+    DoActions([
+        # Set fligy to [94] Command Center
+        SetMemoryX(0x6644F8 + q4, SetTo, 94 * m4, 0xFF * m4),
+        # Units.dat: Unit Dimensions, Building Dimensions
         SetMemory(0x6617C8 + QCUnit * 8, SetTo, 0x20002),
         SetMemory(0x6617CC + QCUnit * 8, SetTo, 0x20002),
         SetMemory(0x662860 + QCUnit * 4, SetTo, 0),
@@ -502,7 +576,7 @@ def Respawn():
         SetMemoryX(0x662DB8 + q4, SetTo, 0, 0xFF * m4),
         SetMemoryX(0x663238 + q4, SetTo, 0, 0xFF * m4),
         # Advanced Flags, Editor Ability Flags, Group
-        SetMemory(0x664080 + QCUnit * 4, SetTo, 0x38000004),
+        SetMemory(0x664080 + QCUnit * 4, SetTo, 0x38000025),
         SetMemoryX(0x661518 + q2, SetTo, 0x1CF * m2, 0xFFFF * m2),
         SetMemoryX(0x6637A0 + q4, SetTo, 0, 0xFF * m4),
         # MovementFlags & Elevation
@@ -522,7 +596,7 @@ def Respawn():
     arrayEPD = ArrayEPDs[cp]
     DoActions([
         i.SetNumber(0),
-        arrayEPD.AddNumber(5),
+        arrayEPD.AddNumber(328 // 4 + 5),
         [
             DisplayText("\x13\x04[QCDebug] \x16Respawning QC Units...")
             if QCDebug else []
@@ -530,6 +604,7 @@ def Respawn():
     ])
     if EUDWhile()(i <= QCCount - 1):
         if EUDIf()(Memory(0x628438, Exactly, 0)):
+            DoActions(SetMemoryX(0x6644F8 + q4, SetTo, old_flingy, 0xFF * m4))
             EUDReturn(-1)  # Cannot create more unit
         EUDEndIf()
         ptr, epd = f_cunitepdread_epd(EPD(0x628438))
@@ -540,7 +615,7 @@ def Respawn():
             SetMemoryEPD(LocEPD + 1, SetTo, QCY),
             SetMemoryEPD(LocEPD + 2, SetTo, QCX),
             SetMemoryEPD(LocEPD + 3, SetTo, QCY),
-            CreateUnit(1, QCUnit, QCLoc + 1, P8),
+            CreateUnitWithProperties(1, QCUnit, QCLoc + 1, max(humans), UnitProperty(intransit=True)),
             SetMemoryEPD(arrayEPD, SetTo, epd),
         ])
         pos_x, pos_y = f_posread_epd(epd + 0x28//4)
@@ -550,7 +625,7 @@ def Respawn():
             actions=[
                 pos_x.QueueAssignTo(EPD(SetLoc2UnitPos) + 5),
                 SetNextPtr(pos_x.GetVTable(), pos_y.GetVTable()),
-                pos_y.QueueAssignTo(EPD(SetLoc2UnitPos) + 5),
+                pos_y.QueueAssignTo(EPD(SetLoc2UnitPos) + 13),
                 SetNextPtr(pos_y.GetVTable(), SetLocRB),
             ]
         )
@@ -564,12 +639,12 @@ def Respawn():
         )
         Loc2PosTrg << NextTrigger()
         DoActions([
-            # Move QCLocation to QCUnit
+            # Move QCLocation to QCUnitq
             SetLoc2UnitPos << SetMemoryEPD(LocEPD, SetTo, 0),
             SetMemoryEPD(LocEPD + 1, SetTo, 0),
             SetMemoryEPD(LocEPD + 2, SetTo, 0),
             SetMemoryEPD(LocEPD + 3, SetTo, 0),
-            GiveUnits(1, QCUnit, P8, QCLoc + 1, QCPlayer),
+            GiveUnits(1, QCUnit, max(humans), QCLoc + 1, QCPlayer),
             SetMemoryEPD(epd + 0x10 // 4, SetTo, 64 * 65537),  # reset waypoint
             SetMemoryEPD(epd + 0x34 // 4, SetTo, 0),  # immobilize
             SetMemoryEPD(epd + 0x4C // 4, Add, cp - QCPlayer),  # modify unit's player
@@ -582,7 +657,7 @@ def Respawn():
             SetMyQC, SetMyQCTrg = Forward(), Forward()
     
             myQCptr, myQCalphaID = MyQCptrsArray[i], MyQCalphaidsArray[i]
-            alphaID = epd2alphaid(epd)
+            alphaID = f_epd2alphaid(epd)
 
             RawTrigger(
                 nextptr=myQCptr.GetVTable(),
@@ -624,7 +699,6 @@ def Respawn():
         # Editor Ability Flags
         SetMemoryX(0x661518 + q2, SetTo, 0, 0xFFFF * m2),
     ])
-
     EUDReturn(0)
 
 
@@ -648,44 +722,13 @@ def KillQCUnits():
     EUDHumanLoop()()
     arrayPtr = ArrayPTRs[cp]
     arrayEPD = ArrayEPDs[cp]
+    epd = EUDVariable()
     i = EUDVariable()
-    loopstart, qc2epdv = Forward(), Forward()
-    RawTrigger(
-        nextptr=arrayPtr.GetVTable(),
-        actions=[
-            arrayPtr.QueueAssignTo(EPD(qc2epdv) + 1),  # nextptr
-            SetNextPtr(arrayPtr.GetVTable(), arrayEPD.GetVTable()),
-            arrayEPD.AddNumber(4),  # dest
-            arrayEPD.QueueAssignTo(EPD(qc2epdv) + 86),
-            i.SetNumber(0),
-            SetNextPtr(arrayEPD.GetVTable(), loopstart),
-        ]
-    )
-    loopstart << NextTrigger()
-    VProc(arrayEPD, [
-        arrayEPD.SubtractNumber(3),  # nextptr
-        SetMemory(arrayEPD._varact + 16, Add, 8),
-    ])
+    InitVArrayGetter(arrayPtr, arrayEPD, epd, i.SetNumber(0))
     if EUDWhile()(i <= QCCount - 1):
-        epd, _next = EUDVariable(), Forward()
-        qc2epdv << RawTrigger(
-            nextptr=0,
-            actions=[
-                SetMemory(0, SetTo, EPD(epd.getValueAddr())),
-                SetNextPtr(0, _next),
-            ]
-        )
-        _next << NextTrigger()
+        VArrayGetter(i.AddNumber(1))
         EUDContinueIf(MemoryEPD(epd + 0xC//4, Exactly, 0))
         DoActions(SetMemoryXEPD(epd + 0x110//4, SetTo, 1, 0xFFFF))
-
-        EUDSetContinuePoint()
-        DoActions([
-            SetMemory(qc2epdv + 4, Add, 72),
-            SetMemory(qc2epdv + 328 + 16, Add, 18),
-            SetMemory(qc2epdv + 360 + 16, Add, 18),
-            i.AddNumber(1)
-        ])
     EUDEndWhile()
     EUDSetContinuePoint()
     cp += 1
@@ -696,56 +739,53 @@ def DebugQC():
     if not QCDebug:
         return
     something_bad_happend, fin = Forward(), Forward()
-    global cp
+    err_type = EUDLightVariable()
+    global cp, get_varr
     cp << min(humans)
     EUDHumanLoop()()
     arrayPtr = ArrayPTRs[cp]
     arrayEPD = ArrayEPDs[cp]
-    i = EUDVariable()
-    loopstart, qc2epdv = Forward(), Forward()
-    playercheck = Forward()
+    epd = EUDVariable()
+    playercheck, nptr = Forward(), Forward()
     RawTrigger(
         nextptr=arrayPtr.GetVTable(),
         actions=[
-            arrayPtr.QueueAssignTo(EPD(qc2epdv) + 1),  # nextptr
+            arrayPtr.QueueAssignTo(EPD(get_varr) + 1),
             SetNextPtr(arrayPtr.GetVTable(), arrayEPD.GetVTable()),
-            arrayEPD.AddNumber(4),  # dest
-            arrayEPD.QueueAssignTo(EPD(qc2epdv) + 86),
-            i.SetNumber(0),
+            arrayEPD.AddNumber(1),
+            arrayEPD.QueueAssignTo(EPD(get_varr) + 360 // 4 + 4),
             SetNextPtr(arrayEPD.GetVTable(), cp.GetVTable()),
             cp.QueueAssignTo(EPD(playercheck) + 2),
-            SetNextPtr(cp.GetVTable(), loopstart),
+            SetNextPtr(cp.GetVTable(), nptr),
+            SetMemory(get_varr + 328 + 20, SetTo, EPD(epd.getValueAddr())),
         ]
     )
-    loopstart << NextTrigger()
+    nptr << NextTrigger()
+    i = EUDVariable()
     VProc(arrayEPD, [
-        arrayEPD.SubtractNumber(3),  # nextptr
-        SetMemory(arrayEPD._varact + 16, Add, 8),
+        arrayEPD.AddNumber(328 // 4 + 3),
+        SetMemory(arrayEPD._varact + 16, Add, -8),
+        i.SetNumber(0),
     ])
     if EUDWhile()(i <= QCCount - 1):
-        epd, _next = EUDVariable(), Forward()
-        qc2epdv << RawTrigger(
-            nextptr=0,
-            actions=[
-                SetMemory(0, SetTo, EPD(epd.getValueAddr())),
-                SetNextPtr(0, _next),
-            ]
-        )
-        _next << NextTrigger()
-        # TODO: more helpful debug message
-        EUDJumpIf(MemoryEPD(epd + 0xC//4, Exactly, 0), something_bad_happend)
-        EUDJumpIf(MemoryXEPD(epd + 0xA5//4, AtLeast, 256, 0xFF00), something_bad_happend)
-        EUDJumpIfNot([
-            playercheck << MemoryEPD(epd + 0x4C//4, Exactly, 0)
-        ], something_bad_happend)
-
-        EUDSetContinuePoint()
-        DoActions([
-            SetMemory(qc2epdv + 4, Add, 72),
-            SetMemory(qc2epdv + 328 + 16, Add, 18),
-            SetMemory(qc2epdv + 360 + 16, Add, 18),
-            i.AddNumber(1)
-        ])
+        VArrayGetter(i.AddNumber(1))
+        # TODO: more helpful debug 
+        if EUDIf()(MemoryEPD(epd + 0xC//4, Exactly, 0)):
+            RawTrigger(
+                nextptr=something_bad_happend,
+                actions=err_type.SetNumber(1),
+            )
+        if EUDElseIf()(MemoryXEPD(epd + 0xA5//4, AtLeast, 256, 0xFF00)):
+            RawTrigger(
+                nextptr=something_bad_happend,
+                actions=err_type.SetNumber(2),
+            )
+        if EUDElseIfNot()([playercheck << MemoryXEPD(epd + 0x4C//4, Exactly, 0, 0xFF)]):
+            RawTrigger(
+                nextptr=something_bad_happend,
+                actions=err_type.SetNumber(3),
+            )
+        EUDEndIf()
     EUDEndWhile()
     EUDSetContinuePoint()
     cp += 1
@@ -759,6 +799,18 @@ def DebugQC():
             # TODO: more helpful debug message
             DisplayText("\x13\x08MSQC FATAL ERROR! QC Unit has been removed."),
         ])
+        RawTrigger(
+            conditions=err_type.Exactly(1),
+            actions=DisplayText("\x13CSprite is 0"),
+        )
+        RawTrigger(
+            conditions=err_type.Exactly(2),
+            actions=DisplayText("\x13TOS is more than 0"),
+        )
+        RawTrigger(
+            conditions=err_type.Exactly(3),
+            actions=DisplayText("\x13Player isn't equal"),
+        )
         EUDSetContinuePoint()
         cp += 1
     EUDEndHumanLoop()
@@ -783,15 +835,17 @@ def DebugQC():
     fin << NextTrigger()
 
 
+SelCount, SelMem = EUDVariable(), EUDVArray(12)()
+QGCActivated = EUDLightVariable()
+
+
 @EUDFunc
 def SendQC():
-    SelCount, SelMem = EUDVariable(), EUDVArray(12)()
-    QGCActivated = EUDLightVariable()
+    global SelCount, SelMem, QGCActivated
     skipSelSave = Forward()
     global MyQC
 
     # 0x6284B8: (desync) *CUnits of units in selection (4 bytes * 12 units)
-    SelCount << 0
     for i in range(QCCount):  # skip if QCUnit is selected
         skipper, nextTrg = Forward(), Forward()
         skipper << RawTrigger(
@@ -803,22 +857,21 @@ def SendQC():
             ]
         )
         nextTrg << NextTrigger()
-
-    SelMemPos = Forward()
-    DoActions([  # don't need setcurpl, as read_cp don't use getcurpl
+    SetSelMem = Forward()
+    DoActions([
         SetMemory(0x6509B0, SetTo, EPD(0x6284B8)),
-        SetMemory(SelMemPos + 16, SetTo, EPD(SelMem)),
+        SetMemory(SetSelMem + 16, SetTo, EPD(SelMem) + 328 // 4 + 5),
+        SelCount.SetNumber(0),
     ])
-    if EUDLoopN()(12):  # backup units in selection
-        EUDJumpIf(Deaths(CurrentPlayer, Exactly, 0, 0), skipSelSave)
+    if EUDWhile()(Deaths(CurrentPlayer, AtLeast, 0x59CCA8, 0)):
         DoActions([
-            SelMemPos << SetMemoryEPD(0, SetTo, f_cunitepdread_cp(0)[1]),
-            SetMemory(SelMemPos + 16, Add, 1),
+            SetSelMem << SetMemory(0, SetTo, f_cunitepdread_cp(0)[1]),
+            SetMemory(SetSelMem + 16, Add, 18),
             SelCount.AddNumber(1),
             SetMemory(0x6509B0, Add, 1),
         ])
-    EUDEndLoopN()
-
+        EUDBreakIf(SelCount.AtLeast(12))
+    EUDEndWhile()
     skipSelSave << RawTrigger(
         actions=[
             SetNextPtr(skipper, nextTrg),
@@ -826,10 +879,13 @@ def SendQC():
             cp.SetNumber(min(humans)),  # initialization for ReceiveQC
         ]
     )
+    global useMouseLocation
+    if useMouseLocation:
+        _IsMouseMoved()
 
     def parseCond(s):
         _ns = GetEUDNamespace()
-        for k, v in ns.items():
+        for k, v in _ns.items():
             if (IsEUDVariable(v)
                 or isUnproxyInstance(v, EUDLightVariable)
                 or isUnproxyInstance(v, EUDXVariable)
@@ -842,16 +898,21 @@ def SendQC():
     SEL = Db(b'..\x09\x0112..')
     f_setcurpl(f_getuserplayerid())
 
+    _ns = GetEUDNamespace()
     qc_list = eqsplit(qc_conds, len(bit_xy))
+    qc_count = 0
     for n, conds in enumerate(qc_list):
+        qc_count += 1
         DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
         for con, bit in zip(conds, bit_xy):
             if len(con) == 1:
-                condition = con
+                if type(con[0]) is str:
+                    condition = eval(parseCond(con[0]))
+                else:
+                    condition = con[0]
             else:
                 condition = EUDSCAnd()
                 for c in con:
-                    _ns = GetEUDNamespace()
                     if type(c) is str:
                         condition = condition(eval(parseCond(c)))
                     else:
@@ -873,11 +934,13 @@ def SendQC():
     for n, (con, ret) in enumerate(zip(v_conds, v_rets)):
         DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
         if len(con) == 1:
-            condition = con
+            if type(con[0]) is str:
+                condition = eval(parseCond(con[0]))
+            else:
+                condition = con[0]
         else:
             condition = EUDSCAnd()
             for c in con:
-                _ns = GetEUDNamespace()
                 if type(c) is str:
                     condition = condition(eval(parseCond(c)))
                 else:
@@ -885,28 +948,43 @@ def SendQC():
             condition = condition()
         if EUDIf()(condition):
             if ret[0] == "mouse":
+                global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
                 sX = f_mapXread_epd(EPD(0x62848C))
-                sY = f_mapYread_epd(EPD(0x6284A8))
+                sY, _csY = f_mapYread_epd(EPD(0x6284A8))
                 mX = f_screenXread_epd(EPD(0x6CDDC4))
-                mY = f_screenYread_epd(EPD(0x6CDDC8))
+                mY, _cmY = f_screenYread_epd(EPD(0x6CDDC8))
                 addMouseCoord = Forward()
                 RawTrigger(
                     nextptr=sX.GetVTable(),
                     actions=[
-                        SetMemory(addMouseCoord + 328 + 20, SetTo, 0),
-                        sX.QueueAddTo(EPD(addMouseCoord) + 87),
+                        sX.QueueAssignTo(EPD(addMouseCoord) + 87),
                         SetNextPtr(sX.GetVTable(), sY.GetVTable()),
                         sY.QueueAddTo(EPD(addMouseCoord) + 87),
-                        SetNextPtr(sY.GetVTable(), sY.GetVTable()),
+                        SetNextPtr(sY.GetVTable(), mX.GetVTable()),
                         mX.QueueAddTo(EPD(addMouseCoord) + 87),
-                        SetNextPtr(mX.GetVTable(), sY.GetVTable()),
+                        SetNextPtr(mX.GetVTable(), mY.GetVTable()),
                         mY.QueueAddTo(EPD(addMouseCoord) + 87),
-                        SetNextPtr(mY.GetVTable(), addMouseCoord),
-                        MyQCalphaids[n + len(qc_list)] << SetMemory(SEL + 4, SetTo, 0),
+                        SetNextPtr(mY.GetVTable(), _csY.GetVTable()),
+                        _csY.QueueAssignTo(EPD(cmpScreenY) + 2),
+                        SetNextPtr(_csY.GetVTable(), _cmY.GetVTable()),
+                        _cmY.QueueAssignTo(EPD(cmpMouseY) + 2),
+                        SetNextPtr(_cmY.GetVTable(), addMouseCoord),
+                        MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
                         QGCActivated.SetNumber(1),
                     ]
                 )
-                addMouseCoord << RawTrigger(actions=SetMemory(RC + 4, Add, 0))
+                nptr = Forward()
+                addMouseCoord << RawTrigger(
+                    nextptr=sX.GetVTable(),
+                    actions=[
+                        SetMemory(RC + 4, Add, 0),
+                        sX.QueueAssignTo(EPD(cmpScreenX) + 2),
+                        SetNextPtr(sX.GetVTable(), mX.GetVTable()),
+                        mX.QueueAssignTo(EPD(cmpMouseX) + 2),
+                        SetNextPtr(mX.GetVTable(), nptr),
+                    ]
+                )
+                nptr << NextTrigger()
             elif ret[0] == "xy":
 
                 def parseSource(src, always=False):
@@ -930,11 +1008,11 @@ def SendQC():
                     y = parseSource(ret[2], always=True)
                     if type(src) not in (EUDVariable, EUDXVariable):
                         x = f_mapXread_epd(x)
-                    y = f_mapYread_epd(y)
+                    y = f_mapYread_epd(y)[0]
                     src = x + y
                 VProc(src, [
                     src.QueueAddTo(EPD(RC) + 1),
-                    MyQCalphaids[n + len(qc_list)] << SetMemory(SEL + 4, SetTo, 0),
+                    MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
                     QGCActivated.SetNumber(1),
                 ])
             else:
@@ -944,52 +1022,9 @@ def SendQC():
             QueueGameCommand(RC + 3, 10)  # RightClick
         EUDEndIf()
 
-    # restore unit selection from array
-    if EUDIf()([SelCount >= 1, QGCActivated == 1]):
-        NSEL = Db(b'...\x091234567890123456789012345.......')
-        n, sel2unitepd, _next = EUDVariable(), Forward(), Forward()
-        VProc(SelCount, [
-            SetCurrentPlayer(EPD(NSEL) + 1),
-            n.SetNumber(2),
-            SelCount.QueueAddTo(n),
-            SetMemory(sel2unitepd + 4, SetTo, SelMem),
-            SetMemory(sel2unitepd + 328 + 16, SetTo, EPD(SelMem) + 4),
-            SetMemory(sel2unitepd + 360 + 16, SetTo, EPD(SelMem) + 1),
-        ])
-        VProc(SelCount, [])
-        cw = CPByteWriter()
-        cw.writebyte(n)
-        if EUDWhile()(SelCount >= 1):
-            unitepd = EUDVariable()  # f_epdcunitread_epd(ptrListepd)
-            sel2unitepd << RawTrigger(
-                nextptr=0,
-                actions=[
-                    SetMemory(0, SetTo, EPD(unitepd.getValueAddr())),
-                    SetNextPtr(0, _next),
-                ]
-            )
-            _next << NextTrigger()
-            targetID = epd2alphaid(unitepd)
-            b0, b1 = f_dwbreak(targetID)[2:4]
-            cw.writebyte(b0)
-            cw.writebyte(b1)
-    
-            EUDSetContinuePoint()
-            DoActions([
-                SelCount.SubtractNumber(1),
-                SetMemory(sel2unitepd + 4, Add, 72),
-                SetMemory(sel2unitepd + 328 + 16, Add, 18),
-                SetMemory(sel2unitepd + 360 + 16, Add, 18),
-            ])
-        EUDEndWhile()
-        cw.flushdword()
-        QueueGameCommand(NSEL + 3, n)
-    EUDEndIf()
-
 
 @EUDFunc
 def ReceiveQC():
-
     vi = EUDVariable()
     DoActions([
         cp.SetNumber(min(humans)),
@@ -999,45 +1034,12 @@ def ReceiveQC():
     EUDHumanLoop()()
     arrayPtr = ArrayPTRs[cp]
     arrayEPD = ArrayEPDs[cp]
-    loopstart, qc2epdv = Forward(), Forward()
-    RawTrigger(
-        nextptr=arrayPtr.GetVTable(),
-        actions=[
-            arrayPtr.QueueAssignTo(EPD(qc2epdv) + 1),  # nextptr
-            SetNextPtr(arrayPtr.GetVTable(), arrayEPD.GetVTable()),
-            arrayEPD.AddNumber(4),  # dest
-            arrayEPD.QueueAssignTo(EPD(qc2epdv) + 86),
-            SetNextPtr(arrayEPD.GetVTable(), loopstart),
-        ]
-    )
-    loopstart << NextTrigger()
-    VProc(arrayEPD, [
-        arrayEPD.SubtractNumber(3),  # nextptr
-        SetMemory(arrayEPD._varact + 16, Add, 8),
-    ])
+    epd = EUDVariable()
+    InitVArrayGetter(arrayPtr, arrayEPD, epd)
     DoActions([
         SetDeaths(CurrentPlayer, SetTo, 0, deaths_unit)
         for deaths_unit in deathsUnits
     ])
-    epd = EUDVariable()
-
-    @EUDFunc
-    def updateQCepd():
-        _next = Forward()
-        qc2epdv << RawTrigger(
-            nextptr=0,
-            actions=[
-                SetMemory(0, SetTo, EPD(epd.getValueAddr())),
-                SetNextPtr(0, _next),
-            ]
-        )
-        _next << RawTrigger(
-            actions=[
-                SetMemory(qc2epdv + 4, Add, 72),
-                SetMemory(qc2epdv + 328 + 16, Add, 18),
-                SetMemory(qc2epdv + 360 + 16, Add, 18),
-            ]
-        )
 
     def parseArray(s):
         _ns = GetEUDNamespace()
@@ -1049,14 +1051,14 @@ def ReceiveQC():
         return s
 
     init_array = []
+    _ns = GetEUDNamespace()
     for ret in qc_rets:
         if ret[0] == "array":
-            _ns = GetEUDNamespace()
             array = eval(parseArray(ret[1]))
             if isUnproxyInstance(array, EUDArray):
                 init_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
             elif isUnproxyInstance(array, EUDVArray(8)):
-                init_array.append(SetMemoryEPD(EPD(array) + vi, SetTo, 0))
+                init_array.append(SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, 0))
             else:
                 raise EPError("{} unknown type for return value".format(ret[1]))
     if init_array:
@@ -1064,7 +1066,7 @@ def ReceiveQC():
 
     qr_list = eqsplit(qc_rets, len(bit_xy))
     for n, rets in enumerate(qr_list):
-        updateQCepd()
+        VArrayGetter()
         waypoint = epd + 0x10 // 4
         if EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1)):
             f_dwsubtract_epd(waypoint, 64 * 65537)
@@ -1073,35 +1075,35 @@ def ReceiveQC():
                     if ret[0] == "deaths":
                         DoActions(SetDeaths(CurrentPlayer, Add, ret[2], ret[1]))
                     elif ret[0] == "array":
-                        _ns = GetEUDNamespace()
                         array = eval(parseArray(ret[1]))
                         if isUnproxyInstance(array, EUDArray):
                             DoActions(SetMemoryEPD(EPD(array) + cp, Add, ret[2]))
                         elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(SetMemoryEPD(EPD(array) + vi, Add, ret[2]))
+                            DoActions(SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, Add, ret[2]))
                         else:
                             raise EPError("{} unknown type for return value".format(ret[1]))
                 EUDEndIf()
             f_dwwrite_epd(waypoint, 64 * 65537)
         EUDEndIf()
-
     vinit_array = []
     for rets in v_rets:
         for ret in rets:
             if type(ret) == str and (ret != "xy" and ret != "mouse"):
-                _ns = GetEUDNamespace()
-                array = eval(parseArray(ret))
+                try:
+                    array = eval(parseArray(ret))
+                except (NameError):
+                    continue
                 if isUnproxyInstance(array, EUDArray):
-                    vinit.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
+                    vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
                 elif isUnproxyInstance(array, EUDVArray(8)):
-                    vinit_array.append(SetMemoryEPD(EPD(array) + vi, SetTo, 0))
+                    vinit_array.append(SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, 0))
                 else:
                     raise EPError("{} unknown type for return value".format(ret))
     if vinit_array:
         DoActions(vinit_array)
 
     for n, ret in enumerate(v_rets):
-        updateQCepd()
+        VArrayGetter()
         waypoint = epd + 0x10 // 4
         if EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1)):
             f_dwsubtract_epd(waypoint, 64 * 65537)
@@ -1114,12 +1116,11 @@ def ReceiveQC():
                     if isinstance(ret[2], int):
                         DoActions(SetDeaths(CurrentPlayer, SetTo, xy, ret[2]))
                     else:
-                        _ns = GetEUDNamespace()
                         array = eval(parseArray(ret[2]))
                         if isUnproxyInstance(array, EUDArray):
                             DoActions(SetMemoryEPD(EPD(array) + cp, SetTo, xy))
                         elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(SetMemoryEPD(EPD(array) + vi, SetTo, xy))
+                            DoActions(SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, xy))
                         else:
                             raise EPError("{} unknown type for return value".format(ret[2]))
                 elif len(ret) == 5:
@@ -1135,7 +1136,6 @@ def ReceiveQC():
                                 if isinstance(ret[4], int) else []
                             ],
                         ])
-                    _ns = GetEUDNamespace()
                     for s, v in zip([ret[3], ret[4]], [x, y]):
                         if type(s) != str:
                             continue
@@ -1143,7 +1143,7 @@ def ReceiveQC():
                         if isUnproxyInstance(array, EUDArray):
                             DoActions(SetMemoryEPD(EPD(array) + cp, SetTo, v))
                         elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(SetMemoryEPD(EPD(array) + vi, SetTo, v))
+                            DoActions(SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, v))
                         else:
                             raise EPError("{} unknown type for return value".format(ret[2]))
             else:
@@ -1175,3 +1175,37 @@ def beforeTriggerExec():
         end << RawTrigger(conditions=QCShutdown.AtLeast(1), actions=QCShutdown.SubtractNumber(1))
 
     f_setcurpl(origcp)
+
+
+def RestoreSelUnits():
+    global SelCount, SelMem, QGCActivated
+    if EUDIf()([SelCount >= 1, QGCActivated >= 1]):
+        NSEL = Db(b'...\x091234567890123456789012345.......')
+        n, epd = EUDCreateVariables(2)
+        DoActions([
+            InitVArrayGetter(SelMem, EPD(SelMem), epd),
+            n.SetNumber(2),
+        ])
+        bw = EUDByteWriter()
+        bw.seekepd(EPD(NSEL) + 1)
+        bw.writebyte(SelCount)
+        if EUDWhile()(SelCount >= 1):
+            VArrayGetter([
+                SelCount.SubtractNumber(1),
+                n.AddNumber(2),
+            ])
+            tos = f_tosread_epd(epd + 0xA5 // 4)
+            unitIndex = f_epd2alphaid(epd)
+            targetID = unitIndex + tos
+            b1 = f_b1read_epd(EPD(targetID.getValueAddr()))
+            DoActions(targetID.SetNumberX(0, 0xFFFFFF00))
+            bw.writebyte(targetID)
+            bw.writebyte(b1)
+        EUDEndWhile()
+        bw.flushdword()
+        QueueGameCommand(NSEL + 3, n)
+    EUDEndIf()
+
+
+def afterTriggerExec():
+    RestoreSelUnits()
