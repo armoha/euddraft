@@ -673,7 +673,6 @@ def Respawn():
             MyQCptrsArray = EUDArray([EPD(t) + 2 for t in MyQCptrs])
             MyQCalphaidsArray = EUDArray([EPD(t) + 5 for t in MyQCalphaids])
             SetMyQC, SetMyQCTrg = Forward(), Forward()
-
             myQCptr, myQCalphaID = MyQCptrsArray[i], MyQCalphaidsArray[i]
             alphaID = f_epd2alphaid(epd)
 
