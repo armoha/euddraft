@@ -1,9 +1,11 @@
 import sys
-from cx_Freeze import setup, Executable
+
+from cx_Freeze import Executable, setup
+
 from euddraft import version
 
-if 'build_exe' not in sys.argv:
-    sys.argv.append('build_exe')
+if "build_exe" not in sys.argv:
+    sys.argv.append("build_exe")
 
 
 build_exe_options = {
@@ -17,11 +19,12 @@ build_exe_options = {
         "libepScriptLib.dll",
         "license.txt",
         "plugins",
-        'lib',
-        'epTrace.exe',
+        "lib",
+        "epTrace.exe",
     ],
     "zip_include_packages": "*",
-    "zip_exclude_packages": ""
+    "zip_exclude_packages": "",
+    "small_app": True,
 }
 
 
@@ -29,10 +32,6 @@ setup(
     name="euddraft",
     version=version,
     description="euddraft compilication system",
-    options={
-        "build_exe": build_exe_options
-    },
-    executables=[
-        Executable("euddraft.py", base="Console")
-    ]
+    options={"build_exe": build_exe_options},
+    executables=[Executable("euddraft.py", base="Console")],
 )
