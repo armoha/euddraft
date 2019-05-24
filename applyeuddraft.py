@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +21,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
-import eudplib as ep
-import traceback
-import sys
 import os
 import subprocess
-from readconfig import readconfig
-from pluginLoader import loadPluginsFromConfig, isFreezeIssued, isMpaqIssued
-from msgbox import MessageBox, MessageBeep, MB_OK, MB_ICONHAND
-import msgbox
+import sys
+import traceback
+
+import eudplib as ep
+
 import freezeMpq
-
-
-from freeze import (
-    unFreeze,
-    decryptOffsets,
-    encryptOffsets,
-    obfpatch,
-    obfunpatch,
-)
+import msgbox
+# import scbank_core
+from freeze import (decryptOffsets, encryptOffsets, obfpatch, obfunpatch,
+                    unFreeze)
+from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
+from pluginLoader import (isFreezeIssued, isMpaqIssued, isSCBankIssued,
+                          loadPluginsFromConfig)
+from readconfig import readconfig
 
 
 def createPayloadMain(pluginList, pluginFuncDict):
     @ep.EUDFunc
     def payloadMain():
-        """ Main function of euddraft payload """
+        """Main function of euddraft payload."""
         # init plugins
         if isFreezeIssued():
             unFreeze()
             ep.PRT_SetInliningRate(0.05)
+
+        if isSCBankIssued():
+            # scbank_core.onPluginStart()
+            pass
 
         for pluginName in pluginList:
             onPluginStart = pluginFuncDict[pluginName][0]
@@ -63,6 +64,10 @@ def createPayloadMain(pluginList, pluginFuncDict):
                 decryptOffsets()
                 obfpatch()
 
+            if isSCBankIssued():
+                # scbank_core.beforeTriggerExec()
+                pass
+
             for pluginName in pluginList:
                 beforeTriggerExec = pluginFuncDict[pluginName][1]
                 beforeTriggerExec()
@@ -72,6 +77,10 @@ def createPayloadMain(pluginList, pluginFuncDict):
             for pluginName in reversed(pluginList):
                 afterTriggerExec = pluginFuncDict[pluginName][2]
                 afterTriggerExec()
+
+            if isSCBankIssued():
+                # scbank_core.afterTriggerExec()
+                pass
 
             if isFreezeIssued():
                 obfunpatch()
@@ -86,14 +95,14 @@ def createPayloadMain(pluginList, pluginFuncDict):
 
 ##############################
 
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # frozen
     basepath = os.path.dirname(sys.executable)
 else:
     # unfrozen
     basepath = os.path.dirname(os.path.realpath(__file__))
 
-globalPluginPath = os.path.join(basepath, 'plugins').lower()
+globalPluginPath = os.path.join(basepath, "plugins").lower()
 # cx_Freeze modifies ep.__file__ to library.zip. So we use this convoluted
 # way of getting eudplib install path.
 epPath = os.path.dirname(ep.eudplibVersion.__code__.co_filename).lower()
@@ -103,13 +112,14 @@ edPath = os.path.dirname(MessageBox.__code__.co_filename).lower()
 def isEpExc(s):
     s = s.lower()
     return (
-        epPath in s or
-        edPath in s or
-        '<frozen ' in s or
-        (basepath in s and globalPluginPath not in s) or
-        'runpy.py' in s or
-        s.startswith('  file "eudplib')
+        epPath in s
+        or edPath in s
+        or "<frozen " in s
+        or (basepath in s and globalPluginPath not in s)
+        or "runpy.py" in s
+        or s.startswith('  file "eudplib')
     )
+
 
 ##############################
 
@@ -117,23 +127,23 @@ def isEpExc(s):
 def applyEUDDraft(sfname):
     try:
         config = readconfig(sfname)
-        mainSection = config['main']
-        ifname = mainSection['input']
-        ofname = mainSection['output']
+        mainSection = config["main"]
+        ifname = mainSection["input"]
+        ofname = mainSection["output"]
         if ifname == ofname:
-            raise RuntimeError('input and output file should be different.')
+            raise RuntimeError("input and output file should be different.")
 
         try:
-            if mainSection['debug']:
+            if mainSection["debug"]:
                 ep.EPS_SetDebug(True)
         except KeyError:
             pass
 
-        print('---------- Loading plugins... ----------')
+        print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
         pluginList, pluginFuncDict = loadPluginsFromConfig(ep, config)
 
-        print('--------- Injecting plugins... ---------')
+        print("--------- Injecting plugins... ---------")
 
         payloadMain = createPayloadMain(pluginList, pluginFuncDict)
         ep.CompressPayload(True)
@@ -141,7 +151,9 @@ def applyEUDDraft(sfname):
 
         if isFreezeIssued():
             print("[Stage 4/3] Applying freeze mpq modification...")
-            ret = freezeMpq.applyFreezeMpqModification(ep.u2b(ofname), ep.u2b(ofname), isMpaqIssued())
+            ret = freezeMpq.applyFreezeMpqModification(
+                ep.u2b(ofname), ep.u2b(ofname), isMpaqIssued()
+            )
             if ret != 0:
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 
@@ -156,11 +168,11 @@ def applyEUDDraft(sfname):
         formatted_excs = []
 
         for i, exc in enumerate(excs):
-            if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1:-1]):
+            if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
             formatted_excs.append(exc)
 
-        print("[Error] %s" % e, ''.join(formatted_excs))
+        print("[Error] %s" % e, "".join(formatted_excs))
         if msgbox.isWindows:
             msgbox.SetForegroundWindow(msgbox.GetConsoleWindow())
         return False

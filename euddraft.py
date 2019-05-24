@@ -2,7 +2,7 @@
 
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +22,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import multiprocessing as mp
 import os
@@ -38,7 +38,7 @@ from readconfig import readconfig
 
 
 def applylib():
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         # The application is frozen
         datadir = os.path.dirname(sys.executable)
     else:
@@ -46,7 +46,7 @@ def applylib():
         # Change this bit to match where you store your data files:
         datadir = os.path.dirname(__file__)
 
-    libdir = os.path.join(datadir, 'lib')
+    libdir = os.path.join(datadir, "lib")
     sys.path.append(libdir)
 
 
@@ -56,13 +56,14 @@ applylib()
 def applyEUDDraft(fname, queue=None):
     try:
         import applyeuddraft
+
         ret = applyeuddraft.applyEUDDraft(fname)
         if queue:
             queue.put(True)
         return ret
     except ImportError as e:
         if queue:
-            if str(e).startswith('DLL load failed:'):
+            if str(e).startswith("DLL load failed:"):
                 queue.put(False)
             else:
                 queue.put(True)
@@ -77,10 +78,7 @@ def isFileModified(path, since):
         return False
 
     try:
-        mtime = max(
-            os.path.getmtime(path),
-            os.path.getctime(path)
-        )
+        mtime = max(os.path.getmtime(path), os.path.getctime(path))
         if mtime > since:
             return True
     except OSError:
@@ -91,7 +89,7 @@ def isFileModified(path, since):
 def hasModifiedFile(dirname, since):
     ret = False
     for root, dirs, files in os.walk(dirname):
-        dirs[:] = [d for d in dirs if d[0] != '.' and d[0] != '_']
+        dirs[:] = [d for d in dirs if d[0] != "." and d[0] != "_"]
         for f in files:
             finalpath = os.path.join(root, f)
             if isFileModified(finalpath, since):
@@ -100,10 +98,10 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.8.6.8"
+version = "0.8.6.9"
 
 
-if __name__ == '__main__' or __name__ == 'euddraft__main__':
+if __name__ == "__main__" or __name__ == "euddraft__main__":
     mp.freeze_support()
     autoupdate.issueAutoUpdate()
 
@@ -126,16 +124,14 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
         sys.path.insert(0, os.path.abspath(dirname))
 
     # Use simple setting system
-    if sfname[-4:] == '.eds':
+    if sfname[-4:] == ".eds":
         if not applyEUDDraft(sfname):
             input("Press Enter to continue...")
 
     # Daemoning system
-    elif sfname[-4:] == '.edd':
-        print(
-            " - Daemon mode. Ctrl+C to quit. R to recompile (windows only)\n\n"
-        )
-        mp.set_start_method('spawn')
+    elif sfname[-4:] == ".edd":
+        print(" - Daemon mode. Ctrl+C to quit. R to recompile (windows only)\n\n")
+        mp.set_start_method("spawn")
         lasttime = None
 
         globalPluginDir = getGlobalPluginDirectory()
@@ -145,25 +141,24 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
 
             def isModifiedFiles():
                 return (
-                    hasModifiedFile(globalPluginDir, lasttime) or
-                    hasModifiedFile('.', lasttime) or
-                    isFileModified(sfname, lasttime) or
-                    (inputMap and isFileModified(inputMap, lasttime))
+                    hasModifiedFile(globalPluginDir, lasttime)
+                    or hasModifiedFile(".", lasttime)
+                    or isFileModified(sfname, lasttime)
+                    or (inputMap and isFileModified(inputMap, lasttime))
                 )
 
             while True:
                 # input map may change with edd update. We re-read inputMap
                 # every time here.
                 config = readconfig(sfname)
-                mainSection = config['main']
-                inputMap = mainSection['input']
+                mainSection = config["main"]
+                inputMap = mainSection["input"]
 
                 # Wait for changes
                 while lasttime and not isModifiedFiles():
                     if msgbox.isWindows:
-                        if (
-                            msgbox.IsThisForeground() and
-                            msgbox.GetAsyncKeyState(ord('R'))
+                        if msgbox.IsThisForeground() and msgbox.GetAsyncKeyState(
+                            ord("R")
                         ):
                             print("[Forced recompile issued]")
                             break
@@ -177,9 +172,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                     if not isModifiedFiles():
                         break
 
-                print(
-                    "[[Updating on %s]]" %
-                    time.strftime("%Y-%m-%d %H:%M:%S"))
+                print("[[Updating on %s]]" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
                 compileStatus = False
                 count = 0
@@ -195,7 +188,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
                         print("# Compile failed [%d/%d]" % (count, 5))
 
                 if count == 5:
-                    print('Unexpected error!\n\n')
+                    print("Unexpected error!\n\n")
                 else:
                     print("Done!\n\n")
                 lasttime = time.time()
@@ -205,7 +198,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
             pass
 
     # Freeze protection
-    elif sfname[-4:].lower() == '.scx':
+    elif sfname[-4:].lower() == ".scx":
         print(" - Freeze protector mode.")
         import applyeuddraft
         import pluginLoader
@@ -216,7 +209,7 @@ if __name__ == '__main__' or __name__ == 'euddraft__main__':
         ep.LoadMap(sfname)
         payloadMain = applyeuddraft.createPayloadMain([], {})
         ep.CompressPayload(True)
-        ofname = sfname[:-4] + ' prt.scx'
+        ofname = sfname[:-4] + " prt.scx"
         ep.SaveMap(ofname, payloadMain)
         print("[Stage 4/3] Applying freeze mpq modification...")
         ret = subprocess.call([applyeuddraft.mpqFreezePath, ofname])

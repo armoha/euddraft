@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,16 +21,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import os
-from importlib.machinery import SourceFileLoader
 import sys
 import types
-
+from importlib.machinery import SourceFileLoader
 
 # Get absolute path of current executable
-if getattr(sys, 'frozen', False):
+if getattr(sys, "frozen", False):
     # frozen
     basepath = os.path.dirname(sys.executable)
 else:
@@ -39,19 +38,17 @@ else:
 
 
 def getGlobalPluginDirectory():
-    return os.path.join(basepath, 'plugins')
+    return os.path.join(basepath, "plugins")
 
 
 def getPluginPath(pluginName):
-    if pluginName[-3:] == '.py' or pluginName[-4:] == '.eps':
+    if pluginName[-3:] == ".py" or pluginName[-4:] == ".eps":
         pluginPath = os.path.abspath(pluginName)
     else:
         # Try eps
-        pluginPath = os.path.join(
-            basepath, 'plugins', '%s.eps' % pluginName)
+        pluginPath = os.path.join(basepath, "plugins", "%s.eps" % pluginName)
         if not os.path.exists(pluginPath):
-            pluginPath = os.path.join(
-                basepath, 'plugins', '%s.py' % pluginName)
+            pluginPath = os.path.join(basepath, "plugins", "%s.py" % pluginName)
 
     return pluginPath
 
@@ -62,6 +59,8 @@ def empty():
 
 freeze_enabled = True
 mpaq_enabled = False
+scbank_enabled = False
+scbankSettings = None
 
 
 def isFreezeIssued():
@@ -72,11 +71,19 @@ def isMpaqIssued():
     return mpaq_enabled
 
 
+def isSCBankIssued():
+    return scbank_enabled
+
+
+def getSCBankSettings():
+    return scbankSettings
+
+
 def loadPluginsFromConfig(ep, config):
-    global freeze_enabled, mpaq_enabled
+    global freeze_enabled, mpaq_enabled, scbank_enabled, scbankSettings
 
     """ Load plugin from config file """
-    pluginList = [name for name in config.keys() if name != 'main']
+    pluginList = [name for name in config.keys() if name != "main"]
     pluginFuncDict = {}
 
     initialDirectory = os.getcwd()
@@ -84,24 +91,49 @@ def loadPluginsFromConfig(ep, config):
 
     freeze_enabled = False
     for pluginName in pluginList:
-        if pluginName == 'freeze':
+        if pluginName == "freeze":
             freeze_enabled = True
-            print("""\
+            print(
+                """\
                           *                                         *
         *                                        *
                         [[ freeze activated ]]
                                   *                       *
                 *                                                          *\
-""")
+"""
+            )
             print("Freeze plugin loaded")
-            if 'mpaq' in config[pluginName]:
+            if "mpaq" in config[pluginName]:
                 mpaq_enabled = True
                 print(" - mpaq enabled ")
             continue
 
+        elif pluginName == "SCBank":
+            scbank_enabled = True
+            print("SCBank plugin loaded")
+            SCBankSettings = config[pluginName]
+            try:
+                msqc_settings = config["MSQC"]
+            except KeyError:
+                raise Exception("MSQC must be enabled to use SCBank")
+            else:
+                if pluginList.index("SCBank") > pluginList.index("MSQC"):
+                    raise Exception("SCBank should be written before MSQC")
+                try:
+                    SCBankSettings["key"]
+                except (KeyError):
+                    raise Exception("SCBank key must be provided")
+
+            '''from scbank_core import init_settings
+
+            msqc_scbank = init_settings(SCBankSettings)
+            msqc_settings.update(msqc_scbank)
+            config["MSQC"] = msqc_settings'''
+            continue
+
         pluginSettings = config[pluginName]
 
-        print('Loading plugin %s...' % pluginName)
+        print("Loading plugin %s..." % pluginName)
 
         # real python name
         pluginPath = getPluginPath(pluginName)
@@ -113,9 +145,9 @@ def loadPluginsFromConfig(ep, config):
 
             moduleName = os.path.splitext(os.path.basename(pluginPath))[0]
             pluginModule = types.ModuleType(moduleName)
-            pluginModule.__dict__['settings'] = pluginSettings
+            pluginModule.__dict__["settings"] = pluginSettings
 
-            if pluginPath.endswith('.eps'):
+            if pluginPath.endswith(".eps"):
                 loader = ep.EPSLoader(moduleName, pluginPath)
             else:
                 loader = SourceFileLoader(moduleName, pluginPath)
@@ -129,13 +161,13 @@ def loadPluginsFromConfig(ep, config):
             pluginDict = pluginModule.__dict__
 
             if pluginDict:
-                onPluginStart = pluginDict.get('onPluginStart', empty)
-                beforeTriggerExec = pluginDict.get('beforeTriggerExec', empty)
-                afterTriggerExec = pluginDict.get('afterTriggerExec', empty)
+                onPluginStart = pluginDict.get("onPluginStart", empty)
+                beforeTriggerExec = pluginDict.get("beforeTriggerExec", empty)
+                afterTriggerExec = pluginDict.get("afterTriggerExec", empty)
                 pluginFuncDict[pluginName] = (
                     onPluginStart,
                     beforeTriggerExec,
-                    afterTriggerExec
+                    afterTriggerExec,
                 )
 
         except (KeyboardInterrupt, SystemExit):
@@ -148,7 +180,9 @@ def loadPluginsFromConfig(ep, config):
             os.chdir(initialDirectory)
             sys.path[:] = initialPath[:]
 
-    if 'freeze' in pluginList:
-        pluginList.remove('freeze')
+    if "freeze" in pluginList:
+        pluginList.remove("freeze")
+    elif "SCBank" in pluginList:
+        pluginList.remove("SCBank")
 
     return pluginList, pluginFuncDict
