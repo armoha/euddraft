@@ -267,26 +267,32 @@ def onInit():
     # simple parsing settings
     for k, v in settings.items():
 
-        def check_settings():
-            settings_dict = {
-                "QCUnit": (QCUnit, EncodeUnit, "unit"),
-                "QCLoc": (QCLoc, GetLocationIndex, "location"),
-                "QCPlayer": (QCPlayer, EncPlayer, "player"),
-            }
-            for s, var_encf_err in settings_dict.items():
-                if k == s:
-                    var, encf, err = var_encf_err
-                    try:
-                        var = encf(v)
-                    except EPError:
-                        try:
-                            var = int(v, 0)
-                        except ValueError:
-                            raise EPError("{} should be {} or number.".format(s, err))
-                    return True
-            return False
-
-        if check_settings() is True:
+        if k == "QCUnit":
+            try:
+                QCUnit = EncodeUnit(v)
+            except EPError:
+                try:
+                    QCUnit = int(v, 0)
+                except ValueError:
+                    raise EPError("QCUnit should be unit or number.")
+            continue
+        elif k == "QCLoc":
+            try:
+                QCLoc = GetLocationIndex(v)
+            except EPError:
+                try:
+                    QCLoc = int(v, 0)
+                except ValueError:
+                    raise EPError("QCLoc should be location or number.")
+            continue
+        elif k == "QCPlayer":
+            try:
+                QCPlayer = EncPlayer(v)
+            except EPError:
+                try:
+                    QCPlayer = int(v, 0)
+                except ValueError:
+                    raise EPError("QCPlayer should be player or number.")
             continue
         elif k == "QC_XY":
             coord = v.split(",")
@@ -418,8 +424,8 @@ def onInit():
     QCCount = len(v_rets) + ceil(len(qc_rets) / len(bit_xy))
     ep_assert(QCCount >= 1, "Must add desync cond : sync return pair")
     print(
-        "[MSQC] map size: {}x{}, {} men × {} QCUnits".format(
-            dim_x, dim_y, len(humans), QCCount
+        "[MSQC] map size: {}x{}, {} men × {} QCUnits (ID: {})".format(
+            dim_x, dim_y, len(humans), QCCount, QCUnit
         )
     )
     if useMouseLocation:
