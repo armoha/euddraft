@@ -116,19 +116,24 @@ def loadPluginsFromConfig(ep, config):
                 msqc_settings = config["MSQC"]
             except KeyError:
                 raise Exception("MSQC must be enabled to use SCBank")
-            else:
-                if pluginList.index("SCBank") > pluginList.index("MSQC"):
-                    raise Exception("SCBank should be written before MSQC")
-                try:
-                    SCBankSettings["key"]
-                except (KeyError):
-                    raise Exception("SCBank key must be provided")
+            if pluginList.index("SCBank") > pluginList.index("MSQC"):
+                raise Exception("SCBank should be written before MSQC")
+            try:
+                scbank_key = SCBankSettings["key"]
+            except (KeyError):
+                raise Exception("SCBank key must be provided")
+            import base64
+            import binascii
 
-            '''from scbank_core import init_settings
+            try:
+                base64.b64decode(scbank_key)
+            except binascii.Error:
+                raise Exception("SCBank key must be base64 encoded")
+            from scbank_core import init_settings
 
             msqc_scbank = init_settings(SCBankSettings)
             msqc_settings.update(msqc_scbank)
-            config["MSQC"] = msqc_settings'''
+            config["MSQC"] = msqc_settings
             continue
 
         pluginSettings = config[pluginName]
