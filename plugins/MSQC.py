@@ -361,26 +361,32 @@ def onInit():
                 c = [con.strip() for con in cond.split(",")]
                 if c[0].lower() == "xy":
                     ret = [r.strip() for r in v.split(",")]
+                    if not 1 <= len(ret) <= 2:
+                        raise EPError("xy send/receive number should be 1 or 2")
+                    ret_final = ["xy"]
                     try:
-                        ret_final = ["xy", c[1], c[2], ret[0], ret[1]]
+                        for _c in c[1:1 + len(ret)]:
+                            try:
+                                _c = EPD(int(_c, 0))
+                            except ValueError:
+                                pass
+                            ret_final.append(_c)
                     except IndexError:
-                        ret_final = ["xy", c[1], v]
-                        DU = [v]
-                    else:
-                        DU = [ret[1], ret[0]]
-                    for i, du in enumerate(DU):
+                        raise EPError("xy send/receive number mismatched")
+                    for i, du in enumerate(ret):
+                        deaths_unit = du
                         try:
                             deaths_unit = EncodeUnit(du)
                         except EPError:
                             try:
                                 deaths_unit = int(du, 0)
                             except ValueError:
-                                continue
+                                pass
                             else:
                                 deathsUnits.add(deaths_unit)
                         else:
                             deathsUnits.add(deaths_unit)
-                        ret_final[-1 - i] = deaths_unit
+                        ret_final.append(deaths_unit)
                 elif re.fullmatch(r"0[xX][0-9a-fA-F]+", c[0]):
                     try:
                         ptr, mod, val = int(c[0], 0), eval(c[1]), int(c[2], 0)
@@ -434,7 +440,10 @@ def onInit():
         for p in humans:
             locid = (mouse_loc + p) * 20
             locstr = b2i2(mrgn[locid + 16 : locid + 18])
-            locname = (strtb.GetString(locstr)).decode("cp949")
+            try:
+                locname = (strtb.GetString(locstr)).decode("cp949")
+            except AttributeError:  # location has no name string
+                locname = mouse_loc + p
             loc_list.append("P%u:%s" % (p + 1, locname))
         print("MouseLoc=%s" % ", ".join(loc_list))
 
@@ -940,6 +949,8 @@ def SendQC():
             elif ret[0] == "xy":
 
                 def parseSource(src, always=False):
+                    if isinstance(src, int):
+                        return src
                     try:
                         src = int(ret[1], 0)
                     except ValueError:
