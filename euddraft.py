@@ -201,6 +201,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
     elif sfname[-4:].lower() == ".scx":
         print(" - Freeze protector mode.")
         import applyeuddraft
+        import freezeMpq
         import pluginLoader
         import subprocess
 
@@ -212,9 +213,11 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
         ofname = sfname[:-4] + " prt.scx"
         ep.SaveMap(ofname, payloadMain)
         print("[Stage 4/3] Applying freeze mpq modification...")
-        ret = subprocess.call([applyeuddraft.mpqFreezePath, ofname])
+        ret = freezeMpq.applyFreezeMpqModification(
+            ep.u2b(ofname), ep.u2b(ofname), applyeuddraft.isMpaqIssued()
+        )
         if ret != 0:
-            raise RuntimeError("Error on mpq protection")
+            raise RuntimeError("Error on mpq protection (%d)" % ret)
 
     else:
         print("Invalid extension %s" % os.path.splitext(sfname)[1])
