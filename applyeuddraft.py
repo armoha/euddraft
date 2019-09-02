@@ -36,8 +36,8 @@ import scbank_core
 from freeze import (decryptOffsets, encryptOffsets, obfpatch, obfunpatch,
                     unFreeze)
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
-from pluginLoader import (isFreezeIssued, isMpaqIssued, isSCBankIssued,
-                          loadPluginsFromConfig)
+from pluginLoader import (isFreezeIssued, isMpaqIssued, isPromptIssued,
+                          isSCBankIssued, loadPluginsFromConfig)
 from readconfig import readconfig
 
 
@@ -147,6 +147,8 @@ def applyEUDDraft(sfname):
         ep.SaveMap(ofname, payloadMain)
 
         if isFreezeIssued():
+            if isPromptIssued():
+                os.system("pause")
             print("[Stage 4/3] Applying freeze mpq modification...")
             ret = freezeMpq.applyFreezeMpqModification(
                 ep.u2b(ofname), ep.u2b(ofname), isMpaqIssued()

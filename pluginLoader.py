@@ -59,6 +59,7 @@ def empty():
 
 freeze_enabled = True
 mpaq_enabled = False
+prompt_enabled = False
 scbank_enabled = False
 scbankSettings = None
 
@@ -71,6 +72,10 @@ def isMpaqIssued():
     return mpaq_enabled
 
 
+def isPromptIssued():
+    return prompt_enabled
+
+
 def isSCBankIssued():
     return scbank_enabled
 
@@ -80,7 +85,7 @@ def getSCBankSettings():
 
 
 def loadPluginsFromConfig(ep, config):
-    global freeze_enabled, mpaq_enabled, scbank_enabled, scbankSettings
+    global freeze_enabled, mpaq_enabled, prompt_enabled, scbank_enabled, scbankSettings
 
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != "main"]
@@ -106,6 +111,9 @@ def loadPluginsFromConfig(ep, config):
             if "mpaq" in config[pluginName]:
                 mpaq_enabled = True
                 print(" - mpaq enabled ")
+            if "prompt" in config[pluginName]:
+                prompt_enabled = True
+                print(" - prompt enabled")
             continue
 
         elif pluginName == "SCBank":
