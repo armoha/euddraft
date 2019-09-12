@@ -113,7 +113,6 @@ def loadPluginsFromConfig(ep, config):
                 print(" - mpaq enabled ")
             if "prompt" in config[pluginName]:
                 prompt_enabled = True
-                print(" - prompt enabled")
             continue
 
         elif pluginName == "SCBank":
