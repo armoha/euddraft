@@ -33,11 +33,15 @@ import eudplib as ep
 import freezeMpq
 import msgbox
 import scbank_core
-from freeze import (decryptOffsets, encryptOffsets, obfpatch, obfunpatch,
-                    unFreeze)
+from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
-from pluginLoader import (isFreezeIssued, isMpaqIssued, isPromptIssued,
-                          isSCBankIssued, loadPluginsFromConfig)
+from pluginLoader import (
+    isFreezeIssued,
+    isMpaqIssued,
+    isPromptIssued,
+    isSCBankIssued,
+    loadPluginsFromConfig,
+)
 from readconfig import readconfig
 
 
@@ -148,6 +152,8 @@ def applyEUDDraft(sfname):
 
         if isFreezeIssued():
             if isPromptIssued():
+                print("Freeze - prompt enabled ")
+                sys.stdout.flush()
                 os.system("pause")
             print("[Stage 4/3] Applying freeze mpq modification...")
             ret = freezeMpq.applyFreezeMpqModification(

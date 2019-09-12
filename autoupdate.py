@@ -62,7 +62,7 @@ def writeVersionCheckpoint(version):
 def getLatestVersion():
     v = download(VERSION_URL)
     if v is None:
-        return None
+        return "0.0.0.0"
     else:
         return v.decode('utf-8')
 

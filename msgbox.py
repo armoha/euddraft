@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,10 +21,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
-import sys
 import ctypes
+import sys
 
 try:
     from winsound import MB_OK, MB_ICONHAND, MessageBeep
@@ -43,16 +43,18 @@ try:
 
     from ctypes import WINFUNCTYPE, windll, c_int
     from ctypes.wintypes import HWND, SHORT
+
     prototype = WINFUNCTYPE(HWND)
     GetForegroundWindow = prototype(("GetForegroundWindow", windll.user32))
     GetConsoleWindow = prototype(("GetConsoleWindow", windll.kernel32))
     prototype = WINFUNCTYPE(HWND, HWND)
     SetForegroundWindow = prototype(("SetForegroundWindow", windll.user32))
     prototype = WINFUNCTYPE(SHORT, c_int)
-    GetAsyncKeyState = prototype(("SetForegroundWindow", windll.user32))
+    GetAsyncKeyState = prototype(("GetAsyncKeyState", windll.user32))
 
     def IsThisForeground():
         return GetForegroundWindow() == GetConsoleWindow()
+
 
 except ImportError:
     MB_OK = 1
