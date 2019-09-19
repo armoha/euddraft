@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,17 +21,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
-from eudplib import (
-    EUDFunc
-)
+from eudplib import EUDFunc, VProc
 
 
 @EUDFunc
 def T(x):
     xsq = x * x
-    return x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053
+    # return x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053
+    x4p = xsq * xsq
+    x4p += 1
+    x6p = xsq * x4p
+    x6p += 1
+    x7p = x * x6p
+    x7p += 0x8ADA4053
+    return x7p
 
 
 unTDict = {}
@@ -40,7 +45,7 @@ unTDict = {}
 def T2(x):
     x &= 0xFFFFFFFF
     xsq = x * x
-    ret = (x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053) & 0xFFFFFFFF
+    ret = (x * (xsq * (xsq * xsq + 1) + 1) + 0x8ADA4053) & 0xFFFFFFFF
     unTDict[ret] = x
     return ret
 
@@ -52,12 +57,16 @@ def tryUnT(x):
         return x
 
 
+@EUDFunc
 def mix(x, y):
-    return T(x) + y + 0x10f874f3
+    # return T(x) + y + 0x10f874f3
+    t = T(x)
+    VProc(t, [t.QueueAddTo(y), y.AddNumber(0x10F874F3)])
+    return y
 
 
 def mix2(x, y):
-    return (T2(x) + y + 0x10f874f3) & 0xFFFFFFFF
+    return (T2(x) + y + 0x10F874F3) & 0xFFFFFFFF
 
 
 def unT2(y):
@@ -70,4 +79,4 @@ def unT2(y):
 
 
 def unmix2(z, y):
-    return unT2((z - 0x10f874f3 - y) & 0xFFFFFFFF)
+    return unT2((z - 0x10F874F3 - y) & 0xFFFFFFFF)
