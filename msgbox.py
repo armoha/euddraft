@@ -29,8 +29,8 @@ import sys
 try:
     from winsound import MB_OK, MB_ICONHAND, MessageBeep
 
-    def MessageBox(title, text, style=0):
-        print("[%s]\n%s" % (title, text))
+    def MessageBox(title, text, style=0, textio=sys.stdout):
+        print("[%s]\n%s" % (title, text), file=textio)
 
         """ Helper function """
         hWnd = ctypes.windll.kernel32.GetConsoleWindow()
@@ -64,7 +64,7 @@ except ImportError:
         for _ in range(type):
             sys.stdout.write("\a")
 
-    def MessageBox(title, text, style=0):
-        print("[%s]\n%s\n" % (title, text))
+    def MessageBox(title, text, style=0, textio=sys.stdout):
+        print("[%s]\n%s\n" % (title, text), file=textio)
 
     isWindows = False

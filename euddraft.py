@@ -185,10 +185,10 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
                     p.join()
                     count += 1
                     if not compileStatus:
-                        print("# Compile failed [%d/%d]" % (count, 5))
+                        print("# Compile failed [%d/%d]" % (count, 5), file=sys.stderr)
 
                 if count == 5:
-                    print("Unexpected error!\n\n")
+                    print("Unexpected error!\n\n", file=sys.stderr)
                 else:
                     print("Done!\n\n")
                 lasttime = time.time()
@@ -220,6 +220,6 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
             raise RuntimeError("Error on mpq protection (%d)" % ret)
 
     else:
-        print("Invalid extension %s" % os.path.splitext(sfname)[1])
+        print("Invalid extension %s" % os.path.splitext(sfname)[1], file=sys.stderr)
 
     os.chdir(os.getcwd())

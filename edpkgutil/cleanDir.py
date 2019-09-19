@@ -1,5 +1,7 @@
 import os
 import shutil
+import sys
+
 
 def cleanDirectory(directory):
     if os.path.exists(directory):
@@ -11,4 +13,4 @@ def cleanDirectory(directory):
                 elif os.path.isdir(fpath):
                     shutil.rmtree(fpath)
             except Exception as e:
-                print(e)
+                print(e, file=sys.stderr)

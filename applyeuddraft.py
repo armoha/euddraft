@@ -33,15 +33,11 @@ import eudplib as ep
 import freezeMpq
 import msgbox
 import scbank_core
-from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
+from freeze import (decryptOffsets, encryptOffsets, obfpatch, obfunpatch,
+                    unFreeze)
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
-from pluginLoader import (
-    isFreezeIssued,
-    isMpaqIssued,
-    isPromptIssued,
-    isSCBankIssued,
-    loadPluginsFromConfig,
-)
+from pluginLoader import (isFreezeIssued, isMpaqIssued, isPromptIssued,
+                          isSCBankIssued, loadPluginsFromConfig)
 from readconfig import readconfig
 
 
@@ -177,7 +173,7 @@ def applyEUDDraft(sfname):
                 continue
             formatted_excs.append(exc)
 
-        print("[Error] %s" % e, "".join(formatted_excs))
+        print("[Error] %s" % e, "".join(formatted_excs), file=sys.stderr)
         if msgbox.isWindows:
             msgbox.SetForegroundWindow(msgbox.GetConsoleWindow())
         return False
