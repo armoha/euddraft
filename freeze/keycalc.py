@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import random
 
@@ -34,14 +34,24 @@ from .mpqh import getMapHandleEPD
 def keycalc(seedKey, fileCursor):
     if EUDIf()(Memory(0x6D0F14, Exactly, 0)):  # On game
         mpqEPD = getMapHandleEPD()
-        mpqHeaderEPD = f_epdread_epd(mpqEPD + (0x130 // 4))
-        blockTableEPD = f_epdread_epd(mpqEPD + (0x134 // 4))
-        hashTableEPD = f_epdread_epd(mpqEPD + (0x138 // 4))
-
+        mpqEPD += 0x130 // 4
+        mpqHeaderEPD = f_epdread_epd(mpqEPD)
+        DoActions([mpqEPD.AddNumber(1), mpqHeaderEPD.AddNumber(0x10 // 4)])
+        blockTableEPD = f_epdread_epd(mpqEPD)
         # Basic check
-        mpqHashTableOffset = f_dwread_epd(mpqHeaderEPD + (0x10 // 4))
-        mpqHashTableSize = f_dwread_epd(mpqHeaderEPD + (0x18 // 4))
-        mpqBlockTableSize = f_dwread_epd(mpqHeaderEPD + (0x1C // 4))
+        mpqHashTableOffset = f_dwread_epd(mpqHeaderEPD)
+        DoActions([mpqEPD.AddNumber(1), mpqHeaderEPD.AddNumber(2)])
+        hashTableEPD = f_epdread_epd(mpqEPD)
+        mpqHashTableSize = f_dwread_epd(mpqHeaderEPD)
+        mpqHeaderEPD += 1
+        mpqBlockTableSize = f_dwread_epd(mpqHeaderEPD)
+        DoActions(
+            [
+                mpqHashTableSize.AddNumber(-1),
+                mpqBlockTableSize.AddNumber(-1),
+                mpqHeaderEPD.AddNumber(-(0x1C // 4)),
+            ]
+        )
 
         # To find first real block index, seek scenario.chk.
         # Find scenario.chk in hash table
@@ -49,20 +59,25 @@ def keycalc(seedKey, fileCursor):
         chkHashB = 0xFCFB1EED
         chkHashOffset = EUDVariable()
         chkHashEntryEPD = EUDVariable()
-        chkHashOffset << (0xAFC8C05D & (mpqHashTableSize - 1))
+        chkHashOffset << (0xAFC8C05D & mpqHashTableSize)
         if EUDInfLoop()():
             chkHashEntryEPD << hashTableEPD + 4 * chkHashOffset
-            EUDBreakIf([
-                MemoryEPD(chkHashEntryEPD + 0, Exactly, chkHashA),
-                MemoryEPD(chkHashEntryEPD + 1, Exactly, chkHashB)
-            ])
-            chkHashOffset << ((chkHashOffset + 1) & (mpqHashTableSize - 1))
+            EUDBreakIf(
+                [
+                    MemoryEPD(chkHashEntryEPD, Exactly, chkHashA),
+                    MemoryEPD(chkHashEntryEPD + 1, Exactly, chkHashB),
+                ]
+            )
+            chkHashOffset += 1
+            chkHashOffset << (chkHashOffset & mpqHashTableSize)
         EUDEndInfLoop()
 
-        initialBlockIndex = f_dwread_epd(chkHashEntryEPD + 3)
-        chkBlockEntryEPD = blockTableEPD + initialBlockIndex * 4
+        chkHashEntryEPD += 3
+        initialBlockIndex = f_dwread_epd(chkHashEntryEPD)
+        blockTableOffsetDiv4 = initialBlockIndex * 4
+        chkBlockEntryEPD = blockTableEPD + blockTableOffsetDiv4
 
-    if EUDElse()():  # On replay
+    """if EUDElse()():  # On replay
         DoActions([
             [
                 SetCurrentPlayer(pl),
@@ -71,7 +86,7 @@ def keycalc(seedKey, fileCursor):
         ])
         if EUDInfLoop()():
             EUDDoEvents()
-        EUDEndInfLoop()
+        EUDEndInfLoop()"""
     EUDEndIf()
 
     def feedSample(sample, inplace=True):
@@ -92,34 +107,50 @@ def keycalc(seedKey, fileCursor):
         feedSample(sample, inplace)
 
     # 1. Feed mpq header
-    for i in range(8):
-        feedSample(f_dwread_epd(mpqHeaderEPD + i))
+    if EUDLoopN()(8):
+        feedSample(f_dwread_epd(mpqHeaderEPD))
+        mpqHeaderEPD += 1
+    EUDEndLoopN()
 
     for i in range(8):
         feedSampleByIndex(i, random.random() >= 0.5)
 
     # 2. Feed HET
     hashTableOffsetDiv4 = mpqHashTableOffset // 4
-    for i in EUDLoopRange(mpqHashTableSize):
-        feedSampleByIndex(hashTableOffsetDiv4 + i * 4 + 3)
+    DoActions(
+        [
+            chkBlockEntryEPD.AddNumber(2),
+            initialBlockIndex.AddNumber(2),
+            hashTableOffsetDiv4.AddNumber(3),
+        ]
+    )
+    if EUDWhileNot()(mpqHashTableSize == -1):
+        feedSampleByIndex(hashTableOffsetDiv4)
+        DoActions([mpqHashTableSize.AddNumber(-1), hashTableOffsetDiv4.AddNumber(4)])
+    EUDEndWhile()
 
     # 3. Feed BET
-    blockTableOffsetDiv4 = initialBlockIndex * 4
-    for i in EUDLoopRange(mpqBlockTableSize - initialBlockIndex - 2):
-        feedSampleByIndex(blockTableOffsetDiv4 + i * 4)
+    # blockTableOffsetDiv4 = initialBlockIndex * 4
+    if EUDWhile()(mpqBlockTableSize >= initialBlockIndex):
+        feedSampleByIndex(blockTableOffsetDiv4)
+        DoActions([initialBlockIndex.AddNumber(1), blockTableOffsetDiv4.AddNumber(4)])
+    EUDEndWhile()
 
     # 4. Feed scenario.chk sectorOffsetTable
-    chkSectorNum = (f_dwread_epd(chkBlockEntryEPD + 2) + 4095) // 4096
+    chkSector_ = f_dwread_epd(chkBlockEntryEPD)
+    chkSector_ += 4095
+    chkSectorNum = chkSector_ // 4096
     i_ = EUDVariable(0)
     if EUDWhile()(i_ <= chkSectorNum):
-        feedSampleByIndex(8 + i_)
-        i_ += 3
+        i_ += 8
+        feedSampleByIndex(i_)
+        i_ -= 5
     EUDEndWhile()
 
     # 5. Feed entire block table
     # For speed, we employ more simpler expression here instead of T function.
     SAMPLEN = 2048
-    n = mpqBlockTableSize * 4 - 4
+    n = mpqBlockTableSize * 4
     for i in range(4):
         for j in EUDLoopRange(SAMPLEN // 4):
             sample = f_dwread_epd(blockTableEPD + fileCursor % n)
@@ -134,8 +165,11 @@ def keycalc(seedKey, fileCursor):
     EUDEndLoopN()
 
     # Append block data
-    seedKeySrc = blockTableEPD + (mpqBlockTableSize - 1) * 4
-    seedKey[0] = mix(seedKey[0], f_dwread_epd(seedKeySrc + 0))
-    seedKey[1] = mix(seedKey[1], f_dwread_epd(seedKeySrc + 1))
-    seedKey[2] = mix(seedKey[2], f_dwread_epd(seedKeySrc + 2))
-    seedKey[3] = mix(seedKey[3], f_dwread_epd(seedKeySrc + 3))
+    seedKeySrc = blockTableEPD + n
+    seedKey[0] = mix(seedKey[0], f_dwread_epd(seedKeySrc))
+    seedKeySrc += 1
+    seedKey[1] = mix(seedKey[1], f_dwread_epd(seedKeySrc))
+    seedKeySrc += 1
+    seedKey[2] = mix(seedKey[2], f_dwread_epd(seedKeySrc))
+    seedKeySrc += 1
+    seedKey[3] = mix(seedKey[3], f_dwread_epd(seedKeySrc))

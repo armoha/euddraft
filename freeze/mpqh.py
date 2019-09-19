@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,23 +21,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 from eudplib import *
 
-stormRelocateAmount = EUDVariable()
-
-
-def getStormBaseAddr():
-    # Read base address from import table
-    SStrLen = f_dwread_epd(EPD(0x4FE544))
-    stormRelocateAmount << (SStrLen - 0x15021A00) // 4
-
-
-def stormepd(epd):
-    return EPD(epd) + stormRelocateAmount
-
 
 def getMapHandleEPD():
-    getStormBaseAddr()
-    return f_epdread_epd(stormepd(0x1505ADFC))
+    # Read base address from import table
+    stormRelocateAmount = f_epdread_epd(EPD(0x4FE544))
+    stormRelocateAmount += EPD(0x1505ADFC) - EPD(0x15021A00)
+
+    return f_epdread_epd(stormRelocateAmount)

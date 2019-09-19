@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,18 +21,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
+
+import random
 
 from eudplib import *
 
-import random
-from .utils import (
-    obfuscatedValueAssigner,
-    writeAssigner,
-)
-
-from .crypt import mix2, mix
-
+from .crypt import mix, mix2
+from .utils import obfuscatedValueAssigner, writeAssigner
 
 cryptKey = EUDVariable()
 oJumper = []
@@ -49,7 +45,6 @@ RegisterCreatePayloadCallback(clearOJumper)
 
 
 class OJumperBuffer(EUDObject):
-
     def __init__(self):
         super().__init__()
 
@@ -93,13 +88,8 @@ def ObfuscatedJump():
     r = random.randint(0, 0xFFFFFFFF)
 
     cProxy = CallerProxy(pdst - r, oJumper)
-    oJumper << RawTrigger(
-        nextptr=cProxy,
-        actions=SetMemory(oJumper + 4, Add, r)
-    )
-    pdst << RawTrigger(
-        actions=SetMemory(oJumper + 4, Add, -r)
-    )
+    oJumper << RawTrigger(nextptr=cProxy, actions=SetMemory(oJumper + 4, Add, r))
+    pdst << RawTrigger(actions=SetMemory(oJumper + 4, Add, -r))
 
 
 oJumperArray = OJumperBuffer()
@@ -132,10 +122,9 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
         f_dwadd_epd(jumperEPD, key + RlocInt(0, 4))
         seedKeyArray[kIndex] = key
 
-        oJumperIndex += 1
-        kIndex += 1
+        DoActions([kIndex.AddNumber(1), oJumperIndex.AddNumber(1)])
         Trigger(kIndex == 4, kIndex.SetNumber(0))
-        cryptKey2 << cryptKey2 + 0x46b8622c
+        cryptKey2 += 0x46B8622C
     EUDEndInfLoop()
 
     for i in range(4):
@@ -145,9 +134,8 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
 def decryptOffsets():
     # Table modifier
     oJumperPtr = EUDVariable()
-    oJumperPtr << EPD(oJumperArray)
     cryptKey2 = EUDVariable()
-    cryptKey2 << cryptKey
+    DoActions([cryptKey2.SetNumber(cryptKey), oJumperPtr.SetNumber(EPD(oJumperArray))])
 
     if EUDInfLoop()():
         jumperEPD = f_dwread_epd(oJumperPtr)
@@ -156,8 +144,7 @@ def decryptOffsets():
         v = f_dwread_epd(jumperEPD)
         f_dwwrite_epd(jumperEPD, (v ^ cryptKey2) + cryptKey)
 
-        oJumperPtr += 1
-        cryptKey2 << cryptKey2 + 0x46b8622c
+        DoActions([oJumperPtr.AddNumber(1), cryptKey2.AddNumber(0x46B8622C)])
     EUDEndInfLoop()
 
 
@@ -177,6 +164,5 @@ def encryptOffsets():
         v = f_dwread_epd(jumperEPD)
         f_dwwrite_epd(jumperEPD, (v + cryptKeyInv) ^ cryptKey2)
 
-        oJumperPtr += 1
-        cryptKey2 << cryptKey2 + 0x46b8622c
+        DoActions([oJumperPtr.AddNumber(1), cryptKey2.AddNumber(0x46B8622C)])
     EUDEndInfLoop()

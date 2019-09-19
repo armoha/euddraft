@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,46 +21,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
+
+import random
 
 from eudplib import *
-import random
+
+from .crypt import mix, mix2
+from .keycalc import keycalc
+from .obfjump import ObfuscatedJump, cryptKey, encryptOffsets, initOffsets
+from .obfpatch import obfpatch, obfunpatch
+from .trigcrypt import decryptTrigger, encryptTriggers
+from .trigutils import getExpectedTriggerCount
+from .utils import assignerMerge, obfuscatedValueAssigner, writeAssigner
 
 # Basic mixer
 
-
-from .trigutils import (
-    getExpectedTriggerCount
-)
-
-from .utils import (
-    obfuscatedValueAssigner,
-    assignerMerge,
-    writeAssigner
-)
-
-from .crypt import (
-    mix, mix2
-)
-
-from .obfjump import (
-    initOffsets,
-    encryptOffsets,
-    ObfuscatedJump,
-    cryptKey
-)
-
-from .obfpatch import (
-    obfpatch,
-    obfunpatch
-)
-
-from .trigcrypt import (
-    encryptTriggers,
-    decryptTrigger
-)
-
-from .keycalc import keycalc
 
 g_seedKey = None
 
@@ -76,7 +52,7 @@ def unFreeze():
     seedKeyVal = keys[0:4]  # Used for checksumming
     destKeyVal = keys[4:8]  # Used for destinations
     fileCursorVal = keys[8]
-    MPQAddFile('(keyfile)', b''.join(i2b4(k) for k in keys))
+    MPQAddFile("(keyfile)", b"".join(i2b4(k) for k in keys))
 
     triggerKeyVal = random.randint(0, 0xFFFFFFFF)
     triggerKey = EUDVariable()
@@ -87,25 +63,16 @@ def unFreeze():
 
     assigner = []
     for i, key in enumerate(seedKeyVal):
-        assignerMerge(
-            assigner,
-            obfuscatedValueAssigner(seedKey[i], key)
-        )
-    assignerMerge(
-        assigner,
-        obfuscatedValueAssigner(fileCursor, fileCursorVal)
-    )
-    assignerMerge(
-        assigner,
-        obfuscatedValueAssigner(triggerKey, triggerKeyVal)
-    )
+        assignerMerge(assigner, obfuscatedValueAssigner(seedKey[i], key))
+    assignerMerge(assigner, obfuscatedValueAssigner(fileCursor, fileCursorVal))
+    assignerMerge(assigner, obfuscatedValueAssigner(triggerKey, triggerKeyVal))
     writeAssigner(assigner)
 
-    cryptKey << mix(cryptKey, seedKey[0])
-    cryptKey << mix(cryptKey, seedKey[1])
-    cryptKey << mix(cryptKey, seedKey[2])
-    cryptKey << mix(cryptKey, seedKey[3])
-    cryptKey << mix(cryptKey, 0)
+    tempKey1 = mix(cryptKey, seedKey[0])
+    tempKey2 = mix(tempKey1, seedKey[1])
+    tempKey3 = mix(tempKey2, seedKey[2])
+    tempKey4 = mix(tempKey3, seedKey[3])
+    cryptKey << mix(tempKey4, 0)
 
     cryptKeyVal = 0
     cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[0])
@@ -123,9 +90,7 @@ def unFreeze():
 
     # Modify triggers
     desiredTriggerCount = EUDArray(getExpectedTriggerCount())
-    encryptedTriggerCount = EUDArray(
-        encryptTriggers(mix2(triggerKeyVal, cryptKeyVal))
-    )
+    encryptedTriggerCount = EUDArray(encryptTriggers(mix2(triggerKeyVal, cryptKeyVal)))
     tCount = EUDVariable()
     tInternalCount = EUDVariable()
     decryptedCount = EUDVariable()
@@ -138,9 +103,13 @@ def unFreeze():
         tbegin = TrigTriggerBegin(player)
         if EUDIfNot()(tbegin == 0):
             tend = TrigTriggerEnd(player)
-            tCount << 0
-            tInternalCount << 0
-            decryptedCount << 0
+            DoActions(
+                [
+                    tCount.SetNumber(0),
+                    tInternalCount.SetNumber(0),
+                    decryptedCount.SetNumber(0),
+                ]
+            )
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
                 decryptedCount += decryptTrigger(epd, triggerKey, tCount)
@@ -151,10 +120,10 @@ def unFreeze():
                     tInternalCount += 1
                 EUDEndIf()
             ObfuscatedJump()
-            Trigger([
-                tCount == desiredTriggerCount[player],
-                tInternalCount == 217
-            ], cryptKey.AddNumber(1))
+            Trigger(
+                [tCount == desiredTriggerCount[player], tInternalCount == 217],
+                cryptKey.AddNumber(1),
+            )
             cryptKey += decryptedCount - encryptedTriggerCount[player]
         EUDEndIf()
 
