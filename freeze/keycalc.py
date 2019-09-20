@@ -140,11 +140,11 @@ def keycalc(seedKey, fileCursor):
     chkSector_ = f_dwread_epd(chkBlockEntryEPD)
     chkSector_ += 4095
     chkSectorNum = chkSector_ // 4096
-    i_ = EUDVariable(0)
+    chkSectorNum += 8
+    i_ = EUDVariable(8)
     if EUDWhile()(i_ <= chkSectorNum):
-        i_ += 8
         feedSampleByIndex(i_)
-        i_ -= 5
+        i_ += 3
     EUDEndWhile()
 
     # 5. Feed entire block table

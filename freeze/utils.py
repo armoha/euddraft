@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,17 +21,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import random
-from eudplib import (
-    IsConstExpr,
-    EUDVariable,
-)
-from .crypt import (
-    T2,
-    tryUnT,
-)
+
+from eudplib import DoActions, EUDVariable, IsConstExpr
+
+from .crypt import T2, tryUnT
 
 
 class L(list):
@@ -56,7 +52,7 @@ def obfuscatedValueAssigner(v, vInsert):
 
     desiredOperationCount = random.randint(32, 96)
     t = random.randint(0, 0xFFFFFFFF)
-    operations = [L(['+', v, vInsert + t, -t])]
+    operations = [L(["+", v, vInsert + t, -t])]
     constantHavingOperation = {operations[0]}
 
     # Operation expander
@@ -76,10 +72,7 @@ def obfuscatedValueAssigner(v, vInsert):
             targetOperation[3] = srcVariable
             targetValue = src2
 
-        if not (
-            IsConstExpr(targetOperation[2]) or
-            IsConstExpr(targetOperation[3])
-        ):
+        if not (IsConstExpr(targetOperation[2]) or IsConstExpr(targetOperation[3])):
             constantHavingOperation.remove(targetOperation)
 
         targetValue = targetValue & 0xFFFFFFFF
@@ -88,21 +81,21 @@ def obfuscatedValueAssigner(v, vInsert):
 
         optype = random.randint(0, 4)
         if optype == 0:
-            operation = ['+', srcVariable, t1, targetValue - t1]
+            operation = ["+", srcVariable, t1, targetValue - t1]
         elif optype == 1:
-            operation = ['^', srcVariable, t1, targetValue ^ t1]
+            operation = ["^", srcVariable, t1, targetValue ^ t1]
         elif optype == 2:
-            operation = ['-', srcVariable, targetValue + t1, t1]
+            operation = ["-", srcVariable, targetValue + t1, t1]
         elif optype == 3:
             t2 &= random.randint(0, 0xFFFFFFFF)
             a = t1 & t2
             b = ~t1 & t2
-            operation = ['&', srcVariable, a | targetValue, b | targetValue]
+            operation = ["&", srcVariable, a | targetValue, b | targetValue]
         elif optype == 4:
             t2 &= random.randint(0, 0xFFFFFFFF)
             a = t1 | t2
             b = ~t1 | t2
-            operation = ['|', srcVariable, a & targetValue, b & targetValue]
+            operation = ["|", srcVariable, a & targetValue, b & targetValue]
 
         operation = L(operation)
 
@@ -131,19 +124,45 @@ def assignerMerge(op1, op2):
 
 def writeAssigner(operations):
     """ Write assigner. """
+    queue_doactions = []
     for optype, dst, src1, src2 in operations:
         if isinstance(src1, int):
             src1 = tryUnT(src1)
         if isinstance(src2, int):
             src2 = tryUnT(src2)
 
-        if optype == '+':
-            dst << src1 + src2
-        elif optype == '^':
+        if isinstance(src1, int) and isinstance(src2, int):
+            if optype == "+":
+                ret = src1 + src2
+            elif optype == "^":
+                ret = src1 ^ src2
+            elif optype == "-":
+                ret = src1 - src2
+            elif optype == "&":
+                ret = src1 & src2
+            elif optype == "|":
+                ret = src1 | src2
+            queue_doactions.append(dst.SetNumber(ret))
+            continue
+        elif queue_doactions:
+            DoActions(queue_doactions)
+            queue_doactions.clear()
+
+        if optype == "+":
+            if isinstance(src1, EUDVariable) and isinstance(src2, int):
+                dst << src1
+                dst += src2
+            else:
+                dst << src1 + src2
+        elif optype == "^":
             dst << (src1 ^ src2)
-        elif optype == '-':
-            dst << src1 - src2
-        elif optype == '&':
+        elif optype == "-":
+            if isinstance(src1, EUDVariable) and isinstance(src2, int):
+                dst << src1
+                dst -= src2
+            else:
+                dst << src1 - src2
+        elif optype == "&":
             dst << (src1 & src2)
-        elif optype == '|':
+        elif optype == "|":
             dst << (src1 | src2)
