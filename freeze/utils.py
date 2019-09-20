@@ -166,3 +166,7 @@ def writeAssigner(operations):
             dst << (src1 & src2)
         elif optype == "|":
             dst << (src1 | src2)
+
+    if queue_doactions:
+        DoActions(queue_doactions)
+        queue_doactions.clear()
