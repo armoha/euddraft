@@ -26,15 +26,10 @@ THE SOFTWARE.
 import random
 
 from eudplib import *
-
-from .crypt import (
-    mix,
-    mix2,
-    unmix2,
-)
-
-from .trigutils import getTriggerExecutingPlayers
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
+
+from .crypt import mix, mix2, unmix2
+from .trigutils import getTriggerExecutingPlayers
 
 
 def bseti4(b, pos, dw):
@@ -110,14 +105,17 @@ def encryptTriggers(cryptKey):
 
 
 @EUDFunc
-def decryptTrigger(triggerEPD, key, index):
+def decryptTrigger(triggerEPD, key):
     """ Decrypt trigger with key """
 
-    triggerEPD += 2  # Skip linked list part
+    triggerEPD += 2 + (2368 // 4)  # Skip linked list part
 
-    flag = f_dwread_epd(triggerEPD + (2368 // 4))
+    flag = f_dwread_epd(triggerEPD)
     if EUDIf()(flag >= 0x80000000):
-        flag -= 0x80000000
+        DoActions([
+            flag.AddNumber(-0x80000000),
+            triggerEPD.AddNumber(-(2368 // 4))
+        ])
         r = mix(key, flag)
         r = mix(r, key).makeR()
 
@@ -126,12 +124,15 @@ def decryptTrigger(triggerEPD, key, index):
             adddw = mix(w, i)
             oldcp = f_getcurpl()
             f_setcurpl(triggerEPD + w)
-            DoActions([[
-                SetDeaths(CurrentPlayer, Add, adddw, 0),
-                SetMemory(0x6509B0, Add, 2368 // 32)
-            ] for _ in range(8)])
+            if EUDLoopN()(8):
+                DoActions([
+                    SetDeaths(CurrentPlayer, Add, adddw, 0),
+                    SetMemory(0x6509B0, Add, 2368 // 32)
+                ])
+            EUDEndLoopN()
             f_setcurpl(oldcp)
-            r << mix(r, key + i)
+            r << mix(r, key)
+            key += 1
 
         EUDReturn(1)
     EUDEndIf()

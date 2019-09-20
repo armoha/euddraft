@@ -112,8 +112,10 @@ def unFreeze():
             )
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
-                decryptedCount += decryptTrigger(epd, triggerKey, tCount)
-                propv = f_dwread_epd(epd + (8 + 320 + 2048) // 4)
+                decryptedCount += decryptTrigger(epd, triggerKey)
+                epd += (8 + 320 + 2048) // 4
+                propv = f_dwread_epd(epd)
+                epd -= (8 + 320 + 2048) // 4
                 if EUDIfNot()(propv == 8):
                     tCount += 1
                 if EUDElse()():
