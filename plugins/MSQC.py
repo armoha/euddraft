@@ -430,7 +430,7 @@ def onInit():
     QCCount = len(v_rets) + ceil(len(qc_rets) / len(bit_xy))
     ep_assert(QCCount >= 1, "Must add desync cond : sync return pair")
     print(
-        "[MSQC] map size: {}x{}, {} men × {} QCUnits (ID: {})".format(
+        "[MSQC] map size: {}x{}, {} men x {} QCUnits (ID: {})".format(
             dim_x, dim_y, len(humans), QCCount, QCUnit
         )
     )
