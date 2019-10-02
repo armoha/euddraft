@@ -272,7 +272,7 @@ def AddLoop(title, goto=1):
     intro, bar, bridge = 0, 0, 0
     identifier = _id_generator()
     for i in range(1000):
-        file_path = get_filepath(x)
+        file_path = get_filepath(i)
         if file_path:
             with open(file_path, "rb") as f:
                 content = f.read()
@@ -286,7 +286,7 @@ def AddLoop(title, goto=1):
         elif i == 0:
             continue
         elif any([intro, bar, bridge]):
-            _Loop(title, identifier, i - 1, intro, bar, bridge, goto)
+            return _Loop(title, identifier, i - 1, intro, bar, bridge, goto)
         else:
             raise EPError("{} 삽입 실패, 파일 경로를 확인하세요.".format(title))
 
@@ -366,6 +366,21 @@ def _onInit():
 EUDOnStart(_onInit)
 
 
+@EUDFunc
+def PlaySoundWorkaround(loop, barpp):
+    barpp -= 1
+    EUDSwitch(loop)
+    for title, loop in _Loop.loop_dict.items():
+        EUDSwitchCase()(loop.index)
+        EUDSwitch(barpp)
+        for n in range(loop.count + 1):
+            EUDSwitchCase()(n)
+            DoActions(PlayWAV("{}{:03d}".format(loop.id, n)))
+            EUDReturn()
+        EUDEndSwitch()
+    EUDEndSwitch()
+
+
 def get_three_digits(x):
     ab, c = divmod(x, 10)
     a, b = divmod(ab, 10)
@@ -429,12 +444,13 @@ class SoundLooper:
                 self._set_loop[1] << SetMemory(0, SetTo, 0),
                 self._set_bar << SetMemory(0, Add, 0),
                 self._set_localcp << SetMemory(_CP, SetTo, 0),
-                PlayWAV(_sb.StringIndex),
+                # PlayWAV(_sb.StringIndex),
                 self.current_bar.AddNumber(1),
                 SetMemory(self._set_bar + 20, Add, 1 << 16),
                 self._add1_bar << SetMemory(0, Add, 1),
             ],
         )
+        PlaySoundWorkaround(self.current_loop, self.current_bar)
         bar_carry = self._set_bar + 20
         RawTrigger(
             conditions=MemoryX(bar_carry, AtLeast, (ord("9") + 1) << 16, 0xFF << 16),
@@ -508,7 +524,7 @@ class SoundLooper:
         )
 
         EUDSwitch(index)
-        for filename, loop in loop_dict.items():
+        for filename, loop in _Loop.loop_dict.items():
             EUDSwitchCase()(loop.index)
             d2, d1, d0 = get_three_digits(loop.goto)
             goto = (d0 << 16) + (d1 << 8) + d2
