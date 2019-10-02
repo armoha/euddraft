@@ -9,8 +9,8 @@ from eudplib import *
 # fmt: off
 QCUnit, QCLoc, QCPlayer = 58, 0, 10
 QCX, QCY = 128, 128  # (4, 4)
-QCDebug = 1
-qc_conds, qc_rets, v_conds, v_rets, deathsUnits = [], [], [], [], set()
+QCDebug, UseVal = True, False
+qc_cons, qc_rets, xy_cons, xy_rets, deathsUnits = [], [], [], [], set()
 
 KeyArray, KeyOffset = EUDArray(8), set()
 MouseArray, MouseOffset = EUDArray(1), set()
@@ -261,38 +261,30 @@ def onInit():
     map_x, map_y = (dim_x - 1).bit_length() + 4, (dim_y - 1).bit_length() + 4
 
     global humans, QCUnit, QCLoc, QCPlayer, QCX, QCY, QCDebug
-    global qc_conds, qc_rets, v_conds, v_rets, QCCount
+    global qc_cons, qc_rets, xy_cons, xy_rets, QCCount, UseVal
     humans = [p for p in range(8) if ownr[p] == 6]
 
     # simple parsing settings
     for k, v in settings.items():
 
-        if k == "QCUnit":
+        def EncodeInput(string, encode_func, type_name, name):
             try:
-                QCUnit = EncodeUnit(v)
-            except EPError:
+                ret = encode_func(string)
+            except (EPError, KeyError):
                 try:
-                    QCUnit = int(v, 0)
+                    ret = int(v, 0)
                 except ValueError:
-                    raise EPError("QCUnit should be unit or number.")
+                    raise EPError("%s shoud be %s or number." % (type_name, name))
+            return ret
+
+        if k == "QCUnit" or k == "QCUnitID":
+            QCUnit = EncodeInput(v, EncodeUnit, k, "unit")
             continue
         elif k == "QCLoc":
-            try:
-                QCLoc = GetLocationIndex(v)
-            except EPError:
-                try:
-                    QCLoc = int(v, 0)
-                except ValueError:
-                    raise EPError("QCLoc should be location or number.")
+            QCLoc = EncodeInput(v, GetLocationIndex, k, "location")
             continue
         elif k == "QCPlayer":
-            try:
-                QCPlayer = EncPlayer(v)
-            except EPError:
-                try:
-                    QCPlayer = int(v, 0)
-                except ValueError:
-                    raise EPError("QCPlayer should be player or number.")
+            QCPlayer = EncodeInput(v, EncPlayer, k, "player")
             continue
         elif k == "QC_XY":
             coord = v.split(",")
@@ -301,7 +293,7 @@ def onInit():
             except (IndexError, ValueError):
                 raise EPError("QC_XY should be two numbers.")
             continue
-        elif k == "QCDebug":
+        elif k == "QCDebug" or k == "QCSafety":
             if v.lower() == "true":
                 QCDebug = True
             elif v.lower() == "false":
@@ -359,7 +351,26 @@ def onInit():
 
             else:
                 c = [con.strip() for con in cond.split(",")]
-                if c[0].lower() == "xy":
+                if c[0].lower() == "val":
+                    UseVal = True
+                    _c, deaths_unit = c[1], v.strip()
+                    try:
+                        _c = EPD(int(_c, 0))
+                    except ValueError:
+                        pass
+                    try:
+                        deaths_unit = EncodeUnit(deaths_unit)
+                    except EPError:
+                        try:
+                            deaths_unit = int(deaths_unit, 0)
+                        except ValueError:
+                            pass
+                        else:
+                            deathsUnits.add(deaths_unit)
+                    else:
+                        deathsUnits.add(deaths_unit)
+                    ret_final = ["val", _c, deaths_unit]
+                elif c[0].lower() == "xy":
                     ret = [r.strip() for r in v.split(",")]
                     if not 1 <= len(ret) <= 2:
                         raise EPError("xy send/receive number should be 1 or 2")
@@ -421,13 +432,13 @@ def onInit():
             else:
                 deathsUnits.add(death_unit)
                 ret_final = ["deaths", death_unit, increment]
-            qc_conds.append(con_final)
+            qc_cons.append(con_final)
             qc_rets.append(ret_final)
         else:
-            v_conds.append(con_final)
-            v_rets.append(ret_final)
+            xy_cons.append(con_final)
+            xy_rets.append(ret_final)
 
-    QCCount = len(v_rets) + ceil(len(qc_rets) / len(bit_xy))
+    QCCount = len(xy_rets) + ceil(len(qc_rets) / len(bit_xy))
     ep_assert(QCCount >= 1, "Must add desync cond : sync return pair")
     print(
         "[MSQC] map size: {}x{}, {} men x {} QCUnits (ID: {})".format(
@@ -446,6 +457,8 @@ def onInit():
                 locname = mouse_loc + p
             loc_list.append("P%u:%s" % (p + 1, locname))
         print("MouseLoc=%s" % ", ".join(loc_list))
+    if QCDebug:
+        print("QCDebug enabled. You can disable it by writing 'QCDebug: false'.")
 
 
 onInit()
@@ -472,7 +485,13 @@ f_screenYread_epd = f_readgen_epd(0x1FF, (0, lambda y: y << 16), (0, lambda y: y
 mapMask = 2 ** (map_x + 1) - 1 + ((2 ** (map_y + 1) - 1) << 16)
 f_tosread_epd = f_readgen_epd(0xFF00, (0, lambda x: x * 8))
 f_b1read_epd = f_readgen_epd(0xFF00, (0, lambda x: x >> 8))
+valMask = 2 ** map_x - 1 + ((2 ** map_y - 1) << map_x)
+v2pMask = 2 ** map_x - 1 + ((2 ** map_y - 1) << 16)
+f_v2posread_epd = f_readgen_epd(valMask, (0, lambda x: x if x < 1 << map_x else x << (16 - map_x)))
+f_pos2vread_epd = f_readgen_epd(v2pMask, (0, lambda x: x if x <= 0xFFFF  else x >> (16 - map_x)))
 # fmt: on
+if UseVal:
+    print("Sendable value range for 'val' syntax: 0 to {}".format(valMask))
 
 
 def EUDHumanLoop():
@@ -868,7 +887,7 @@ def SendQC():
     f_setcurpl(f_getuserplayerid())
 
     _ns = GetEUDNamespace()
-    qc_list = eqsplit(qc_conds, len(bit_xy))
+    qc_list = eqsplit(qc_cons, len(bit_xy))
     qc_count = 0
     for n, conds in enumerate(qc_list):
         qc_count += 1
@@ -902,7 +921,7 @@ def SendQC():
             QueueGameCommand(RC + 3, 10)  # RightClick
         EUDEndIf()
 
-    for n, (con, ret) in enumerate(zip(v_conds, v_rets)):
+    for n, (con, ret) in enumerate(zip(xy_cons, xy_rets)):
         DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
         if len(con) == 1:
             if type(con[0]) is str:
@@ -917,75 +936,101 @@ def SendQC():
                 else:
                     condition = condition(c)
             condition = condition()
-        if EUDIf()(condition):
-            if ret[0] == "mouse":
-                global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
-                sX = f_mapXread_epd(EPD(0x62848C))
-                sY, _csY = f_mapYread_epd(EPD(0x6284A8))
-                mX = f_screenXread_epd(EPD(0x6CDDC4))
-                mY, _cmY = f_screenYread_epd(EPD(0x6CDDC8))
-                addMouseCoord = Forward()
-                VProc(
-                    [sX, sY, mX, mY, _csY, _cmY],
-                    [
-                        sX.QueueAssignTo(EPD(addMouseCoord) + 87),
-                        sY.QueueAddTo(EPD(addMouseCoord) + 87),
-                        mX.QueueAddTo(EPD(addMouseCoord) + 87),
-                        mY.QueueAddTo(EPD(addMouseCoord) + 87),
-                        _csY.QueueAssignTo(EPD(cmpScreenY) + 2),
-                        _cmY.QueueAssignTo(EPD(cmpMouseY) + 2),
-                        MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
-                        QGCActivated.SetNumber(1),
-                    ],
-                )
-                addMouseCoord << VProc(
-                    [sX, mX],
-                    [
-                        SetMemory(RC + 4, Add, 0),
-                        sX.QueueAssignTo(EPD(cmpScreenX) + 2),
-                        mX.QueueAssignTo(EPD(cmpMouseX) + 2),
-                    ],
-                )
-            elif ret[0] == "xy":
+        EUDIf()(condition)
+        if ret[0] == "mouse":
+            global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
+            sX = f_mapXread_epd(EPD(0x62848C))
+            sY, _csY = f_mapYread_epd(EPD(0x6284A8))
+            mX = f_screenXread_epd(EPD(0x6CDDC4))
+            mY, _cmY = f_screenYread_epd(EPD(0x6CDDC8))
+            addMouseCoord = Forward()
+            VProc(
+                [sX, sY, mX, mY, _csY, _cmY],
+                [
+                    sX.QueueAssignTo(EPD(addMouseCoord) + 87),
+                    sY.QueueAddTo(EPD(addMouseCoord) + 87),
+                    mX.QueueAddTo(EPD(addMouseCoord) + 87),
+                    mY.QueueAddTo(EPD(addMouseCoord) + 87),
+                    _csY.QueueAssignTo(EPD(cmpScreenY) + 2),
+                    _cmY.QueueAssignTo(EPD(cmpMouseY) + 2),
+                    MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
+                    QGCActivated.SetNumber(1),
+                ],
+            )
+            addMouseCoord << VProc(
+                [sX, mX],
+                [
+                    SetMemory(RC + 4, Add, 0),
+                    sX.QueueAssignTo(EPD(cmpScreenX) + 2),
+                    mX.QueueAssignTo(EPD(cmpMouseX) + 2),
+                ],
+            )
+        elif ret[0] == "val":
 
-                def parseSource(src, always=False):
-                    if isinstance(src, int):
-                        return src
-                    try:
-                        src = int(ret[1], 0)
-                    except ValueError:
-                        _ns = GetEUDNamespace()
-                        src = eval(parseCond(ret[1]))
-                        if isinstance(src, EUDLightVariable) or always:
-                            src = EPD(src.getValueAddr())
-                    else:
-                        src = EPD(src)
+            def parseSource(src, always=False):
+                if isinstance(src, int):
                     return src
+                try:
+                    src = int(ret[1], 0)
+                except ValueError:
+                    _ns = GetEUDNamespace()
+                    src = eval(parseCond(ret[1]))
+                    if isinstance(src, EUDLightVariable) or always:
+                        src = EPD(src.getValueAddr())
+                else:
+                    src = EPD(src)
+                return src
 
-                if len(ret) == 3:
-                    src = parseSource(ret[1])
-                    if type(src) not in (EUDVariable, EUDXVariable):
-                        src = f_maskread_epd(src, mapMask)
-                elif len(ret) == 5:
-                    x = parseSource(ret[1])
-                    y = parseSource(ret[2], always=True)
-                    if type(src) not in (EUDVariable, EUDXVariable):
-                        x = f_mapXread_epd(x)
-                    y = f_mapYread_epd(y)[0]
-                    src = x + y
-                VProc(
-                    src,
-                    [
-                        src.QueueAddTo(EPD(RC) + 1),
-                        MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
-                        QGCActivated.SetNumber(1),
-                    ],
-                )
-            else:
-                raise EPError("{} is Unknown type for return value".format(ret[0]))
-            # TODO: Optimize QueueGameCommand and f_memcpy
-            QueueGameCommand(SEL + 2, 4)
-            QueueGameCommand(RC + 3, 10)  # RightClick
+            src = parseSource(ret[1], always=True)
+            src = f_v2posread_epd(src)
+            VProc(
+                src,
+                [
+                    src.QueueAddTo(EPD(RC) + 1),
+                    MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
+                    QGCActivated.SetNumber(1),
+                ],
+            )
+        elif ret[0] == "xy":
+
+            def parseSource(src, always=False):
+                if isinstance(src, int):
+                    return src
+                try:
+                    src = int(ret[1], 0)
+                except ValueError:
+                    _ns = GetEUDNamespace()
+                    src = eval(parseCond(ret[1]))
+                    if isinstance(src, EUDLightVariable) or always:
+                        src = EPD(src.getValueAddr())
+                else:
+                    src = EPD(src)
+                return src
+
+            if len(ret) == 3:
+                src = parseSource(ret[1])
+                if type(src) not in (EUDVariable, EUDXVariable):
+                    src = f_maskread_epd(src, mapMask)
+            elif len(ret) == 5:
+                x = parseSource(ret[1])
+                y = parseSource(ret[2], always=True)
+                if type(src) not in (EUDVariable, EUDXVariable):
+                    x = f_mapXread_epd(x)
+                y = f_mapYread_epd(y)[0]
+                src = x + y
+            VProc(
+                src,
+                [
+                    src.QueueAddTo(EPD(RC) + 1),
+                    MyQCalphaids[n + qc_count] << SetMemory(SEL + 4, SetTo, 0),
+                    QGCActivated.SetNumber(1),
+                ],
+            )
+        else:
+            raise EPError("{} is Unknown type for return value".format(ret[0]))
+        # TODO: Optimize QueueGameCommand and f_memcpy
+        QueueGameCommand(SEL + 2, 4)
+        QueueGameCommand(RC + 3, 10)  # RightClick
         EUDEndIf()
 
 
@@ -1029,105 +1074,105 @@ def ReceiveQC():
     for n, rets in enumerate(qr_list):
         vr.read()
         waypoint = qc_epd + 0x10 // 4
-        if EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1)):
-            f_dwsubtract_epd(waypoint, 64 * 65537)
-            for ret, bit in zip(rets, bit_xy):
-                if EUDIf()(MemoryXEPD(waypoint, AtLeast, 1, bit)):
-                    if ret[0] == "deaths":
-                        DoActions(SetDeaths(CurrentPlayer, Add, ret[2], ret[1]))
-                    elif ret[0] == "array":
-                        array = eval(parseArray(ret[1]))
-                        if isUnproxyInstance(array, EUDArray):
-                            DoActions(SetMemoryEPD(EPD(array) + cp, Add, ret[2]))
-                        elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(
-                                SetMemoryEPD(
-                                    (EPD(array) + 328 // 4 + 5) + vi, Add, ret[2]
-                                )
-                            )
-                        else:
-                            raise EPError(
-                                "{} unknown type for return value".format(ret[1])
-                            )
-                EUDEndIf()
-            f_dwwrite_epd(waypoint, 64 * 65537)
+        EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1))
+        f_dwsubtract_epd(waypoint, 64 * 65537)
+        for ret, bit in zip(rets, bit_xy):
+            EUDIf()(MemoryXEPD(waypoint, AtLeast, 1, bit))
+            if ret[0] == "deaths":
+                DoActions(SetDeaths(CurrentPlayer, Add, ret[2], ret[1]))
+            elif ret[0] == "array":
+                array = eval(parseArray(ret[1]))
+                if isUnproxyInstance(array, EUDArray):
+                    f_dwadd_epd(EPD(array) + cp, ret[2])
+                elif isUnproxyInstance(array, EUDVArray(8)):
+                    f_dwadd_epd((EPD(array) + 328 // 4 + 5) + vi, ret[2])
+                else:
+                    raise EPError("{} unknown type for return value".format(ret[1]))
+            EUDEndIf()
+        f_dwwrite_epd(waypoint, 64 * 65537)
         EUDEndIf()
     vinit_array = []
-    for rets in v_rets:
+    for rets in xy_rets:
         for ret in rets:
-            if type(ret) == str and (ret != "xy" and ret != "mouse"):
+            if ret == "xy" or ret == "mouse" or ret == "val":
+                continue
+            if type(ret) == str:
                 try:
                     array = eval(parseArray(ret))
                 except (NameError):
                     continue
                 if isUnproxyInstance(array, EUDArray):
-                    vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
+                    vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, -1))
                 elif isUnproxyInstance(array, EUDVArray(8)):
                     vinit_array.append(
-                        SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, 0)
+                        SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, -1)
                     )
                 else:
                     raise EPError("{} unknown type for return value".format(ret))
     if vinit_array:
         DoActions(vinit_array)
 
-    for n, ret in enumerate(v_rets):
+    for n, ret in enumerate(xy_rets):
         vr.read()
         waypoint = qc_epd + 0x10 // 4
-        if EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1)):
-            f_dwsubtract_epd(waypoint, 64 * 65537)
-            if ret[0] == "mouse":
-                x, y = f_posread_epd(waypoint)
-                f_setloc(ret[1] + cp, x, y)
-            elif ret[0] == "xy":
-                if len(ret) == 3:
-                    xy = f_maskread_epd(waypoint, mapMask)
-                    if isinstance(ret[2], int):
-                        DoActions(SetDeaths(CurrentPlayer, SetTo, xy, ret[2]))
-                    else:
-                        array = eval(parseArray(ret[2]))
-                        if isUnproxyInstance(array, EUDArray):
-                            DoActions(SetMemoryEPD(EPD(array) + cp, SetTo, xy))
-                        elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(
-                                SetMemoryEPD(
-                                    (EPD(array) + 328 // 4 + 5) + vi, SetTo, xy
-                                )
-                            )
-                        else:
-                            raise EPError(
-                                "{} unknown type for return value".format(ret[2])
-                            )
-                elif len(ret) == 5:
-                    x, y = f_posread_epd(waypoint)
-                    if isinstance(ret[3], int) or isinstance(ret[4], int):
-                        DoActions(
-                            [
-                                SetDeaths(CurrentPlayer, SetTo, x, ret[3])
-                                if isinstance(ret[3], int)
-                                else []
-                            ]
-                            + [
-                                SetDeaths(CurrentPlayer, SetTo, y, ret[4])
-                                if isinstance(ret[4], int)
-                                else []
-                            ]
-                        )
-                    for s, v in zip([ret[3], ret[4]], [x, y]):
-                        if type(s) != str:
-                            continue
-                        array = eval(parseArray(s))
-                        if isUnproxyInstance(array, EUDArray):
-                            DoActions(SetMemoryEPD(EPD(array) + cp, SetTo, v))
-                        elif isUnproxyInstance(array, EUDVArray(8)):
-                            DoActions(
-                                SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, v)
-                            )
-                        else:
-                            raise EPError("%s unknown type for return value" % ret[2])
+        EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1))
+        f_dwsubtract_epd(waypoint, 64 * 65537)
+        if ret[0] == "mouse":
+            x, y = f_posread_epd(waypoint)
+            f_setloc(ret[1] + cp, x, y)
+        elif ret[0] == "val":
+            xy = f_pos2vread_epd(waypoint)
+            if isinstance(ret[2], int):
+                DoActions(SetDeaths(CurrentPlayer, SetTo, xy, ret[2]))
             else:
-                raise EPError("%s is Unknown type for return value" % ret[0])
-            f_dwwrite_epd(waypoint, 64 * 65537)
+                array = eval(parseArray(ret[2]))
+                if isUnproxyInstance(array, EUDArray):
+                    f_dwwrite_epd(EPD(array) + cp, xy)
+                elif isUnproxyInstance(array, EUDVArray(8)):
+                    f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
+                else:
+                    raise EPError("{} unknown type for return value".format(ret[2]))
+        elif ret[0] == "xy":
+            if len(ret) == 3:
+                xy = f_maskread_epd(waypoint, mapMask)
+                if isinstance(ret[2], int):
+                    DoActions(SetDeaths(CurrentPlayer, SetTo, xy, ret[2]))
+                else:
+                    array = eval(parseArray(ret[2]))
+                    if isUnproxyInstance(array, EUDArray):
+                        f_dwwrite_epd(EPD(array) + cp, xy)
+                    elif isUnproxyInstance(array, EUDVArray(8)):
+                        f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
+                    else:
+                        raise EPError("{} unknown type for return value".format(ret[2]))
+            elif len(ret) == 5:
+                x, y = f_posread_epd(waypoint)
+                if isinstance(ret[3], int) or isinstance(ret[4], int):
+                    DoActions(
+                        [
+                            SetDeaths(CurrentPlayer, SetTo, x, ret[3])
+                            if isinstance(ret[3], int)
+                            else []
+                        ]
+                        + [
+                            SetDeaths(CurrentPlayer, SetTo, y, ret[4])
+                            if isinstance(ret[4], int)
+                            else []
+                        ]
+                    )
+                for s, v in zip([ret[3], ret[4]], [x, y]):
+                    if type(s) != str:
+                        continue
+                    array = eval(parseArray(s))
+                    if isUnproxyInstance(array, EUDArray):
+                        f_dwwrite_epd(EPD(array) + cp, v)
+                    elif isUnproxyInstance(array, EUDVArray(8)):
+                        f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, v)
+                    else:
+                        raise EPError("%s unknown type for return value" % ret[2])
+        else:
+            raise EPError("%s is Unknown type for return value" % ret[0])
+        f_dwwrite_epd(waypoint, 64 * 65537)
         EUDEndIf()
 
     EUDSetContinuePoint()
