@@ -1,3 +1,4 @@
+from itertools import combinations
 from operator import itemgetter
 
 from eudplib import *
@@ -38,6 +39,13 @@ def onInit():
             if v == "1" or v == "0":
                 raise EPError("오류: 더할 값은 2 이상이어야 합니다.")
             chatList.append([k.strip(), int(v, 0)])
+
+    detect_duplicates = list()
+    for v in (Addr, lenAddr, ptrAddr, patternAddr):
+        if v >= 1:
+            detect_duplicates.append(v)
+    if not all(a != b for a, b in combinations(detect_duplicates, 2)):
+        raise EPError("주소가 중복됐습니다; {}".format(detect_duplicates))
 
     chatList.sort(key=itemgetter(1, 0))
     regexList.sort()
