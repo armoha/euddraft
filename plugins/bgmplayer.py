@@ -4,9 +4,8 @@
 
 from eudplib import *
 
-
-bgmPath = settings['path']
-bgmLength = float(settings['length'])
+bgmPath = settings["path"]
+bgmLength = float(settings["length"])
 
 
 ###############################################################################
@@ -22,7 +21,8 @@ def f_time():
 
 @EUDFunc
 def f_starttimer(duration):
-    dsttimer << f_time() + duration - 42
+    duration += f_time()
+    VProc(duration, [duration.SetDest(dsttimer), duration.AddNumber(-42)])
 
 
 @EUDFunc
@@ -38,20 +38,23 @@ def f_istimerhit():
 
 ###############################################################################
 
+
 def onPluginStart():
     f_starttimer(0)
 
 
 def beforeTriggerExec():
-    MPQAddFile("bgm", open(bgmPath, 'rb').read())
+    MPQAddFile("bgm", open(bgmPath, "rb").read())
 
     if EUDIf()(f_istimerhit()):
         oldcp = f_getcurpl()
-        DoActions([
+        localcp = f_getuserplayerid()
+        DoActions(
             [
-                SetCurrentPlayer(player),
+                SetMemory(0x6509B0, SetTo, localcp),
                 PlayWAV("bgm"),
-            ] for player in range(8)
-        ] + [SetCurrentPlayer(oldcp)])
+                SetMemory(0x6509B0, SetTo, oldcp),
+            ]
+        )
         f_starttimer(int(1000 * bgmLength))
     EUDEndIf()
