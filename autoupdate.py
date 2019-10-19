@@ -15,9 +15,9 @@ from urllib.request import urlopen
 import msgbox
 from edpkgutil.verifyPkg import verifyFileSignature
 
-VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/VERSION"
+VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/BETA_VERSION"
 RELEASE_URL = (
-    "https://raw.githubusercontent.com/armoha/euddraft/master/latest/euddraft%s.zip"
+    "https://github.com/armoha/euddraft/releases/download/v%s/euddraft%s.zip"
 )
 
 
@@ -78,11 +78,11 @@ def versionLt(version1, version2):
 
 
 def getRelease(version):
-    return download(RELEASE_URL % version)
+    return download(RELEASE_URL % (version, version))
 
 
 def getReleaseSignature(version):
-    return download(RELEASE_URL % version + ".sig")
+    return download(RELEASE_URL % (version, version) + ".sig")
 
 
 def checkUpdate():

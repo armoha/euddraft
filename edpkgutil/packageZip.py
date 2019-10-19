@@ -18,5 +18,5 @@ def packageZip(buildDir, fname, version):
                 if file.startswith('.'):
                     continue
                 zipf.write(os.path.join(root, file))
-        zipf.writestr('VERSION', str(version))
+        zipf.writestr('BETA_VERSION', str(version))
         os.chdir(oldDir)
