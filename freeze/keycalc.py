@@ -29,29 +29,32 @@ from eudplib import *
 
 from .crypt import mix
 from .mpqh import getMapHandleEPD
+from .trigutils import ObfuscatedAdd, SetMemoryC, srand, MoveCP
 
 
 def keycalc(seedKey, fileCursor):
-    if EUDIf()(Memory(0x6D0F14, Exactly, 0)):  # On game
+    DoActions(srand(), MoveCP(EPD(0x6D0F14)))
+    if EUDIf()(Deaths(CurrentPlayer, Exactly, 0, 0)):  # On game
         mpqEPD = getMapHandleEPD()
-        mpqEPD += 0x130 // 4
+        ObfuscatedAdd(mpqEPD, 0x130 // 4, SetMemoryC(0x6509B0, SetTo, 0))
+        # mpqEPD += 0x130 // 4
         mpqHeaderEPD = f_epdread_epd(mpqEPD)
-        DoActions([mpqEPD.AddNumber(1), mpqHeaderEPD.AddNumber(0x10 // 4)])
+        DoActions(mpqEPD.AddNumber(1), mpqHeaderEPD.AddNumber(0x10 // 4))
         blockTableEPD = f_epdread_epd(mpqEPD)
         # Basic check
         mpqHashTableOffset = f_dwread_epd(mpqHeaderEPD)
-        DoActions([mpqEPD.AddNumber(1), mpqHeaderEPD.AddNumber(2)])
+        DoActions(mpqHeaderEPD.AddNumber(2), mpqEPD.AddNumber(1))
         hashTableEPD = f_epdread_epd(mpqEPD)
         mpqHashTableSize = f_dwread_epd(mpqHeaderEPD)
         mpqHeaderEPD += 1
         mpqBlockTableSize = f_dwread_epd(mpqHeaderEPD)
-        DoActions(
-            [
-                mpqHashTableSize.AddNumber(-1),
-                mpqBlockTableSize.AddNumber(-1),
-                mpqHeaderEPD.AddNumber(-(0x1C // 4)),
-            ]
-        )
+        acts = [
+            mpqHashTableSize.AddNumber(-1),
+            mpqBlockTableSize.AddNumber(-1),
+            mpqHeaderEPD.AddNumber(-(0x1C // 4)),
+        ]
+        random.shuffle(acts)
+        DoActions(acts)
 
         # To find first real block index, seek scenario.chk.
         # Find scenario.chk in hash table
@@ -106,6 +109,8 @@ def keycalc(seedKey, fileCursor):
         sample = f_dwread_epd(blockTableEPD + index)
         feedSample(sample, inplace)
 
+    DoActions(SetMemoryC(0x6509B0, SetTo, 0))
+
     # 1. Feed mpq header
     if EUDLoopN()(8):
         feedSample(f_dwread_epd(mpqHeaderEPD))
@@ -126,19 +131,22 @@ def keycalc(seedKey, fileCursor):
     )
     if EUDWhileNot()(mpqHashTableSize == -1):
         feedSampleByIndex(hashTableOffsetDiv4)
-        DoActions([mpqHashTableSize.AddNumber(-1), hashTableOffsetDiv4.AddNumber(4)])
+        DoActions(mpqHashTableSize.AddNumber(-1), hashTableOffsetDiv4.AddNumber(4))
     EUDEndWhile()
 
     # 3. Feed BET
     # blockTableOffsetDiv4 = initialBlockIndex * 4
     if EUDWhile()(mpqBlockTableSize >= initialBlockIndex):
         feedSampleByIndex(blockTableOffsetDiv4)
-        DoActions([initialBlockIndex.AddNumber(1), blockTableOffsetDiv4.AddNumber(4)])
+        DoActions(initialBlockIndex.AddNumber(1), blockTableOffsetDiv4.AddNumber(4))
     EUDEndWhile()
 
     # 4. Feed scenario.chk sectorOffsetTable
     chkSector_ = f_dwread_epd(chkBlockEntryEPD)
-    chkSector_ += 4095
+    if random.random() >= 0.6:
+        ObfuscatedAdd(chkSector_, 4095, SetMemoryC(0x6509B0, SetTo, 0))
+    else:
+        chkSector_ += 4095
     chkSectorNum = chkSector_ // 4096
     chkSectorNum += 8
     i_ = EUDVariable(8)

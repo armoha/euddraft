@@ -24,11 +24,12 @@ THE SOFTWARE.
 """
 
 from eudplib import *
+from .trigutils import ObfuscatedAdd
 
 
 def getMapHandleEPD():
     # Read base address from import table
     stormRelocateAmount = f_epdread_epd(EPD(0x4FE544))
-    stormRelocateAmount += EPD(0x1505ADFC) - EPD(0x15021A00)
+    ObfuscatedAdd(stormRelocateAmount, EPD(0x1505ADFC) - EPD(0x15021A00))
 
     return f_epdread_epd(stormRelocateAmount)

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Copyright (c) 2014 trgk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +21,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-'''
+"""
 
 import random
 
@@ -29,21 +29,22 @@ from eudplib import *
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
 
 from .crypt import mix, mix2, unmix2
-from .trigutils import getTriggerExecutingPlayers
+from .trigutils import getTriggerExecutingPlayers, ObfuscatedAdd, SetMemoryC
 
 
 def bseti4(b, pos, dw):
     """ Inverse of b2i4 """
-    b[pos: pos + 4] = i2b4(dw)
+    b[pos : pos + 4] = i2b4(dw)
 
 
 # Trigger encryption
 
 tabCount = 16
+obfuscateDT = random.randint(0, 0xFFFFFFFF)
 
 
 def hexdump(b):
-    print(''.join('%02X' % ch for ch in b))
+    print("".join("%02X" % ch for ch in b))
 
 
 def encryptTrigger(bTrigger_, key):
@@ -56,7 +57,7 @@ def encryptTrigger(bTrigger_, key):
     if flag >= 0x10:
         return bTrigger_
     flag = (flag + 0x80000000) + (r & 0x7FFFF000)
-    bTrigger[2368: 2372] = i2b4(flag)  # Apply flag
+    bTrigger[2368:2372] = i2b4(flag)  # Apply flag
 
     # Generate encryption key
     flag -= 0x80000000
@@ -81,7 +82,7 @@ def encryptTrigger(bTrigger_, key):
 
 def encryptTriggers(cryptKey):
     chkt = GetChkTokenized()
-    trigSection = chkt.getsection('TRIG')
+    trigSection = chkt.getsection("TRIG")
     p = 0.05
 
     encryptedCount = [0] * 8
@@ -89,7 +90,7 @@ def encryptTriggers(cryptKey):
     # Pre-crypt.
     bSet = []
     for i in range(0, len(trigSection), 2400):
-        bTrigger = trigSection[i: i + 2400]
+        bTrigger = trigSection[i : i + 2400]
         # Only non-inline code can be crypted
         if not GetInlineCodePlayerList(bTrigger):
             if random.random() < p:
@@ -100,22 +101,20 @@ def encryptTriggers(cryptKey):
                 bTrigger = encryptTrigger(bTrigger, cryptKey)
         bSet.append(bTrigger)
 
-    chkt.setsection('TRIG', b''.join(bSet))
+    chkt.setsection("TRIG", b"".join(bSet))
     return encryptedCount
 
 
 @EUDFunc
 def decryptTrigger(triggerEPD, key):
     """ Decrypt trigger with key """
-
-    triggerEPD += 2 + (2368 // 4)  # Skip linked list part
+    # Skip linked list part
+    ObfuscatedAdd(triggerEPD, 2 + (2368 // 4), SetMemoryC(0x6509B0, SetTo, 0))
 
     flag = f_dwread_epd(triggerEPD)
-    if EUDIf()(flag >= 0x80000000):
-        DoActions([
-            flag.AddNumber(-0x80000000),
-            triggerEPD.AddNumber(-(2368 // 4))
-        ])
+    if EUDIf()(flag.AtLeastX(1, 0x80000000)):
+        ObfuscatedAdd(flag, -0x80000000)
+        ObfuscatedAdd(triggerEPD, -(2368 // 4), SetMemoryC(0x6509B0, SetTo, 0))
         r = mix(key, flag)
         r = mix(r, key).makeR()
 
@@ -125,10 +124,10 @@ def decryptTrigger(triggerEPD, key):
             oldcp = f_getcurpl()
             f_setcurpl(triggerEPD + w)
             if EUDLoopN()(8):
-                DoActions([
+                DoActions(
                     SetDeaths(CurrentPlayer, Add, adddw, 0),
-                    SetMemory(0x6509B0, Add, 2368 // 32)
-                ])
+                    SetMemory(0x6509B0, Add, 2368 // 32),
+                )
             EUDEndLoopN()
             f_setcurpl(oldcp)
             r << mix(r, key)

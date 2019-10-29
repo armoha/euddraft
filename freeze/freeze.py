@@ -31,8 +31,8 @@ from .crypt import mix, mix2
 from .keycalc import keycalc
 from .obfjump import ObfuscatedJump, cryptKey, encryptOffsets, initOffsets
 from .obfpatch import obfpatch, obfunpatch
-from .trigcrypt import decryptTrigger, encryptTriggers
-from .trigutils import getExpectedTriggerCount
+from .trigcrypt import decryptTrigger, encryptTriggers, obfuscateDT
+from .trigutils import getExpectedTriggerCount, RestorePUPx, ObfuscatedAdd, SetMemoryC
 from .utils import assignerMerge, obfuscatedValueAssigner, writeAssigner
 
 # Basic mixer
@@ -46,6 +46,8 @@ g_seedKey = None
 
 def unFreeze():
     global tKeys, cryptKey
+
+    RestorePUPx()
 
     # Generate key
     keys = [random.randint(0, 0xFFFFFFFF) for _ in range(9)]
@@ -72,7 +74,7 @@ def unFreeze():
     tempKey2 = mix(tempKey1, seedKey[1])
     tempKey3 = mix(tempKey2, seedKey[2])
     tempKey4 = mix(tempKey3, seedKey[3])
-    cryptKey << mix(tempKey4, 0)
+    mix(tempKey4, 0, ret=cryptKey)
 
     cryptKeyVal = 0
     cryptKeyVal = mix2(cryptKeyVal, seedKeyVal[0])
@@ -103,29 +105,30 @@ def unFreeze():
         tbegin = TrigTriggerBegin(player)
         if EUDIfNot()(tbegin == 0):
             tend = TrigTriggerEnd(player)
-            DoActions(
-                [
-                    tCount.SetNumber(0),
-                    tInternalCount.SetNumber(0),
-                    decryptedCount.SetNumber(0),
-                ]
-            )
+            acts = [
+                tCount.SetNumber(0),
+                tInternalCount.SetNumber(0),
+                decryptedCount.SetNumber(0),
+            ]
+            random.shuffle(acts)
+            DoActions(acts)
             for ptr, epd in EUDLoopList(tbegin, tend):
                 ObfuscatedJump()
+                offset = (8 + 320 + 2048) // 4
                 decryptedCount += decryptTrigger(epd, triggerKey)
-                epd += (8 + 320 + 2048) // 4
+                ObfuscatedAdd(epd, offset, SetMemoryC(0x6509B0, SetTo, 0))
                 propv = f_dwread_epd(epd)
-                epd -= (8 + 320 + 2048) // 4
+                ObfuscatedAdd(epd, -offset, SetMemoryC(0x6509B0, SetTo, 0))
                 if EUDIfNot()(propv == 8):
                     tCount += 1
                 if EUDElse()():
                     tInternalCount += 1
                 EUDEndIf()
             ObfuscatedJump()
-            Trigger(
-                [tCount == desiredTriggerCount[player], tInternalCount == 217],
-                cryptKey.AddNumber(1),
-            )
+            dst = EPD(desiredTriggerCount) + player
+            cons = [MemoryEPD(dst, Exactly, tCount), tInternalCount == 217]
+            random.shuffle(cons)
+            Trigger(cons, cryptKey.AddNumber(1))
             cryptKey += decryptedCount - encryptedTriggerCount[player]
         EUDEndIf()
 

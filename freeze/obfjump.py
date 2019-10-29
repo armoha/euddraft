@@ -29,6 +29,7 @@ from eudplib import *
 
 from .crypt import mix, mix2
 from .utils import obfuscatedValueAssigner, writeAssigner
+from .trigutils import ObfuscatedAdd, SetMemoryC, DebugPrint
 
 cryptKey = EUDVariable()
 oJumper = []
@@ -88,8 +89,8 @@ def ObfuscatedJump():
     r = random.randint(0, 0xFFFFFFFF)
 
     cProxy = CallerProxy(pdst - r, oJumper)
-    oJumper << RawTrigger(nextptr=cProxy, actions=SetMemory(oJumper + 4, Add, r))
-    pdst << RawTrigger(actions=SetMemory(oJumper + 4, Add, -r))
+    oJumper << RawTrigger(nextptr=cProxy, actions=SetMemoryC(oJumper + 4, Add, r))
+    pdst << RawTrigger(actions=SetMemoryC(oJumper + 4, Add, -r))
 
 
 oJumperArray = OJumperBuffer()
@@ -122,9 +123,12 @@ def initOffsets(seedKey, destKeyVal, cryptKey):
         f_dwadd_epd(jumperEPD, key + RlocInt(0, 4))
         seedKeyArray[kIndex] = key
 
-        DoActions([kIndex.AddNumber(1), oJumperIndex.AddNumber(1)])
+        obfus = random.randint(0, 0xFFFFFFFF)
+        ObfuscatedAdd(
+            cryptKey2, obfus, [kIndex.AddNumber(1), oJumperIndex.AddNumber(1)]
+        )
         Trigger(kIndex == 4, kIndex.SetNumber(0))
-        cryptKey2 += 0x46B8622C
+        ObfuscatedAdd(cryptKey2, 0x46B8622C - obfus, SetMemoryC(0x6509B0, SetTo, 0))
     EUDEndInfLoop()
 
     for i in range(4):
@@ -135,34 +139,69 @@ def decryptOffsets():
     # Table modifier
     oJumperPtr = EUDVariable()
     cryptKey2 = EUDVariable()
-    DoActions([cryptKey2.SetNumber(cryptKey), oJumperPtr.SetNumber(EPD(oJumperArray))])
+    acts = [cryptKey.QueueAssignTo(cryptKey2), oJumperPtr.SetNumber(EPD(oJumperArray))]
+    random.shuffle(acts)
+    VProc(cryptKey, acts)
+    obfus1 = random.randint(1, 0xFFFFFFFF)
+    obfus2 = random.randint(1, 0xFFFFFFFF)
 
     if EUDInfLoop()():
         jumperEPD = f_dwread_epd(oJumperPtr)
         EUDBreakIf(jumperEPD == 0)
 
         v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, (v ^ cryptKey2) + cryptKey)
-
-        DoActions([oJumperPtr.AddNumber(1), cryptKey2.AddNumber(0x46B8622C)])
+        f_bitxor(v, cryptKey2, ret=v)
+        acts = [
+            cryptKey.QueueAddTo(v),
+            jumperEPD.SetDest(EPD(v.getDestAddr())),
+            SetMemoryC(oJumperPtr.getValueAddr(), Add, obfus1),
+            SetMemoryC(cryptKey2.getValueAddr(), Add, obfus2),
+        ]
+        random.shuffle(acts)
+        VProc([cryptKey, jumperEPD, v], acts)
+        acts = [
+            SetMemoryC(oJumperPtr.getValueAddr(), Add, 1 - obfus1),
+            SetMemoryC(cryptKey2.getValueAddr(), Add, 0x46B8622C - obfus2),
+        ]
+        random.shuffle(acts)
+        DoActions(acts)
     EUDEndInfLoop()
 
 
 def encryptOffsets():
     # Table modifier
     oJumperPtr = EUDVariable()
-    oJumperPtr << EPD(oJumperArray)
-    cryptKeyInv = EUDVariable()
-    cryptKeyInv << -cryptKey
+    cryptKeyInv = -cryptKey
+    obfus1 = random.randint(1, 0xFFFFFFFF)
+    obfus2 = random.randint(1, 0xFFFFFFFF)
     cryptKey2 = EUDVariable()
-    cryptKey2 << cryptKey
+    VProc(
+        cryptKey,
+        [cryptKey.QueueAssignTo(cryptKey2), oJumperPtr.SetNumber(EPD(oJumperArray))],
+    )
 
     if EUDInfLoop()():
         jumperEPD = f_dwread_epd(oJumperPtr)
         EUDBreakIf(jumperEPD == 0)
 
         v = f_dwread_epd(jumperEPD)
-        f_dwwrite_epd(jumperEPD, (v + cryptKeyInv) ^ cryptKey2)
-
-        DoActions([oJumperPtr.AddNumber(1), cryptKey2.AddNumber(0x46B8622C)])
+        acts = [
+            cryptKeyInv.QueueAddTo(v),
+            SetMemoryC(oJumperPtr.getValueAddr(), Add, obfus1),
+        ]
+        random.shuffle(acts)
+        VProc(cryptKeyInv, acts)
+        x = v ^ cryptKey2
+        acts = [
+            SetMemoryC(jumperEPD.getDestAddr(), SetTo, EPD(x.getDestAddr())),
+            SetMemoryC(cryptKey2.getValueAddr(), Add, obfus2),
+        ]
+        random.shuffle(acts)
+        VProc([jumperEPD, x], acts)
+        acts = [
+            SetMemoryC(oJumperPtr.getValueAddr(), Add, 1 - obfus1),
+            SetMemoryC(cryptKey2.getValueAddr(), Add, 0x46B8622C - obfus2),
+        ]
+        random.shuffle(acts)
+        DoActions(acts)
     EUDEndInfLoop()
