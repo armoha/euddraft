@@ -23,7 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from eudplib import EUDFunc, VProc
+from eudplib import EUDFunc, VProc, DoActions, Add
+from .trigutils import SetMemoryC
+import random
 
 
 @EUDFunc
@@ -31,11 +33,15 @@ def T(x):
     xsq = x * x
     # return x * (xsq * (xsq * xsq + 1) + 1) + 0x8ada4053
     x4p = xsq * xsq
-    x4p += 1
+    DoActions(SetMemoryC(x4p.getValueAddr(), Add, 1))
     x6p = xsq * x4p
-    x6p += 1
+    DoActions(SetMemoryC(x6p.getValueAddr(), Add, 1))
     x7p = x * x6p
-    x7p += 0x8ADA4053
+    obf = random.randint(1, 0xFFFFFFFF)
+    DoActions(
+        SetMemoryC(x7p.getValueAddr(), Add, obf),
+        SetMemoryC(x7p.getValueAddr(), Add, 0x8ADA4053 - obf),
+    )
     return x7p
 
 
@@ -61,7 +67,8 @@ def tryUnT(x):
 def mix(x, y):
     # return T(x) + y + 0x10f874f3
     t = T(x)
-    VProc(t, [t.QueueAddTo(y), y.AddNumber(0x10F874F3)])
+    obf = random.randint(1, 0xFFFFFFFF)
+    VProc(t, [t.AddNumber(obf), t.QueueAddTo(y), y.AddNumber(0x10F874F3 - obf)])
     return y
 
 
