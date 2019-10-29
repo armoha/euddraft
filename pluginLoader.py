@@ -94,19 +94,11 @@ def loadPluginsFromConfig(ep, config):
     initialDirectory = os.getcwd()
     initialPath = sys.path[:]
 
-    freeze_enabled = False
     for pluginName in pluginList:
         if pluginName == "freeze":
-            freeze_enabled = True
-            print(
-                """\
-                          *                                         *
-        *                                        *
-                        [[ freeze activated ]]
-                                  *                       *
-                *                                                          *\
-"""
-            )
+            if "freeze" in config[pluginName]:
+                freeze_enabled = False
+                continue
             print("Freeze plugin loaded")
             if "mpaq" in config[pluginName]:
                 mpaq_enabled = True
@@ -192,6 +184,16 @@ def loadPluginsFromConfig(ep, config):
             os.chdir(initialDirectory)
             sys.path[:] = initialPath[:]
 
+    if isFreezeIssued():
+        print(
+            """\
+                          *                                         *
+        *                                        *
+                        [[ freeze activated ]]
+                                  *                       *
+                *                                                          *\
+"""
+        )
     if "freeze" in pluginList:
         pluginList.remove("freeze")
     elif "SCBank" in pluginList:
