@@ -1,6 +1,45 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.1] - 2019-10-29
+
+### 기능 추가
+
+- `DoActions`가 가변 인자를 받습니다.
+
+  리스트 없이 `DoActions(액션1, 액션2, 액션3, ...)` 으로 쓸 수 있어요.
+- EUD 함수 리턴 최적화.
+  - 함수 리턴 관련 액션을 모두 호출 트리거로 옮겼습니다. 이제 리턴값 있는 함수도 호출할때마다 트리거 1개만 씁니다. 실행되는 액션 개수도 줄었어요.
+  - EUD함수 호출에 `ret=[변수 리스트]` 키워드 인자 추가.
+    ```python
+    v << f_bitxor(v, key)  # 리턴값이 임시변수에 저장되고 다시 v에 대입함.
+    f_bitxor(v, key, ret=v)  # 리턴값을 v에 바로 대입함.
+    ```
+- `stat_txt.tbl` 문자열을 해당하는 번호로 바꿔주는 `EncodeTBL("문자열")` 함수 추가.
+  - **epScript**에서는 `$B("문자열")`로 사용합니다.
+  - 이제 `f_settbl`, `f_settbl2`, `GetTBLAddr`이 문자열도 인자로 받습니다.
+  - [TBL 문자열 목록] 참고하세요.
+- `VProc` 액션 개수 제한 없게 수정. 트리거 2개 이상인 경우 트리거의 리스트를 리턴합니다.
+- `EUDXTypedFunc(bitmasks, argtypes, rettypes)`, EUDXVariable`.getMaskAddr()` 추가.
+- `[freeze]` 취약점 보완. unFreeze 방지.
+  - freeze 자동 언프로텍터가 나온 관계로 eudplib 코드 비공개합니다. pip도 내렸어요.
+
+### 동작 변경
+
+- **freeze 프로텍터가 기본 적용됩니다.** 끄려면 .eds, .edd에 아래 문구 추가하세요.
+    ```
+    [freeze]
+    freeze: 0
+    ```
+- 비트 연산 최적화.
+    - `AND, OR, NAND, NOR`는 이제 EUD함수가 아닙니다. 트리거 1개로 계산합니다.
+
+### 버그 수정
+
+- 함수의 반환 값 개수가 일정하지 않을 때 오류 메시지에 함수 이름이 안 나오는 버그 수정;
+```EPError: Numbers of returned value should be constant. (From function caller)```
+- 메소드 StringBuffer`.insertf(index, format_string, *args)` 인자 오류 수정.
+
 ## [0.8.9.0] - 2019-10-19
 
 기능 추가 위주의 대형 업데이트입니다.
@@ -1099,7 +1138,8 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
+[0.8.9.1]: https://github.com/armoha/euddraft/releases/download/v0.8.9.1/euddraft0.8.9.1.zip
+[TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
 [1e6fae3]: https://github.com/armoha/eudplib/commit/1e6fae3ac884e980741199c22fbddb06414f7f03
