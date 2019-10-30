@@ -29,7 +29,7 @@ from eudplib import *
 
 from .crypt import mix, mix2
 from .utils import obfuscatedValueAssigner, writeAssigner
-from .trigutils import ObfuscatedAdd, SetMemoryC, DebugPrint
+from .trigutils import ObfuscatedAdd, SetMemoryC
 
 cryptKey = EUDVariable()
 oJumper = []

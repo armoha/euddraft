@@ -294,9 +294,6 @@ def getObf():
 
 
 def ObfuscatedAdd(var, amount, acts=[]):
-    oldcp = f_getcurpl()
-    TODO_VAR = EUDVariable()
-    TODO_VAR << var
     ptr = var.getValueAddr()
     dst1, e1 = getObf()
     dst2, e2 = getObf()
@@ -313,28 +310,3 @@ def ObfuscatedAdd(var, amount, acts=[]):
         SetMemoryS(ptr, Add, amount - e1 - e2),
         acts,
     )
-    f_setcurpl(f_getuserplayerid())
-    import inspect
-
-    s = "\x04"
-    for i in range(2, 0, -1):
-        s += inspect.getouterframes(inspect.currentframe())[i].function + "/"
-    if EUDIf()(var - TODO_VAR == amount):
-        t = s + " \x07GOOD!"
-        DoActions(DisplayText(t))
-    if EUDElse()():
-        t = s + " \x08BAD..."
-        DoActions(DisplayText(t))
-    EUDEndIf()
-    f_setcurpl(oldcp)
-
-
-def DebugPrint(t):
-    import inspect
-
-    s = "\x04"
-    for i in range(5, 0, -1):
-        s += inspect.getouterframes(inspect.currentframe())[i].function + "/"
-    oldcp = f_getcurpl()
-    DoActions(DisplayText(s + t))
-    f_setcurpl(oldcp)
