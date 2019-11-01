@@ -1,6 +1,15 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.2] - 2019-11-02
+
+### 버그 수정
+
+- **[freeze] 프로텍션 버그 수정**
+
+    - [0.8.9.0]까지 input 맵에서 CP트릭 사용하면 해당 트리거가 일정 확률로 실행되지 않는 버그가 났습니다. [0.8.9.1]은 최적화, 난독화하다가 실수해서 CP트릭 안 썼어도 버그날 확률이 있었습니다.
+
+
 ## [0.8.9.1] - 2019-10-29
 
 ### 기능 추가
@@ -39,6 +48,7 @@
 - 함수의 반환 값 개수가 일정하지 않을 때 오류 메시지에 함수 이름이 안 나오는 버그 수정;
 ```EPError: Numbers of returned value should be constant. (From function caller)```
 - 메소드 StringBuffer`.insertf(index, format_string, *args)` 인자 오류 수정.
+
 
 ## [0.8.9.0] - 2019-10-19
 
@@ -1138,7 +1148,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.1]: https://github.com/armoha/euddraft/releases/download/v0.8.9.1/euddraft0.8.9.1.zip
+[0.8.9.2]: https://github.com/armoha/euddraft/releases/download/v0.8.9.2/euddraft0.8.9.2.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
