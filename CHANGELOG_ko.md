@@ -1,6 +1,17 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.4] - 2019-11-04
+
+### 기능 추가
+
+- [freeze], inline_eudplib 사용맵도 모든 트리거 인라이닝 기능 `PRT_SetInliningRate(1)` 사용 가능.
+
+### 버그 수정
+
+- `f_wwrite`에서 subp가 3일 때 앞 바이트만 작성되는 버그 수정.
+
+
 ## [0.8.9.3] - 2019-11-04
 
 ### 버그 수정
@@ -10,7 +21,7 @@
 
 ### 기능 추가
 
-- 실험적 트리거 연속 인라이닝 기능 추가.
+- 실험적 모든 트리거 인라이닝 기능 추가.
 
     `PRT_SetInliningRate(1)` 넣으면 활성화됩니다. 모든 트리거를 스트링으로 옮깁니다. 트리거 플레이어가 1명인 트리거의 비중이 높으면 용량 감소 효과가 있습니다.
 
@@ -1162,7 +1173,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.3]: https://github.com/armoha/euddraft/releases/download/v0.8.9.3/euddraft0.8.9.3.zip
+[0.8.9.4]: https://github.com/armoha/euddraft/releases/download/v0.8.9.4/euddraft0.8.9.4.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
