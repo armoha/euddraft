@@ -48,7 +48,7 @@ def createPayloadMain(pluginList, pluginFuncDict):
         # init plugins
         if isFreezeIssued():
             unFreeze()
-            ep.PRT_SetInliningRate(0.05)
+            # ep.PRT_SetInliningRate(0.05)
 
         if isSCBankIssued():
             scbank_core.onPluginStart()
