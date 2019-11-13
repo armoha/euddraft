@@ -34,4 +34,4 @@ for outputZipPath in outputZipList:
     signature = generateFileSignature(outputZipPath)
     open(outputZipPath + ".sig", "w").write(signature)
 
-open("latest/BETA_VERSION", "w").write(version)
+open("latest/VERSION", "w").write(version)

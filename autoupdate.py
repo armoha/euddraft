@@ -15,7 +15,7 @@ from urllib.request import urlopen
 import msgbox
 from edpkgutil.verifyPkg import verifyFileSignature
 
-VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/BETA_VERSION"
+VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/VERSION"
 RELEASE_URL = (
     "https://github.com/armoha/euddraft/releases/download/v%s/euddraft%s.zip"
 )

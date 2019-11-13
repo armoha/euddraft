@@ -1,6 +1,15 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.6] - 2019-11-13
+
+### 기능 추가
+
+- 압축 안 되는 트리거는 인라이닝 안 하게 개선.
+
+    트리거 크기 컷오프 결정하는데 아스나님이 도와주셨습니다.
+
+
 ## [0.8.9.5] - 2019-11-12
 
 ### 기능 추가
@@ -10,11 +19,13 @@
     `Wait`나 `Transmission` 액션이 없는 반복 트리거는 하나만 삽입되고 모든 트리거 플레이어가 공유합니다. 인라이닝율이 1일때만 시행합니다.\
     트리거 플레이어 2~8명 체크했어도 트리거 1개만 삽입되고 `nextptr`을 변경해서 연결합니다.
 
-    > 트리거 4005개 맵 (TrigEditPlus 16만줄) 용량 감소 예시
-    >
-    > basemap: 2.17MB\
-    > 공유 X: 3.01MB (프리즈: 3.23MB)\
-    > 트리거 공유: 1.76MB (프리즈: 2.09MB)
+    - 트리거 4005개 맵 (TrigEditPlus 16만줄) 용량 감소 예시
+
+        ```
+        basemap: 2.17MB
+        공유 X: 3.01MB (프리즈: 3.23MB)
+        트리거 공유: 1.76MB (프리즈: 2.09MB)
+        ```
 
 ### 버그 수정
 
@@ -1203,7 +1214,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.4]: https://github.com/armoha/euddraft/releases/download/v0.8.9.4/euddraft0.8.9.4.zip
+[0.8.9.6]: https://github.com/armoha/euddraft/releases/download/v0.8.9.6/euddraft0.8.9.6.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
