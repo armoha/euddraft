@@ -1,6 +1,19 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.7] - 2019-11-23
+
+### 버그 수정
+
+- `"Protoss Unused type   1"`이 어시밀레이터로 코딩된 버그 수정.
+- `StringBuffer.fadeInf`, `.fadeOutf`가 텍스트 효과 종료 여부를 리턴하지 않는 문제 수정. (아스나님 제보 감사합니다.)
+
+### 기능 추가
+
+- Python 3.8, cx_Freeze 6.1로 업데이트.
+- `*=`, `//=`, `%=`는 좌항에 직접 리턴하게 최적화.
+
+
 ## [0.8.9.6] - 2019-11-13
 
 ### 기능 추가
@@ -1214,7 +1227,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.6]: https://github.com/armoha/euddraft/releases/download/v0.8.9.6/euddraft0.8.9.6.zip
+[0.8.9.7]: https://github.com/armoha/euddraft/releases/download/v0.8.9.7/euddraft0.8.9.7.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228

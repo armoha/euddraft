@@ -10,7 +10,7 @@ from edpkgutil.packageZip import packageZip
 from edpkgutil.verifyPkg import generateFileSignature
 from euddraft import version
 
-buildDir = "build/exe.win32-3.7"
+buildDir = "build/exe.win32-%u.%u" % sys.version_info[0:2]
 outputZipList = [
     "latest/euddraft%s.zip" % version,
     # 'latest/euddraft_latest.zip'
