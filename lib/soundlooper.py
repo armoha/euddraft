@@ -215,7 +215,6 @@ class _Ogg(_TinyTag):
 _PATH = ""
 _INV_SYS_TIME = 0x51CE8C
 _CP = 0x6509B0
-_sb = StringBuffer(8)
 
 
 def _id_generator():
@@ -322,7 +321,7 @@ def _T2i(title):
 @EUDFunc
 def _calculate_error():
     x = EUDVariable()
-    DoActions(x.SetNumber(-41))
+    x << -41
     _next = Forward()
     EUDJumpIfNot(Memory(0x5124F0, Exactly, 42), _next)
     x << f_dwread_epd(EPD(0x5124F0))
@@ -366,21 +365,6 @@ def _onInit():
 EUDOnStart(_onInit)
 
 
-@EUDFunc
-def PlaySoundWorkaround(loop, barpp):
-    barpp -= 1
-    EUDSwitch(loop)
-    for title, loop in _Loop.loop_dict.items():
-        EUDSwitchCase()(loop.index)
-        EUDSwitch(barpp)
-        for n in range(loop.count + 1):
-            EUDSwitchCase()(n)
-            DoActions(PlayWAV("{}{:03d}".format(loop.id, n)))
-            EUDReturn()
-        EUDEndSwitch()
-    EUDEndSwitch()
-
-
 def get_three_digits(x):
     ab, c = divmod(x, 10)
     a, b = divmod(ab, 10)
@@ -408,6 +392,7 @@ class SoundLooper:
         self._set_bridge_length = Forward()
         self._set1_bar = Forward()
         self._set_goto = [Forward() for _ in range(2)]
+        self._sb = StringBuffer(8)
 
         def _Init():
             self.initialize()
@@ -417,15 +402,15 @@ class SoundLooper:
     def initialize(self):
         """사운드 플레이어 초기화. onPluginStart에서 1번 실행해주세요."""
         VProc(
-            _sb.epd, [_sb.epd.AddNumber(1), _sb.epd.QueueAssignTo(EPD(self._set_loop[1]) + 4)]
+            self._sb.epd, [self._sb.epd.AddNumber(1), self._sb.epd.SetDest(EPD(self._set_loop[1]) + 4)]
         )
-        VProc(_sb.epd, _sb.epd.SetDest(EPD(self._set_bar) + 4))
+        VProc(self._sb.epd, self._sb.epd.SetDest(EPD(self._set_bar) + 4))
         VProc(
-            [_sb.epd, localcp],
+            [self._sb.epd, localcp],
             [
-                _sb.epd.AddNumber(-1),
-                _sb.epd.SetDest(EPD(self._set_loop[0]) + 4),
-                localcp.QueueAssignTo(EPD(self._set_localcp) + 5),
+                self._sb.epd.AddNumber(-1),
+                self._sb.epd.SetDest(EPD(self._set_loop[0]) + 4),
+                localcp.SetDest(EPD(self._set_localcp) + 5),
             ],
         )
 
@@ -438,19 +423,18 @@ class SoundLooper:
         VProc(
             inv_time,
             [
-                inv_time.QueueAssignTo(EPD(self._check_time) + 2),
+                inv_time.SetDest(EPD(self._check_time) + 2),
                 self._set_loop[0] << SetMemory(0, SetTo, 0),
                 self._set_loop[1] << SetMemory(0, SetTo, 0),
                 self._set_bar << SetMemory(0, Add, 0),
                 self._set_localcp << SetMemory(_CP, SetTo, 0),
-                # PlayWAV(_sb.StringIndex),
+                PlayWAV(self._sb.StringIndex),
                 self.current_bar.AddNumber(1),
                 SetMemory(self._set_bar + 20, Add, 1 << 16),
                 self._add1_bar << SetMemory(0, Add, 1),
             ],
         )
-        DoActions([self._set_bar_length << SetMemory(self._check_time + 8, Add, 0)])
-        PlaySoundWorkaround(self.current_loop, self.current_bar)
+        DoActions(self._set_bar_length << SetMemory(self._check_time + 8, Add, 0))
         bar_carry = self._set_bar + 20
         RawTrigger(
             conditions=MemoryX(bar_carry, AtLeast, (ord("9") + 1) << 16, 0xFF << 16),
@@ -482,11 +466,9 @@ class SoundLooper:
         a, b = f_div(ab, 10)
         d = a + (b << 8) + (c << 16)
         DoActions(
-            [
-                self.current_bar.SetNumber(bar),
-                SetMemoryX(self._set_bar + 20, SetTo, d, 0xFFFFFF),
-                SetMemoryEPD(EPD(SoundLooper.bars) + self.current_loop, SetTo, bar),
-            ]
+            self.current_bar.SetNumber(bar),
+            SetMemoryX(self._set_bar + 20, SetTo, d, 0xFFFFFF),
+            SetMemoryEPD(EPD(SoundLooper.bars) + self.current_loop, SetTo, bar),
         )
 
     def play(self, title, bar=None):
@@ -514,9 +496,9 @@ class SoundLooper:
         VProc(
             [self.current_loop, index, err],
             [
-                self.current_loop.QueueAssignTo(self.previous_loop),
-                index.QueueAssignTo(self.current_loop),
-                err.QueueAssignTo(EPD(self._set_bar_length) + 5),
+                self.current_loop.SetDest(self.previous_loop),
+                index.SetDest(self.current_loop),
+                err.SetDest(EPD(self._set_bar_length) + 5),
                 SetMemory(self._set1_bar + 20, SetTo, 1),
                 SetMemory(self._set_goto[0] + 20, SetTo, 1),
                 SetMemory(self._set_goto[1] + 20, SetTo, 0x10000),
@@ -530,31 +512,29 @@ class SoundLooper:
             goto = (d0 << 16) + (d1 << 8) + d2
             bar = EPD(SoundLooper.bars) + loop.index
             DoActions(
+                SetMemory(self._set_loop[0] + 20, SetTo, _u2i4(loop.id[:4])),
+                SetMemory(self._set_loop[1] + 20, SetTo, _u2i4(loop.id[4] + "000")),
+                SetMemory(self._check_last_bar + 8, SetTo, loop.count + 1),
+                SetMemory(
+                    self._set_intro_length + 20,
+                    SetTo,
+                    ceil((loop.bar - loop.intro) * 1000),
+                ),
+                SetMemory(self._set_bar_length + 20, Add, ceil(-loop.bar * 1000)),
+                SetMemory(
+                    self._set_bridge_length + 20,
+                    SetTo,
+                    ceil((loop.bar - loop.bridge) * 1000),
+                ),
+                SetMemory(self._add1_bar + 16, SetTo, bar),
+                SetMemory(self._set1_bar + 16, SetTo, bar),
                 [
-                    SetMemory(self._set_loop[0] + 20, SetTo, _u2i4(loop.id[:4])),
-                    SetMemory(self._set_loop[1] + 20, SetTo, _u2i4(loop.id[4] + "000")),
-                    SetMemory(self._check_last_bar + 8, SetTo, loop.count + 1),
-                    SetMemory(
-                        self._set_intro_length + 20,
-                        SetTo,
-                        ceil((loop.bar - loop.intro) * 1000),
-                    ),
-                    SetMemory(self._set_bar_length + 20, Add, ceil(-loop.bar * 1000)),
-                    SetMemory(
-                        self._set_bridge_length + 20,
-                        SetTo,
-                        ceil((loop.bar - loop.bridge) * 1000),
-                    ),
-                    SetMemory(self._add1_bar + 16, SetTo, bar),
-                    SetMemory(self._set1_bar + 16, SetTo, bar),
-                    [
-                        SetMemory(self._set_goto[0] + 20, SetTo, loop.goto),
-                        SetMemory(self._set_goto[1] + 20, SetTo, goto),
-                        SetMemory(self._set1_bar + 20, SetTo, loop.goto),
-                    ]
-                    if loop.goto != 1
-                    else [],
+                    SetMemory(self._set_goto[0] + 20, SetTo, loop.goto),
+                    SetMemory(self._set_goto[1] + 20, SetTo, goto),
+                    SetMemory(self._set1_bar + 20, SetTo, loop.goto),
                 ]
+                if loop.goto != 1
+                else [],
             )
             EUDBreak()
         EUDEndSwitch()
@@ -562,10 +542,8 @@ class SoundLooper:
     def pause(self):
         """사운드 루프를 일시정지한다."""
         DoActions(
-            [
-                self.previous_loop.SetNumber(self.current_loop),
-                self.current_loop.SetNumber(-1),
-            ]
+            self.previous_loop.SetNumber(self.current_loop),
+            self.current_loop.SetNumber(-1),
         )
 
     def resume(self):
@@ -588,7 +566,7 @@ class SoundLooper:
         같은 사운드 루프의 낮/밤 버전을 같은 위치에서 전환하는 등에 쓰인다.
         """
         loop = _T2i(loop)
-        VProc(self.current_bar, self.current_bar.QueueAssignTo(EPD(SoundLooper.bars) + loop))
+        VProc(self.current_bar, self.current_bar.SetDest(EPD(SoundLooper.bars) + loop))
 
     @classmethod
     def sendbar(cls, dst, src, _fdict={}):

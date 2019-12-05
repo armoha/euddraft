@@ -1,6 +1,14 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.8] - 2019-12-05
+
+### 변경 사항
+
+- `StringBuffer` 롤백
+  
+  `soundlooper`도 사운드 파일마다 스트링 넣는 방식에서 플레이어마다 스트링 쓰게 변경했어요.
+
 ## [0.8.9.7] - 2019-11-23
 
 ### 버그 수정
@@ -1227,7 +1235,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.7]: https://github.com/armoha/euddraft/releases/download/v0.8.9.7/euddraft0.8.9.7.zip
+[0.8.9.8]: https://github.com/armoha/euddraft/releases/download/v0.8.9.8/euddraft0.8.9.8.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
