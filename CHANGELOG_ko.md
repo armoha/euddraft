@@ -1,13 +1,44 @@
 # 변경 사항 (한국어)
 
 
+## [0.8.9.9] - 2019-12-09
+**eudplib 0.61** 업데이트
+
+### 버그 수정
+
+- **StringBuffer** 문자열 주소가 4의 배수가 아닌 버그 수정
+- `DisplayTextAt` 컴파일 안 되는 버그 수정
+
+### 기능 추가
+
+- **eudplib** 메시지 한글화(다국어 지원)
+
+    - 기본으로 시스템 로케일을 불러옵니다. 환경변수 `LANG`으로 설정할 수 있습니다.
+    - 윈도우 `cmd`에서는 `setx LANG en`으로 영어로 설정합니다.
+- eudplib 오류 메시지 한글화 + 모든 경고/오류가 stderr로 출력하게 수정
+- 모든 문자열 주소를 4의 배수로 변경
+- `EUDByteStream` 추가
+  
+  `.readbyte()`, `.writebyte(b)`를 모두 사용할 수 있고,\
+  `.copyto(byterw)`로 현재 위치를 다른 `EUDByteReader`/`Writer`/`Stream`한테 전달할 수 있습니다.
+- `ep_warn`, `EPWarning`, `ep_eprint` 추가
+- `CPByteWriter`, `f_strnstr` 성능 최적화
+
+### 기능 변경
+
+- `_safe` 읽기 함수 지원 중단(deprecated) 경고
+  
+  **eudplib 0.63**에서 `f_dwepdread_epd_safe`, `f_dwread_epd_safe`, `f_epdread_epd_safe`를 삭제할 예정입니다.
+
+
 ## [0.8.9.8] - 2019-12-05
 
-### 변경 사항
+### 기능 변경
 
 - `StringBuffer` 롤백
   
   `soundlooper`도 사운드 파일마다 스트링 넣는 방식에서 플레이어마다 스트링 쓰게 변경했어요.
+
 
 ## [0.8.9.7] - 2019-11-23
 
@@ -1235,7 +1266,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.8.9.8]: https://github.com/armoha/euddraft/releases/download/v0.8.9.8/euddraft0.8.9.8.zip
+[0.8.9.9]: https://github.com/armoha/euddraft/releases/download/v0.8.9.9/euddraft0.8.9.9.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
 [soundlooper 사용법]: http://kein0011.blog.me/221409128228
