@@ -20,8 +20,6 @@ using HashTable = std::vector<HashTableEntry>;
 using BlockTable = std::vector<BlockTableEntry>;
 using BlockDataTable = std::vector<std::string>;
 
-bool bEnableMpaq = false;
-
 std::string modChk(
 	const std::string& chkContent,
 	const uint32_t seedKey[4],
@@ -84,23 +82,6 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
         auto blockEntry = mr->getBlockEntry(hashEntry.blockIndex);
 		std::string blockData = mr->getBlockContent(&hashEntry);
         auto newBlockEntry = *blockEntry;
-
-		// If mpaq -> compress wave file
-		if (bEnableMpaq && newBlockEntry.fileFlag & BLOCK_COMPRESSED) {
-			try {
-				auto fdata = decompressBlock(newBlockEntry.fileSize, blockData);
-
-				if (fdata.size() >= 12 &&
-					memcmp(fdata.data(), "RIFF", 4) == 0 &&
-					memcmp(fdata.data() + 8, "WAVE", 4) == 0) {
-					auto cmpdata = compressToBlock(fdata,
-						MAFA_COMPRESS_STANDARD,
-						MAFA_COMPRESS_WAVE);
-					if (cmpdata.size() < blockData.size()) blockData = cmpdata;
-                    newBlockEntry.blockSize = blockData.size();
-				}
-            } catch(std::runtime_error e) {}
-		}
 
     	blockDataTable.push_back(blockData);
 		newBlockEntry.fileFlag &= ~(BLOCK_ENCRYPTED | BLOCK_KEY_ADJUSTED);  // No longer encrypted
@@ -232,8 +213,8 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // Write "freeze05 protect" header. Note that this header is a part of block table header, but should
 	// be visible as a plaintext in MPQ file. We skip additional encryption/decryption stage here.
-    memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
-    cursor += 16;
+    // memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
+    // cursor += 16;
 
     // Output hash data here
 	DecryptData(archiveBuffer.data(), cursor, blockTableKey);

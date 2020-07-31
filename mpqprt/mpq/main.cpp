@@ -3,18 +3,11 @@
 #include <fstream>
 #include <cstring>
 
-extern bool bEnableMpaq;
-
 int main(int argc, char** argv) {
-    if(argc != 2 && argc != 3) return -1;
+    if(argc != 2) return -1;
 
 	std::string ifname = argv[1];
 	std::string ofname = ifname;
-
-	if (argc == 3) {
-		if (strcmp(argv[2], "mpaq") == 0) bEnableMpaq = true;
-		else return -1;  // Invalid argument
-	}
 
 	try {
 		auto hMPQ = readMPQ(ifname);
