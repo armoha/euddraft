@@ -4,14 +4,10 @@
 #include <cstring>
 #include <pybind11/pybind11.h>
 
-extern bool bEnableMpaq;
-
 int applyFreezeMpqModification(
         const std::string& ifname,
-        const std::string& ofname,
-        bool enableMpaq
+        const std::string& ofname
 ) {
-    bEnableMpaq = enableMpaq;
 
     try {
         auto hMPQ = readMPQ(ifname);
