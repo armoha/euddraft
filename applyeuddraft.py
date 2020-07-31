@@ -33,11 +33,14 @@ import eudplib as ep
 import freezeMpq
 import msgbox
 import scbank_core
-from freeze import (decryptOffsets, encryptOffsets, obfpatch, obfunpatch,
-                    unFreeze)
+from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
-from pluginLoader import (isFreezeIssued, isMpaqIssued, isPromptIssued,
-                          isSCBankIssued, loadPluginsFromConfig)
+from pluginLoader import (
+    isFreezeIssued,
+    isPromptIssued,
+    isSCBankIssued,
+    loadPluginsFromConfig,
+)
 from readconfig import readconfig
 
 
@@ -152,9 +155,7 @@ def applyEUDDraft(sfname):
                 sys.stdout.flush()
                 os.system("pause")
             print("[Stage 4/3] Applying freeze mpq modification...")
-            ret = freezeMpq.applyFreezeMpqModification(
-                ep.u2b(ofname), ep.u2b(ofname), isMpaqIssued()
-            )
+            ret = freezeMpq.applyFreezeMpqModification(ep.u2b(ofname), ep.u2b(ofname))
             if ret != 0:
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 
@@ -171,6 +172,9 @@ def applyEUDDraft(sfname):
         for i, exc in enumerate(excs):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
+            plibPath = '  File "C:\\Py\\lib\\site-packages\\eudplib-0.62.0-py3.8.egg\\eudplib\\'
+            if exc.startswith(plibPath):
+                exc = '  eudplib File "' + exc[len(plibPath) :]
             formatted_excs.append(exc)
 
         print("[Error] %s" % e, "".join(formatted_excs), file=sys.stderr)
