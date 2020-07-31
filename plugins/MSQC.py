@@ -446,7 +446,11 @@ def onInit():
         )
     )
     if useMouseLocation:
-        mrgn, strtb = chkt.getsection("MRGN"), TBL(chkt.getsection("STR"))
+        mrgn = chkt.getsection("MRGN")
+        try:
+            strtb = TBL(chkt.getsection("STR"))
+        except KeyError:
+            strtb = TBL(chkt.getsection("STRx"), load_entry=4, save_entry=4)
         loc_list = []
         for p in humans:
             locid = (mouse_loc + p) * 20
