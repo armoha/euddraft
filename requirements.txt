@@ -8,5 +8,4 @@ pywin32
 cx_Freeze
 
 # These can be installed via pip
-pyopenssl
 eudplib

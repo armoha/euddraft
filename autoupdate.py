@@ -13,12 +13,9 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 import msgbox
-from edpkgutil.verifyPkg import verifyFileSignature
 
 VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/VERSION"
-RELEASE_URL = (
-    "https://github.com/armoha/euddraft/releases/download/v%s/euddraft%s.zip"
-)
+RELEASE_URL = "https://github.com/armoha/euddraft/releases/download/v%s/euddraft%s.zip"
 
 
 def download(url):
@@ -81,10 +78,6 @@ def getRelease(version):
     return download(RELEASE_URL % (version, version))
 
 
-def getReleaseSignature(version):
-    return download(RELEASE_URL % (version, version) + ".sig")
-
-
 def checkUpdate():
     # auto update only supports Win32 by now.
     # Also, the application should be frozen
@@ -126,19 +119,6 @@ def checkUpdate():
     release = getRelease(latestVersion)
     if not release:
         return msgbox.MessageBox("Update failed", "No release", textio=sys.stderr)
-    signature = getReleaseSignature(latestVersion)
-    if not signature:
-        return msgbox.MessageBox("Update failed", "No signature", textio=sys.stderr)
-    if not verifyFileSignature(release, signature):
-        return msgbox.MessageBox(
-            "Update failed",
-            "Digital signature check failed. Deny update for security",
-            textio=sys.stderr,
-        )
-    if not release:
-        return msgbox.MessageBox(
-            "Update failed", "Cannot get update file.", textio=sys.stderr
-        )
 
     dataDir = os.path.dirname(sys.executable)
     updateDir = os.path.join(dataDir, "_update")
