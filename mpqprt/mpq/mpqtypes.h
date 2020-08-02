@@ -14,7 +14,7 @@ typedef struct {
 	uint32_t headerSize; // >= 32
 	uint32_t mpqSize; //Don't matter
 	uint16_t mpqVersion; //0
-	uint8_t sectorSizeShift; //3
+	uint8_t sectorSizeShift; //3~15
 	uint8_t unused0; //0
 
 	uint32_t hashTableOffset;

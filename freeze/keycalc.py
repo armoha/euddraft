@@ -143,11 +143,12 @@ def keycalc(seedKey, fileCursor):
 
     # 4. Feed scenario.chk sectorOffsetTable
     chkSector_ = f_dwread_epd(chkBlockEntryEPD)
+    sectorSize = 4096
     if random.random() >= 0.6:
-        ObfuscatedAdd(chkSector_, 4095, SetMemoryC(0x6509B0, SetTo, 0))
+        ObfuscatedAdd(chkSector_, sectorSize - 1, SetMemoryC(0x6509B0, SetTo, 0))
     else:
-        chkSector_ += 4095
-    chkSectorNum = chkSector_ // 4096
+        chkSector_ += sectorSize - 1
+    chkSectorNum = chkSector_ // sectorSize
     chkSectorNum += 8
     i_ = EUDVariable(8)
     if EUDWhile()(i_ <= chkSectorNum):

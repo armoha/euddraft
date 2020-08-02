@@ -19,6 +19,7 @@ public:
     int getFileCount() const;
     int getHashEntryCount() const;
     int getBlockEntryCount() const;
+    uint8_t getSectorSizeShift() const;
     const HashTableEntry* getHashEntry(int index) const;
     const HashTableEntry* getHashEntry(const std::string& fname) const;
 	const BlockTableEntry* getBlockEntry(int index) const;

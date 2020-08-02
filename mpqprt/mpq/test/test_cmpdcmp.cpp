@@ -10,7 +10,7 @@ TEST_CASE("Compression & decompression")
 	char s[s_size] = {0};
 	std::string data(s, s + s_size);
 
-	std::string cmp = compressToBlock(data, MAFA_COMPRESS_STANDARD, MAFA_COMPRESS_STANDARD);
-	std::string dcmp = decompressBlock(s_size, cmp);
+	std::string cmp = compressToBlock(data, MAFA_COMPRESS_STANDARD, MAFA_COMPRESS_STANDARD, 4096);
+	std::string dcmp = decompressBlock(s_size, cmp, 4096);
 	CHECK(dcmp == data);
 }
