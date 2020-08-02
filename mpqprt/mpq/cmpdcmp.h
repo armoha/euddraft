@@ -7,9 +7,9 @@
 /**
  * Decompress normal-compressed block data
  */
-std::string decompressBlock(size_t fileSize, const std::string& blockContent);
+std::string decompressBlock(size_t fileSize, const std::string& blockContent, size_t sectorSize);
 
 /**
  * Compress block using specified compression algorithm.
  */
-std::string compressToBlock(const std::string& fileContent, uint8_t cmpType1, uint8_t cmpType2);
+std::string compressToBlock(const std::string& fileContent, uint8_t cmpType1, uint8_t cmpType2, size_t sectorSize);

@@ -15,5 +15,6 @@ void keycalc(
 	uint32_t hashTableOffset,
 	uint32_t blockEntryCount,
 	uint32_t initialBlockIndex,
-	const BlockTableEntry& chkBlockEntry
+	const BlockTableEntry& chkBlockEntry,
+	size_t sectorSize
 );

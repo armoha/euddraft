@@ -29,6 +29,7 @@ public:
     ~MpqReadImpl();
 
     int getHashEntryCount() const;
+    uint8_t getSectorSizeShift() const;
 
 	const HashTableEntry* getHashEntry(int index) const;
 	const HashTableEntry* getHashEntry(const std::string& fname) const;
@@ -76,6 +77,7 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
         if(header.sectorSizeShift != 3) {
             throw std::runtime_error("Invalid sectorSizeShift");
         }
+        const size_t sectorSize = 512u << header.sectorSizeShift;
 
         // Get hash table
         readTable(is, header.hashTableOffset, header.hashTableEntryCount, "(hash table)", hashTable);
@@ -93,7 +95,7 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
 			auto listFileBlockEntry = getBlockEntry(listFileHashEntry->blockIndex);
 			auto listFile = getDecryptedBlockContent(listFileHashEntry, listFileBlockEntry);
 			if (listFileBlockEntry->fileFlag & BLOCK_COMPRESSED) {
-				listFile = decompressBlock(listFileBlockEntry->fileSize, listFile);
+				listFile = decompressBlock(listFileBlockEntry->fileSize, listFile, sectorSize);
 			}
 			const char* p = listFile.data();
 			const char* pend = listFile.data() + listFile.size();
@@ -120,6 +122,10 @@ MpqReadImpl::~MpqReadImpl() {
 
 int MpqReadImpl::getHashEntryCount() const {
     return hashTable.size();
+}
+
+uint8_t MpqReadImpl::getSectorSizeShift() const {
+	return header.sectorSizeShift;
 }
 
 const HashTableEntry* MpqReadImpl::getHashEntry(int index) const {
@@ -235,6 +241,7 @@ MpqRead::MpqRead(const std::string &mpqName) : pimpl(new MpqReadImpl(mpqName)) {
 MpqRead::~MpqRead() { delete pimpl; }
 
 int MpqRead::getHashEntryCount() const { return pimpl->getHashEntryCount(); }
+uint8_t MpqRead::getSectorSizeShift() const { return pimpl->getSectorSizeShift(); }
 const HashTableEntry* MpqRead::getHashEntry(int index) const { return pimpl->getHashEntry(index); }
 const HashTableEntry* MpqRead::getHashEntry(const std::string &fname) const { return pimpl->getHashEntry(fname); }
 const BlockTableEntry* MpqRead::getBlockEntry(int index) const { return pimpl->getBlockEntry(index); }

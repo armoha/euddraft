@@ -24,7 +24,8 @@ std::string modChk(
 	const std::string& chkContent,
 	const uint32_t seedKey[4],
 	const uint32_t destKey[4],
-	uint32_t fileCursor);
+	uint32_t fileCursor,
+	size_t sectorSize);
 
 
 bool hashMatch(const HashTableEntry* hashEntry, const char* filename)
@@ -108,6 +109,8 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     }
 
 	// Modify scenario.chk block
+	uint8_t newSectorSizeShift = mr->getSectorSizeShift();
+	size_t newSectorSize = 512u << newSectorSizeShift;
 	{
         auto& scenarioBlock = blockTable[0];
 
@@ -118,13 +121,14 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 		std::string rawchk =
 			(scenarioBlock.fileFlag & BLOCK_COMPRESSED) ?
-			decompressBlock(scenarioBlock.fileSize, blockDataTable[0]) :
+			decompressBlock(scenarioBlock.fileSize, blockDataTable[0], newSectorSize) :
 			blockDataTable[0];
-		std::string newchk = modChk(rawchk, seedKey, destKey, fileCursor);
+		std::string newchk = modChk(rawchk, seedKey, destKey, fileCursor, newSectorSize);
 		blockDataTable[0] = compressToBlock(
 			newchk,
 			MAFA_COMPRESS_STANDARD,
-			MAFA_COMPRESS_STANDARD
+			MAFA_COMPRESS_STANDARD,
+			newSectorSize
 		);
 		scenarioBlock.fileSize = newchk.size();
 		scenarioBlock.blockSize = blockDataTable[0].size();
@@ -175,7 +179,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     header.headerSize = 32;
     header.mpqSize = newArchiveSize;
     header.mpqVersion = 0;
-    header.sectorSizeShift = 3;
+    header.sectorSizeShift = newSectorSizeShift;
     header.unused0 = 0;
     header.hashTableOffset = hashTableOffset;
     header.blockTableOffset = 0;
@@ -213,8 +217,8 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // Write "freeze05 protect" header. Note that this header is a part of block table header, but should
 	// be visible as a plaintext in MPQ file. We skip additional encryption/decryption stage here.
-    // memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
-    // cursor += 16;
+    memcpy(archiveBuffer.data() + cursor, "freeze05 protect", 16);
+    cursor += 16;
 
     // Output hash data here
 	DecryptData(archiveBuffer.data(), cursor, blockTableKey);
@@ -234,7 +238,8 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 		header.hashTableOffset,
 		header.blockTableEntryCount,
 		initialBlockIndex,
-		blockTable[0]
+		blockTable[0],
+		newSectorSize
 	);
 
 	memcpy(archiveBuffer.data() + cursor, outputDwords, 16);

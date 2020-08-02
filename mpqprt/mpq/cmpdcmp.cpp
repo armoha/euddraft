@@ -5,8 +5,7 @@
 #include "mpqtypes.h"
 
 
-std::string decompressBlock(size_t fileSize, const std::string& blockContent) {
-	const size_t sectorSize = 4096;
+std::string decompressBlock(size_t fileSize, const std::string& blockContent, size_t sectorSize) {
 	const size_t sectorCount = (fileSize + sectorSize - 1) / sectorSize;
 
 	// Read sector offset table
@@ -44,9 +43,8 @@ std::string decompressBlock(size_t fileSize, const std::string& blockContent) {
 
 
 
-std::string compressToBlock(const std::string& fileContent, uint8_t cmpType1, uint8_t cmpType2) {
+std::string compressToBlock(const std::string& fileContent, uint8_t cmpType1, uint8_t cmpType2, size_t sectorSize) {
 	const size_t fileSize = fileContent.size();
-	const size_t sectorSize = 4096;
 	const size_t sectorCount = (fileSize + sectorSize - 1) / sectorSize;
 
 	uint8_t cmpType = cmpType1;

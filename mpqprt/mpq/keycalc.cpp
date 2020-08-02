@@ -30,7 +30,8 @@ void keycalc(
 	uint32_t hashTableOffset,
 	uint32_t blockEntryCount,
 	uint32_t initialBlockIndex,
-	const BlockTableEntry& chkBlockEntry
+	const BlockTableEntry& chkBlockEntry,
+	size_t sectorSize
 ) {
 	uint32_t keyDwords[4];
 	keyDwords[0] = seedKey[0];
@@ -61,7 +62,7 @@ void keycalc(
 		feedSample(dwData[initialBlockIndex * 4 + i * 4]);
 
 	// 4. Feed scenario.chk sectorOffsetTable
-	auto chkSectorNum = (chkBlockEntry.fileSize + 4095) / 4096;
+	auto chkSectorNum = (chkBlockEntry.fileSize + sectorSize - 1) / sectorSize;
 	for (size_t i = 0; i < chkSectorNum + 1; i += 3)
 		feedSample(dwData[8 + i]);
 

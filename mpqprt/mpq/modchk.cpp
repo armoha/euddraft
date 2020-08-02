@@ -8,7 +8,8 @@ std::string modChk(
 	const std::string &chkContent,
 	const uint32_t seedKey[4],
 	const uint32_t destKey[4],
-	uint32_t fileCursor)
+	uint32_t fileCursor,
+	size_t sectorSize)
 {
 	std::vector<char> chk(chkContent.begin(), chkContent.end());
 
@@ -40,7 +41,8 @@ std::string modChk(
 		0,
 		chk.size() / 16,
 		chk.size() / 16 - 32,
-		stubBlockEntry);
+		stubBlockEntry,
+		sectorSize);
 	memcpy(chk.data() + chk.size() - 16, outputDwords, 16);
 	return std::string(chk.begin(), chk.end());
 }
