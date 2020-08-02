@@ -147,9 +147,11 @@ def applyEUDDraft(sfname):
 
         payloadMain = createPayloadMain(pluginList, pluginFuncDict)
         ep.CompressPayload(True)
-        ep.SaveMap(ofname, payloadMain)
 
-        if isFreezeIssued():
+        if not isFreezeIssued():
+            ep.SaveMap(ofname, payloadMain, sectorSize=15)
+        else:
+            ep.SaveMap(ofname, payloadMain)
             if isPromptIssued():
                 print("Freeze - prompt enabled ")
                 sys.stdout.flush()
@@ -172,7 +174,11 @@ def applyEUDDraft(sfname):
         for i, exc in enumerate(excs):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
-            plibPath = '  File "C:\\Py\\lib\\site-packages\\eudplib-0.62.0-py3.8.egg\\eudplib\\'
+            ver = ep.eudplibVersion()
+            plibPath = (
+                '  File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8.egg\\eudplib\\'
+                % ver
+            )
             if exc.startswith(plibPath):
                 exc = '  eudplib File "' + exc[len(plibPath) :]
             formatted_excs.append(exc)
