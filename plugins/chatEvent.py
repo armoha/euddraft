@@ -52,12 +52,12 @@ def onInit():
     for i, s in enumerate(chatList):
         print('{} : "{}"'.format(s[1], s[0]))
     print(
-        "1 : (해당 없음)",
+        "1 : (not belong to any pattern)",
         "__encoding__ : {}".format(chatEncoding),
         "__addr__ : %s" % hex(Addr),
         "__lenAddr__ : %s" % hex(lenAddr),
         "__ptrAddr__ : %s" % hex(ptrAddr),
-        "Memory(%s, Exactly, 왼쪽의 값);을 조건으로 쓰시면 됩니다. 총 개수: %d"
+        "Memory(%s, Exactly, Left-sided value); <- Use this condition for chat-detect(desync). Total: %d"
         % (hex(Addr), len(chatList)),
         sep="\n",
     )
@@ -136,6 +136,7 @@ def f_init():
     idptr = 0x57EEEB + 36 * pNumber
     idlen = f_strlen(idptr)
     idDb, myChat = Db(28), Db(b":\x07 ")
+    DoActions([SetMemory(idDb + i, SetTo, 0) for i in range(0, 28, 4)])
     f_memcpy(idDb, idptr, idlen)
     f_dbstr_addstr(idDb + idlen, myChat)
 
@@ -148,21 +149,21 @@ def f_init():
             odd.SetNumber(0),
             even.SetNumber(16),
             SetMemory(set_mask[0] + 16, SetTo, EPD(detect_oddline + 8)),
-            SetMemory(set_mask[1] + 16, SetTo, EPD(detect_oddline + 16)),
+            SetMemory(set_mask[1] + 16, SetTo, EPD(detect_oddline + 8 + 8)),
             SetMemory(set_mask[2] + 16, SetTo, EPD(detect_evenline + 8)),
-            SetMemory(set_mask[3] + 16, SetTo, EPD(detect_evenline + 16)),
+            SetMemory(set_mask[3] + 16, SetTo, EPD(detect_evenline + 8 + 8)),
         ]
         + [
             [
-                SetMemory(detect_oddline + 8 + 20 * c, SetTo, 0),
-                SetMemory(detect_oddline + 16 + 20 * c, SetTo, 0),
+                SetMemory(detect_oddline + 8 + 20 * c, SetTo, 0),  # 비트 마스크
+                SetMemory(detect_oddline + 8 + 8 + 20 * c, SetTo, 0),  # 값
             ]
             for c in range(7)
         ]
         + [
             [
-                SetMemory(detect_evenline + 8 + 20 * c, SetTo, 0),
-                SetMemory(detect_evenline + 16 + 20 * c, SetTo, 0),
+                SetMemory(detect_evenline + 8 + 20 * c, SetTo, 0),  # 비트 마스크
+                SetMemory(detect_evenline + 8 + 8 + 20 * c, SetTo, 0),  # 값
             ]
             for c in range(8)
         ]
@@ -172,21 +173,23 @@ def f_init():
     if EUDWhile()(True):
         b = br.readbyte()
         EUDBreakIf(b == 0)
-        DoActions([
-            set_mask[0] << SetMemory(0, Add, f_bitlshift(0xFF, odd)),
-            set_mask[1] << SetMemory(0, Add, f_bitlshift(b, odd)),
-            set_mask[2] << SetMemory(0, Add, f_bitlshift(0xFF, even)),
-            set_mask[3] << SetMemory(0, Add, f_bitlshift(b, even)),
-            odd.AddNumber(8),
-            even.AddNumber(8),
-        ])
+        DoActions(
+            [
+                set_mask[0] << SetMemory(0, Add, f_bitlshift(0xFF, odd)),
+                set_mask[1] << SetMemory(0, Add, f_bitlshift(b, odd)),
+                set_mask[2] << SetMemory(0, Add, f_bitlshift(0xFF, even)),
+                set_mask[3] << SetMemory(0, Add, f_bitlshift(b, even)),
+                odd.AddNumber(8),
+                even.AddNumber(8),
+            ]
+        )
         RawTrigger(
             conditions=odd.AtLeast(32),
             actions=[
                 odd.SubtractNumber(32),
                 SetMemory(set_mask[0] + 16, Add, 5),
                 SetMemory(set_mask[1] + 16, Add, 5),
-            ]
+            ],
         )
         RawTrigger(
             conditions=even.AtLeast(32),
@@ -194,7 +197,7 @@ def f_init():
                 even.SubtractNumber(32),
                 SetMemory(set_mask[2] + 16, Add, 5),
                 SetMemory(set_mask[3] + 16, Add, 5),
-            ]
+            ],
         )
     EUDEndWhile()
 
@@ -208,6 +211,8 @@ def f_chatcmp():
     chatlen = f_strlen(chatptr)
     if lenAddr >= 1:
         VProc(chatlen, chatlen.QueueAssignTo(EPD(lenAddr)))
+    if ptrAddr >= 1:
+        DoActions(SetMemory(ptrAddr, SetTo, chatptr))
     if EUDIf()([chatlen >= minlen, chatlen <= maxlen]):
         t = EUDArray.cast(chatDict[chatlen - minlen])
         if EUDIf()(t >= 1):
@@ -223,8 +228,6 @@ def f_chatcmp():
             EUDEndWhile()
         EUDEndIf()
     EUDEndIf()
-    if ptrAddr >= 1:
-        DoActions(SetMemory(ptrAddr, SetTo, chatptr))
     if rListlen >= 1:
         for i in EUDLoopRange(rListlen):
             subArray = EUDArray.cast(rList[i])
@@ -245,14 +248,14 @@ temp = EUDVariable()
 
 
 def chatEvent():
-    event_init << RawTrigger(
+    event_init << RawTrigger(  # 조건의 EPD 초기화
         actions=[chatptr.SetNumber(0x640B63)]
         + [
-            SetMemory(detect_oddline + 12 + 20 * c, SetTo, EPD(0x640B60) + c)
+            SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c)
             for c in range(7)
         ]
         + [
-            SetMemory(detect_evenline + 12 + 20 * c, SetTo, EPD(0x640C3A) + c)
+            SetMemory(detect_evenline + 8 + 4 + 20 * c, SetTo, EPD(0x640C3A) + c)
             for c in range(8)
         ]
     )
@@ -263,8 +266,8 @@ def chatEvent():
         detect_oddline << RawTrigger(
             conditions=[DeathsX(0, Exactly, 0, 0, 0) for _ in range(7)],
             actions=[
-                SetMemory(chat_detected + 344, SetTo, EPD(detect_oddline + 4)),
-                SetMemory(chat_detected + 348, SetTo, oddline_nptr),
+                SetMemory(chat_detected + 8 + 320 + 16, SetTo, EPD(detect_oddline + 4)),
+                SetMemory(chat_detected + 8 + 320 + 20, SetTo, oddline_nptr),
                 SetNextPtr(detect_oddline, chat_detected),
             ],
         )
@@ -300,6 +303,8 @@ def beforeTriggerExec():
 
     DoActions(
         [SetMemory(Addr, SetTo, 0), chatptr.SetNumber(0)]  # 초기화
+        + [SetMemory(lenAddr, SetTo, 0) if lenAddr >= 1 else []]
+        + [SetMemory(ptrAddr, SetTo, 0) if ptrAddr >= 1 else []]
         + [SetMemory(patternAddr, SetTo, 0) if rListlen >= 1 else []]
     )
 
