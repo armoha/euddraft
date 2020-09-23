@@ -138,6 +138,14 @@ def applyEUDDraft(sfname):
                 ep.EPS_SetDebug(True)
         except KeyError:
             pass
+        sectorSize = 15
+        try:
+            if mainSection["sectorSize"]:
+                sectorSize = int(mainSection["sectorSize"])
+        except KeyError:
+            pass
+        except:
+            sectorSize = None
 
         print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
@@ -148,10 +156,20 @@ def applyEUDDraft(sfname):
         payloadMain = createPayloadMain(pluginList, pluginFuncDict)
         ep.CompressPayload(True)
 
-        if not isFreezeIssued():
-            ep.SaveMap(ofname, payloadMain, sectorSize=15)
-        else:
-            ep.SaveMap(ofname, payloadMain)
+        if ep.IsSCDBMap():
+            if isFreezeIssued():
+                raise RuntimeError(
+                    "Can't use freeze protection on SCDB map!\nDisable freeze by following plugin settings:\n\n[freeze]\nfreeze : 0\n"
+                )
+            print("SCDB - sectorSize disabled")
+            sectorSize = None
+        elif isFreezeIssued():
+            # FIXME: Add variable sectorSize support for freeze
+            print("Freeze - sectorSize disabled")
+            sectorSize = None
+        ep.SaveMap(ofname, payloadMain, sectorSize=sectorSize)
+
+        if isFreezeIssued():
             if isPromptIssued():
                 print("Freeze - prompt enabled ")
                 sys.stdout.flush()
@@ -176,11 +194,10 @@ def applyEUDDraft(sfname):
                 continue
             ver = ep.eudplibVersion()
             plibPath = (
-                '  File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8.egg\\eudplib\\'
+                'File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8-win32.egg\\eudplib\\'
                 % ver
             )
-            if exc.startswith(plibPath):
-                exc = '  eudplib File "' + exc[len(plibPath) :]
+            exc.replace(plibPath, 'eudplib File"')
             formatted_excs.append(exc)
 
         print("[Error] %s" % e, "".join(formatted_excs), file=sys.stderr)
