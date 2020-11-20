@@ -21,18 +21,21 @@ def onInit():
     chatList, regexList = [], []
     chatEncoding = set(["UTF-8"])
 
+    def delrem4(x):
+        return x - x % 4
+
     for k, v in settings.items():
         rL = k.split(".*")
         if k[:1] == "^" and k[-1:] == "$" and len(rL) == 3:
             regexList.append([rL[0][1:], rL[1], rL[2][:-1], int(v, 0)])
         elif k == "__addr__":
-            Addr = int(v, 0)  # 주소를 정수로 가져온다.
+            Addr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
         elif k == "__lenAddr__":
-            lenAddr = int(v, 0)  # 주소를 정수로 가져온다.
+            lenAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
         elif k == "__ptrAddr__":
-            ptrAddr = int(v, 0)  # 주소를 정수로 가져온다.
+            ptrAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
         elif k == "__patternAddr__":
-            patternAddr = int(v, 0)  # 주소를 정수로 가져온다.
+            patternAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
         elif k == "__encoding__":
             chatEncoding = set([_.strip() for _ in v.split(",")])
         else:
