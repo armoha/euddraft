@@ -114,18 +114,19 @@ def RegisterMouseOffset(k):
 
 def KeyUpdate():
     for offset in KeyOffset:
-        m = 256 ** (offset % 4)
+        r = offset % 4
+        m = 256 ** r
         n = 2 ** (offset % 32)
         RawTrigger(
             conditions=[  # KeyDown
-                MemoryX(0x596A18 + offset, Exactly, m, m),
+                MemoryX(0x596A18 + offset - r, Exactly, m, m),
                 MemoryX(KeyArray + offset // 8, Exactly, 0, n),
             ],
             actions=SetMemoryX(KeyArray + offset // 8, SetTo, n, n),
         )
         RawTrigger(
             conditions=[  # KeyUp
-                MemoryX(0x596A18 + offset, Exactly, 0, m),
+                MemoryX(0x596A18 + offset - r, Exactly, 0, m),
                 MemoryX(KeyArray + offset // 8, Exactly, n, n),
             ],
             actions=SetMemoryX(KeyArray + offset // 8, SetTo, 0, n),
@@ -139,10 +140,11 @@ def KeyDown(k):
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         KeyOffset.add(offset)
-        m = 256 ** (offset % 4)
+        r = offset % 4
+        m = 256 ** r
         n = 2 ** (offset % 32)
         return [  # KeyDown
-            MemoryX(0x596A18 + offset, Exactly, m, m),
+            MemoryX(0x596A18 + offset - r, Exactly, m, m),
             MemoryX(KeyArray + offset // 8, Exactly, 0, n),
         ]
 
@@ -154,10 +156,11 @@ def KeyUp(k):
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         KeyOffset.add(offset)
-        m = 256 ** (offset % 4)
+        r = offset % 4
+        m = 256 ** r
         n = 2 ** (offset % 32)
         return [  # KeyUp
-            MemoryX(0x596A18 + offset, Exactly, 0, m),
+            MemoryX(0x596A18 + offset - r, Exactly, 0, m),
             MemoryX(KeyArray + offset // 8, Exactly, n, n),
         ]
 
@@ -168,8 +171,9 @@ def KeyPress(k):
     except (KeyError):
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
-        m = 256 ** (offset % 4)
-        return MemoryX(0x596A18 + offset, Exactly, m, m)
+        r = offset % 4
+        m = 256 ** r
+        return MemoryX(0x596A18 + offset - r, Exactly, m, m)
 
 
 def MouseUpdate():

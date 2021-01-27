@@ -9,7 +9,17 @@ if "build_exe" not in sys.argv:
 
 
 build_exe_options = {
-    "packages": ["os", "cffi", "ctypes", "idna", "sys", "importlib", "json", "eudplib"],
+    "packages": [
+        "os",
+        "cffi",
+        "ctypes",
+        "idna",
+        "sys",
+        "importlib",
+        "importlib_metadata",
+        "json",
+        "eudplib",
+    ],
     "excludes": ["tkinter"],
     "optimize": 2,
     "include_msvcr": True,
@@ -24,7 +34,6 @@ build_exe_options = {
     ],
     "zip_include_packages": "*",
     "zip_exclude_packages": "",
-    "small_app": True,
 }
 
 

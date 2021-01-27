@@ -138,6 +138,13 @@ def applyEUDDraft(sfname):
                 ep.EPS_SetDebug(True)
         except KeyError:
             pass
+        try:
+            unitname_encoding = mainSection["decodeUnitName"]
+            from ep.core.mapdata.tblformat import DecodeUnitNameAs
+
+            DecodeUnitNameAs(unitname_encoding)
+        except KeyError:
+            pass
         sectorSize = 15
         try:
             if mainSection["sectorSize"]:
