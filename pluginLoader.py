@@ -84,6 +84,11 @@ def loadPluginsFromConfig(ep, config):
 
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != "main"]
+    if "unlimiter" in pluginList:
+        from eudplib.eudlib.utilf.listloop import _unlimiter
+
+        _unlimiter = True
+
     pluginFuncDict = {}
 
     initialDirectory = os.getcwd()

@@ -1,5 +1,95 @@
 # 변경 사항 (한국어)
 
+## [0.9.1.1] - 2021.02.15
+- `(Set)Memory(X)` 주소 4의 배수 아닌 경우 컴파일 에러 -> 제외
+- `TrgTBL` 오타 수정
+- **[unlimiter]** 사용맵 `EUDLoopUnit2` 미작동 문제 수정
+- epScript `object` (`EUDStruct`) 필드 개수 지정 옵션 실험적으로 추가
+```
+[main]
+...
+objFieldN: 16
+```
+
+## [0.9.0.9] - 2021.01.28
+- 프로텍션 추가
+- `EPDCUnitMap` 빠진 내용 추가
+- 유닛 이름 디코딩 지정 옵션 추가
+```
+[main]
+...
+decodeUnitName : utf-8
+```
+
+## [0.9.0.8] - 2020.12.11
+- MPQ에 크기가 음수인 유효하지 않은 파일 있을 때 다음과 같은 컴파일 오류 나던 것 수정.
+```
+    File "C:\Py\lib\ctypes_init_.py", line 62, in create_string_buffer
+    ValueError: Array length must be >= 0, not -1
+```
+
+## [0.9.0.7] - 2020.12.09
+- 마지막 스트링에 null terminator 없는 경우 생기는 오류 수정.
+
+## [0.9.0.6] - 2020.11.21
+- `cx_Freeze` 버전업
+- `IsPName` 버그 수정.
+- `(Set)Memory(X)` 주소 4의 배수 아닌 경우 오류나게 수정.
+- **[chatEvent]** 4의 배수 아닌 주소 넣어서 주소 중복 체크를 무시하는 버그 수정.
+
+## [0.9.0.4] - 2020.10.08
+- `IsPName(player, name)` 조건 추가
+  * `player`: 이름 인식할 플레이어. 변수 또는 `Player1` ~ `Player8` 또는 `CurrentPlayer`
+  * `name`: 인식할 이름. `"문자열"` 또는 `Db`.
+
+## [0.9.0.3] - 2020.09.30
+- `(0000.00)` null 지형이 `(0000.01)` null 로 안 바뀌었던 버그 수정.
+
+## [0.9.0.2] - 2020.09.23
+- **[chatEvent]** 채팅 인식했을 때도 `ptrAddr` 설정하도록 수정. `lenAddr`과 `ptrAddr`도 0으로 초기화 추가
+- 맵에 (0000.00) null 지형이 있으면 (0000.01) 타일로 대체하고 경고
+
+## [0.9.0.1] - 2020.09.09
+- `ctypes/create_string_buffer` 오류 수정
+
+## [0.9.0.0] - 2020.08.08
+- 컴파일 시간에 페이로드 초기화
+  * `CreateVector/PayloadRelocator` 삭제 ( 참고: https://cafe.naver.com/edac/88753 )
+
+- `Encode~/Get~Index` 함수 동일화. `TrgLocationIndex` 삭제
+  * 두 함수 다 1부터 시작합니다. `0x58DC60` 쓴 코드들 - 20 하세요. (참고: https://cafe.naver.com/edac/83158 )
+  * 이제 로케이션에 언제는 1 더하고 이런거 신경 쓸 필요 없어요.
+  ```js
+  $L("Anywhere")  // = 64
+  ```
+- `SaveMap`에 키워드 전용 인자 `sectorSize` 추가
+  * 값: 3~15. 일반 에디터는 3 쓰고 워크 옵티마이저는 7 씁니다.
+  * 테스트 목적으로 `euddraft`에서 **15** 씁니다.
+  * MPQ 압축 기본단위로 생각하면 됩니다. 높을수록 맵 용량이 줄어듭니다.
+  * `sectorSize`를 설정하는 경우 (listfile)에 있는 파일만 output 맵으로 옮겨옵니다.
+    ```
+    [main] 아래에
+    sectorSize: 3  # 이런식으로 작성하면 됩니다.
+    ```
+    - **freeze**나 **SCDB** 사용 맵에선 설정이 무시됩니다.
+
+### 버그 수정
+- 인라이닝한 트리거에 `Disable` 체크된 `PreserveTrigger` 액션 있어도 반복시키는 버그 수정
+- input맵이 `STRx` 단락 사용할 때 **[MSQC]** 오류 수정
+
+### 기타
+- MPQ 압축 알고리즘 변경
+- TBL 시작 주소 4의 배수로 설정
+- `eudplib` 내부 에러 메세지에 있는 파일 경로 가독성 올림
+- `StormLib` 업데이트
+- `"Switch 256"` 빠진거 수정
+- `f_settblf2` 오타 수정
+- EUD Editor 2에서 tempcustomText rwcommon 오류 수정
+- `MPQCheckFile(파일명)` 추가: 해당하는 파일 이름이 이미 MPQ에 있는지 체크하는 함수
+- `StringBuffer.print("크기 32 이상인 텍스트")`를 `DisplayText`로 변환
+- `OpenSSL`, `mpaq` 기능 제거, freeze 업데이트
+- `UNIT`, `UNIx`, `UPGx`, `TECx`에서 안 쓰이는 값/플래그 삭제
+- SCDB랑 freeze 같이 사용하면 컴파일 오류나게 수정 (08.03)
 
 ## [0.8.9.9] - 2019-12-09
 **eudplib 0.61** 업데이트
@@ -1266,6 +1356,12 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
+[0.9.1.1]: https://github.com/armoha/euddraft/releases/download/v0.9.1.1/euddraft0.9.1.1.zip
+[0.9.0.9]: https://github.com/armoha/euddraft/releases/download/v0.9.0.9/euddraft0.9.0.9.zip
+[0.9.0.8]: https://github.com/armoha/euddraft/releases/download/v0.9.0.8/euddraft0.9.0.8.zip
+[0.9.0.5]: https://github.com/armoha/euddraft/releases/download/v0.9.0.5/euddraft0.9.0.5.zip
+[0.9.0.4]: https://github.com/armoha/euddraft/releases/download/v0.9.0.4/euddraft0.9.0.4.zip
+[0.9.0.3]: https://github.com/armoha/euddraft/releases/download/v0.9.0.3/euddraft0.9.0.3.zip
 [0.8.9.9]: https://github.com/armoha/euddraft/releases/download/v0.8.9.9/euddraft0.8.9.9.zip
 [TBL 문자열 목록]: https://cafe.naver.com/edac/82819
 [SQC 사용법]: https://cafe.naver.com/edac/74735
