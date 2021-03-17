@@ -146,10 +146,11 @@ def applyEUDDraft(sfname):
         except KeyError:
             pass
         try:
-            field_n = mainSection["objFieldN"]
-            from eudplib.eudlib.objpool import SetGlobalPoolFieldN
+            if mainSection["objFieldN"]:
+                from eudplib.eudlib.objpool import SetGlobalPoolFieldN
 
-            SetGlobalPoolFieldN(field_n)
+                field_n = int(mainSection["objFieldN"])
+                SetGlobalPoolFieldN(field_n)
         except KeyError:
             pass
 

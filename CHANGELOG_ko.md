@@ -1,6 +1,15 @@
 # 변경 사항 (한국어)
 
-## [0.9.1.1] - 2021.02.15
+## [0.9.1.4] - 2021.03.17
+- TBL 수정 함수에 인코딩 지정 인자 추가 (기본값: "CP949")
+`f_settbl(tbl, offset, *args, encoding="cp949")`
+`f_settblf2(tbl, offset, format_string, *args, encoding="cp949")`
+문자열 타입이 사용할 인코딩을 지정합니다.
+UTF-8 인코딩으로 지정하면 "\u2009\0"을 문자열 끝에 추가합니다.
+(부분 수정 함수 `f_settbl2`, `f_settblf2`에서는 추가하지 않습니다.)
+`bytes`나 `Db` 등 그 외 타입도 같은 인코딩을 쓰는지 검증하셔야합니다.
+
+## [0.9.1.3] - 2021.03.07
 - `(Set)Memory(X)` 주소 4의 배수 아닌 경우 컴파일 에러 -> 제외
 - `TrgTBL` 오타 수정
 - **[unlimiter]** 사용맵 `EUDLoopUnit2` 미작동 문제 수정
@@ -1356,7 +1365,7 @@ switch (day) {
 
 - 윈도우에서 `OSError: [WinError 126] 지정된 모듈을 찾을 수 없습니다.` 오류 수정.
 
-[0.9.1.1]: https://github.com/armoha/euddraft/releases/download/v0.9.1.1/euddraft0.9.1.1.zip
+[0.9.1.3]: https://github.com/armoha/euddraft/releases/download/v0.9.1.3/euddraft0.9.1.3.zip
 [0.9.0.9]: https://github.com/armoha/euddraft/releases/download/v0.9.0.9/euddraft0.9.0.9.zip
 [0.9.0.8]: https://github.com/armoha/euddraft/releases/download/v0.9.0.8/euddraft0.9.0.8.zip
 [0.9.0.5]: https://github.com/armoha/euddraft/releases/download/v0.9.0.5/euddraft0.9.0.5.zip
