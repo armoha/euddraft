@@ -930,7 +930,6 @@ def SendQC():
         EUDEndIf()
 
     for n, (con, ret) in enumerate(zip(xy_cons, xy_rets)):
-        DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
         if len(con) == 1:
             if type(con[0]) is str:
                 condition = eval(parseCond(con[0]))
@@ -946,6 +945,7 @@ def SendQC():
             condition = condition()
         EUDIf()(condition)
         if ret[0] == "mouse":
+            DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
             global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
             sX = f_mapXread_epd(EPD(0x62848C))
             sY, _csY = f_mapYread_epd(EPD(0x6284A8))
@@ -974,6 +974,7 @@ def SendQC():
                 ],
             )
         elif ret[0] == "val":
+            DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
 
             def parseSource(src, always=False):
                 if isinstance(src, int):
@@ -1000,6 +1001,7 @@ def SendQC():
                 ],
             )
         elif ret[0] == "xy":
+            DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
 
             def parseSource(src, always=False):
                 if isinstance(src, int):
@@ -1124,11 +1126,12 @@ def ReceiveQC():
         vr.read()
         waypoint = qc_epd + 0x10 // 4
         EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1))
-        f_dwsubtract_epd(waypoint, 64 * 65537)
         if ret[0] == "mouse":
+            f_dwsubtract_epd(waypoint, 64 * 65537)
             x, y = f_posread_epd(waypoint)
             f_setloc(ret[1] + cp, x, y)
         elif ret[0] == "val":
+            f_dwsubtract_epd(waypoint, 64 * 65537 + 1)
             xy = f_pos2vread_epd(waypoint)
             if isinstance(ret[2], int):
                 DoActions(SetDeaths(CurrentPlayer, SetTo, xy, ret[2]))
@@ -1141,6 +1144,7 @@ def ReceiveQC():
                 else:
                     raise EPError("{} unknown type for return value".format(ret[2]))
         elif ret[0] == "xy":
+            f_dwsubtract_epd(waypoint, 64 * 65537 + 1)
             if len(ret) == 3:
                 xy = f_maskread_epd(waypoint, mapMask)
                 if isinstance(ret[2], int):
