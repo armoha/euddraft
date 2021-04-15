@@ -460,9 +460,16 @@ def onInit():
             locid = (mouse_loc + p) * 20
             locstr = b2i2(mrgn[locid + 16 : locid + 18])
             try:
-                locname = (strtb.GetString(locstr)).decode("cp949")
+                locname = strtb.GetString(locstr)
             except AttributeError:  # location has no name string
                 locname = mouse_loc + p
+            else:
+                try:  # Guess encoding of location name
+                    locname = locname.decode("utf-8")
+                except UnicodeDecodeError:
+                    import locale
+
+                    locname = locname.decode(locale.getpreferredencoding())
             loc_list.append("P%u:%s" % (p + 1, locname))
         print("MouseLoc=%s" % ", ".join(loc_list))
     if QCDebug:

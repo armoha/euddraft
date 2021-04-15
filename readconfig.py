@@ -31,7 +31,9 @@ def readconfig(fname):
     s = open(fname, "rb").read()
 
     try:
-        s = s.decode("cp949")
+        import locale
+
+        s = s.decode(locale.getpreferredencoding())
     except UnicodeDecodeError:
         s = s.decode("utf-8")
 
