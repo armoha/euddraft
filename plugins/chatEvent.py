@@ -52,20 +52,20 @@ def onInit():
 
     chatList.sort(key=itemgetter(1, 0))
     regexList.sort()
-    for i, s in enumerate(chatList):
-        print('{} : "{}"'.format(s[1], s[0]))
+    for s in chatList:
+        print('{} : "{}"'.format(s[0], s[1]))
     print(
-        "1 : (not belong to any pattern)",
+        "(not belong to any pattern) : 1",
         "__encoding__ : {}".format(chatEncoding),
         "__addr__ : %s" % hex(Addr),
         "__lenAddr__ : %s" % hex(lenAddr),
         "__ptrAddr__ : %s" % hex(ptrAddr),
-        "Memory(%s, Exactly, Left-sided value); <- Use this condition for chat-detect(desync). Total: %d"
+        "Memory(%s, Exactly, Right-sided value); <- Use this condition for chat-detect(desync). Total: %d"
         % (hex(Addr), len(chatList)),
         sep="\n",
     )
     for r in regexList:
-        print("{3} : ^{0}.*{1}.*{2}$".format(*r))
+        print("^{0}.*{1}.*{2}$ : {3}".format(*r))
     print("__patternAddr__ : %s" % hex(patternAddr))
 
     chatSet = set()

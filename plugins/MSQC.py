@@ -457,7 +457,7 @@ def onInit():
             strtb = TBL(chkt.getsection("STRx"), load_entry=4, save_entry=4)
         loc_list = []
         for p in humans:
-            locid = (mouse_loc + p) * 20
+            locid = (mouse_loc - 1 + p) * 20
             locstr = b2i2(mrgn[locid + 16 : locid + 18])
             try:
                 locname = strtb.GetString(locstr)

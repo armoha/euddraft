@@ -25,17 +25,14 @@ THE SOFTWARE.
 
 import re
 from collections import OrderedDict
+from typing import Dict
 
 
-def readconfig(fname):
-    s = open(fname, "rb").read()
-
+def readconfig(fname) -> Dict[str, Dict[str, str]]:
     try:
-        import locale
-
-        s = s.decode(locale.getpreferredencoding())
+        text = open(fname)
     except UnicodeDecodeError:
-        s = s.decode("utf-8")
+        text = open(fname, encoding="UTF-8")
 
     currentSectionName = None
     currentSection = None
@@ -47,8 +44,11 @@ def readconfig(fname):
     key_replace_regex = re.compile(r"\\([\\:=])")
     comment_regex = re.compile(r"::.*")
 
-    lines = s.splitlines()
-    for line in lines:
+    header_lineno = {}
+    config_lineno = {}
+
+    for lineno, line in enumerate(text):
+        lineno += 1
         line = line.strip()
         if not line:  # empty line
             continue
@@ -58,9 +58,16 @@ def readconfig(fname):
         if header_match:
             currentSectionName = header_match.group(1)
             if currentSectionName in config:
-                raise RuntimeError("Duplicate header %s" % currentSectionName)
+                raise RuntimeError(
+                    "Duplicate header [%s]" % currentSectionName,
+                    "[Line %u] [%s]"
+                    % (header_lineno[currentSectionName], currentSectionName),
+                    "[Line %u] [%s]" % (lineno, currentSectionName),
+                )
             currentSection = {}
             config[currentSectionName] = currentSection
+            header_lineno[currentSectionName] = lineno
+            config_lineno.clear()
             continue
 
         # Try key-value pair
@@ -71,8 +78,14 @@ def readconfig(fname):
             key = key.strip()
             value = keyvalue_match.group(3)
             if key in currentSection:
-                raise RuntimeError("Duplicate key %s" % key)
+                raise RuntimeError(
+                    "Duplicate key %s" % key,
+                    "[Line %u] %s : %s"
+                    % (config_lineno[key], key, currentSection[key]),
+                    "[Line %u] %s : %s" % (lineno, key, value),
+                )
             currentSection[key] = value
+            config_lineno[key] = lineno
             continue
 
         # Try key-only pair
@@ -84,8 +97,14 @@ def readconfig(fname):
             key = key.replace("\\=", "=")
             key = key.strip()
             if key in currentSection:
-                raise RuntimeError("Duplicate key %s" % key)
+                raise RuntimeError(
+                    "Duplicate key %s in [%s]" % (key, currentSectionName),
+                    "[Line %u] %s : %s"
+                    % (config_lineno[key], key, currentSection[key]),
+                    "[Line %u] %s" % (lineno, key),
+                )
             currentSection[key] = ""
+            config_lineno[key] = lineno
             continue
 
         # Try comment
@@ -95,4 +114,5 @@ def readconfig(fname):
 
         raise RuntimeError("Invalid config %s" % line)
 
+    text.close()
     return config

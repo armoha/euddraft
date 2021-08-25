@@ -98,7 +98,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.9.2.0"
+version = "0.9.3.0"
 
 
 if __name__ == "__main__" or __name__ == "euddraft__main__":
@@ -109,8 +109,6 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
     print(" - This program follows MIT License. See license.txt")
     if msgbox.isWindows:
         print(" - Press SHIFT to force check update while opening euddraft.")
-
-    # sys.argv.append('test.eds')
 
     if len(sys.argv) != 2:
         raise RuntimeError("Usage : euddraft [setting file]")
