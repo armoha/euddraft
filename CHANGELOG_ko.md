@@ -1,4 +1,26 @@
 # 변경 사항 (한국어)
+## [0.9.3.4] - 2021.08.31
+- `once` 조건문 추가. (eudplib에서는 EUDExecuteOnce()(조건) 입니다)
+    ```js
+    once (condition1 && condition2) {
+        onceStatements;
+    }
+
+    static var k = 0;
+    const function_with_side_effect = function (x) {
+        k++;
+        return x;
+    };
+    for(var i = 0; i < 10; i++) {
+        once (function_with_side_effect(true)) {
+            simpleprint("function_with_side_effect is called exactly once.");
+        }
+    }
+    simpleprint("k ==", k);  // k == 1
+    ```
+- `once`에 조건 없을 때 트리거 2개 -> 1개 사용하게 개선
+- `pybind11` 업데이트
+
 ## [0.9.3.3] - 2021.08.25
 - eudplib 0.66.1
   * (베타) **epScript** `if`문에서 부작용 없는 기본 조건의 `&&` 최적화 (`EUDSCAnd`)
@@ -7,7 +29,7 @@
 - `[MSQC]` 스트링 제한 넘었을 때 버그 수정
 - 플러그인 설정 중복됐을 때 오류 메시지 개선
   * 오류 메시지 예시
-  ```
+  ```cs
   [chatEvent]
   서울여자 : 20200721
   서울여자 : 13
@@ -44,7 +66,7 @@ UTF-8 인코딩으로 지정하면 "\u2009\0"을 문자열 끝에 추가합니�
 - `TrgTBL` 오타 수정
 - **[unlimiter]** 사용맵 `EUDLoopUnit2` 미작동 문제 수정
 - epScript `object` (`EUDStruct`) 필드 개수 지정 옵션 실험적으로 추가
-```
+```cs
 [main]
 ...
 objFieldN: 16
@@ -54,7 +76,7 @@ objFieldN: 16
 - 프로텍션 추가
 - `EPDCUnitMap` 빠진 내용 추가
 - 유닛 이름 디코딩 지정 옵션 추가
-```
+```cs
 [main]
 ...
 decodeUnitName : utf-8
@@ -62,7 +84,7 @@ decodeUnitName : utf-8
 
 ## [0.9.0.8] - 2020.12.11
 - MPQ에 크기가 음수인 유효하지 않은 파일 있을 때 다음과 같은 컴파일 오류 나던 것 수정.
-```
+```py
     File "C:\Py\lib\ctypes_init_.py", line 62, in create_string_buffer
     ValueError: Array length must be >= 0, not -1
 ```
@@ -106,7 +128,7 @@ decodeUnitName : utf-8
   * 테스트 목적으로 `euddraft`에서 **15** 씁니다.
   * MPQ 압축 기본단위로 생각하면 됩니다. 높을수록 맵 용량이 줄어듭니다.
   * `sectorSize`를 설정하는 경우 (listfile)에 있는 파일만 output 맵으로 옮겨옵니다.
-    ```
+    ```cs
     [main] 아래에
     sectorSize: 3  # 이런식으로 작성하면 됩니다.
     ```
