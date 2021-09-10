@@ -1,6 +1,33 @@
 # 변경 사항 (한국어)
-## [0.9.3.5] - 2021.09.10
-- eudplib 0.66.3
+## [0.9.3.6] - 2021.09.10
+- eudplib 0.66.3 업데이트
+- **[epScript]** 상대 경로 `import` 기능 추가
+    예시)
+    ```js
+    /* c.py
+     * folder
+     * ├ b.eps
+     * └ inner
+     *　└ a.eps
+     * src
+     * └ main.eps (플러그인 파일 [main.eps])
+     ***/
+
+    // `src/main.eps` 에서 `c.py` 불러오기
+    import ..c;
+    // `src/main.eps` 에서 `folder/b.eps` 불러오기
+    import ..folder.b;
+    // `src/main.eps` 에서 `folder/inner/a.eps` 불러오기
+    import ..folder.inner.a;
+
+    // `folder/b.eps` 에서 `folder/inner/a.eps` 불러오기
+    import .inner.a;
+
+    // `folder/inner/a.eps` 에서 `folder/b.eps` 불러오기
+    import ..b;
+    // `folder/inner/a.eps` 에서 `c.py` 불러오기
+    import ...c;
+    ```
 - `StringBuffer.fadeIn`/`fadeOut`에 `tag`가 없을 때 이전에 출력한 텍스트를 안 지우는 버그 수정.
 - `StringBuffer.fadeIn`/`fadeOut`에서 `line=10` 또는 `line=-1` 일 때 기존 채팅을 지우지 않고 위로 밀도록 변경.
 - `StringBuffer.tagprint(format_string, *args, line, tag)` 추가 \
