@@ -1,4 +1,11 @@
 # 변경 사항 (한국어)
+## [0.9.3.5] - 2021.09.10
+- eudplib 0.66.3
+- `StringBuffer.fadeIn`/`fadeOut`에 `tag`가 없을 때 이전에 출력한 텍스트를 안 지우는 버그 수정.
+- `StringBuffer.fadeIn`/`fadeOut`에서 `line=10` 또는 `line=-1` 일 때 기존 채팅을 지우지 않고 위로 밀도록 변경.
+- `StringBuffer.tagprint(format_string, *args, line, tag)` 추가 \
+    태그 기능이 있는 print 함수입니다. `TextFX_Remove(tag)` 로 화면에 있는 이전 메시지를 지우는 식으로 활용할 수 있습니다.
+
 ## [0.9.3.4] - 2021.08.31
 - `once` 조건문 추가. (eudplib에서는 EUDExecuteOnce()(조건) 입니다)
     ```js
