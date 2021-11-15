@@ -1,4 +1,17 @@
 # 변경 사항 (한국어)
+## [0.9.3.9] - 2021.11.15
+- `EUDVariable` `<<=`, `>>=` 사용 가능하게 수정
+  `상수 << 변수`, `상수 >> 변수` 가능하게 수정
+- `ConstExpr` 끼리 비교 추가 (`baseobj`랑 `rlocmode`가 같아야 함.)
+  ```py
+  from eudplib import *
+
+  array = EUDArray(4)
+  a, b = array + 4, array + 8
+  if a < b:  # True
+      pass
+  ```
+
 ## [0.9.3.8] - 2021.10.30
 - `f_eprintAll(format_string, *args)` 추가
   모든 플레이어한테 에러줄에 출력합니다.
