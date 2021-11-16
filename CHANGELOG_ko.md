@@ -1,4 +1,103 @@
 # 변경 사항 (한국어)
+
+## [0.9.4.0] - 2021.11.16
+- 랜덤 함수들, `DisplayTextAt`, `StringBuffer.DisplayAt`, `f_repmovsd_epd` 최적화
+- `f_printAll`, `f_printAllAt`, `FixedText` 추가
+  - **f_printAll(format_string, \*args)**\
+    모든 플레이어한테 텍스트를 출력합니다.
+  - **f_printAllAt(line, format_string, \*args)**\
+    모든 플레이어한테 해당 줄에 텍스트를 출력합니다.
+  - **FixedText(끝에 실행할 액션(옵션))**\
+    `FixedText`가 시작할 때 텍스트 포인터를 저장하고, 끝나면 복구합니다.\
+    `f_gettextptr` 안 쓰고 간편하게 여러 텍스트를 채팅 보존 출력할 때 씁니다.
+    ```py
+    # 예시: FixedText 안 쓰고 만든 DisplayTextAt
+    @EUDTypedFunc([None, TrgString])
+    def DisplayTextAt(line, text):
+        display_text = DisplayText(0)
+        textptr = f_gettextptr()
+        VProc([line, text], [
+            line.QueueAddTo(EPD(0x640B58)),
+            text.SetDest(EPD(display_text) + 1),
+        ])
+        RawTrigger(
+            conditions=Memory(0x640B58, AtLeast, 11),
+            actions=SetMemory(0x640B58, Subtract, 11),
+        )
+        DoActions(display_text, SetMemory(0x640B58, SetTo, textptr))
+
+    # FixedText로 만든 DisplayTextAt
+    @EUDTypedFunc([None, TrgString])
+    def DisplayTextAt(line, text):
+        display_text = DisplayText(0)
+        with FixedText(display_text):
+            VProc([line, text], [
+                line.QueueAddTo(EPD(0x640B58)),
+                text.SetDest(EPD(display_text) + 1),
+            ])
+            RawTrigger(
+                conditions=Memory(0x640B58, c.AtLeast, 11),
+                actions=SetMemory(0x640B58, c.Subtract, 11),
+            )
+    ```
+- Cython 업데이트
+- `EUDVariable`, `EUDXVariable`의 초기 주소, 수정자(modifier) 설정 추가\
+  `EUDVariable(dest, modifier, value)`\
+  `EUDXVariable(dest, modifier, value, bitmask)`
+- `EUDFullFunc` 추가
+    ```py
+    # 예시: EUDFullFunc로 만든 DisplayTextAt
+    # 매개변수 line을 채팅 포인터에 더하도록 초기 주소, 수정자 설정
+    # 매개변수 text가 DisplayText 액션을 수정하도록 초기 주소, 수정자 설정
+    _display_text = DisplayText(0)
+    @EUDFullFunc(
+        [
+            # 매개변수 line의 초기 주소, 수정자, 값, 비트마스크
+            (EPD(0x640B58), Add, 0, None),
+            # 매개변수 text의 초기 주소, 수정자, 값, 비트마스크
+            (EPD(_display_text) + 1, SetTo, 0, None)
+        ],
+        [None, TrgString],
+    )
+    def DisplayTextAt(line, text):
+        with FixedText(_display_text):
+            VProc([line, text], [])
+            RawTrigger(
+                conditions=c.Memory(0x640B58, AtLeast, 11),
+                actions=c.SetMemory(0x640B58, Subtract, 11),
+            )
+
+    # f_repmovsd_epd 최적화 예시
+    _cpmoda = Forward()
+    @EUDFullFunc(
+        # dstepdp가 _cpmoda한테 더하도록 초기 설정
+        # srcepdp가 CurrentPlayer를 수정하도록 초기 설정
+        [(_cpmoda, Add, 0, None), (EPD(0x6509B0), SetTo, 0, None)],
+        [None, None, None],
+    )
+    def f_repmovsd_epd(dstepdp, srcepdp, copydwn):
+        global _cpmoda
+
+        VProc([dstepdp, srcepdp], c.SetMemoryEPD(_cpmoda, SetTo, -1))
+
+        if EUDWhileNot()(copydwn == 0):
+            cpmod = f_dwread_cp(0)
+            _cpmoda << EPD(cpmod.getDestAddr())
+
+            VProc(
+                cpmod,
+                [
+                    cpmod.AddDest(1),
+                    c.SetMemory(0x6509B0, Add, 1),
+                    copydwn.SubtractNumber(1),
+                ],
+            )
+
+        EUDEndWhile()
+
+        f_setcurpl2cpcache()
+    ```
+
 ## [0.9.3.9] - 2021.11.15
 - `EUDVariable` `<<=`, `>>=` 사용 가능하게 수정
   `상수 << 변수`, `상수 >> 변수` 가능하게 수정
@@ -15,9 +114,6 @@
 ## [0.9.3.8] - 2021.10.30
 - `f_eprintAll(format_string, *args)` 추가
   모든 플레이어한테 에러줄에 출력합니다.
-
-## [0.9.3.7] - 2021.10.17
-- SetPName 관련 수정
 
 ## [0.9.3.6] - 2021.09.10
 - eudplib 0.66.3 업데이트
