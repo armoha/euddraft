@@ -1,5 +1,8 @@
 # 변경 사항 (한국어)
 
+## [0.9.4.1] - 2021.11.17
+- `StringBuffer.DisplayAt`, `StringBuffer.printAt`에서 `line`이 변수일 때 잘못 출력되는 버그 수정
+ 
 ## [0.9.4.0] - 2021.11.16
 - 랜덤 함수들, `DisplayTextAt`, `StringBuffer.DisplayAt`, `f_repmovsd_epd` 최적화
 - `f_printAll`, `f_printAllAt`, `FixedText` 추가
@@ -41,9 +44,7 @@
             )
     ```
 - Cython 업데이트
-- `EUDVariable`, `EUDXVariable`의 초기 주소, 수정자(modifier) 설정 추가\
-  `EUDVariable(dest, modifier, value)`\
-  `EUDXVariable(dest, modifier, value, bitmask)`
+- `EUDVariable`, `EUDXVariable`의 초기 주소, 수정자(modifier)
 - `EUDFullFunc` 추가
     ```py
     # 예시: EUDFullFunc로 만든 DisplayTextAt
