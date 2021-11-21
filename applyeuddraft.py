@@ -191,7 +191,11 @@ def applyEUDDraft(sfname):
                 sys.stdout.flush()
                 os.system("pause")
             print("[Stage 4/3] Applying freeze mpq modification...")
-            ret = freezeMpq.applyFreezeMpqModification(ep.u2b(ofname), ep.u2b(ofname))
+            try:
+                ofname = ofname.encode("mbcs")
+            except (LookupError, UnicodeEncodeError):
+                ofname = ofname.encode(sys.getfilesystemencoding())
+            ret = freezeMpq.applyFreezeMpqModification(ofname, ofname)
             if ret != 0:
                 raise RuntimeError("Error on mpq protection (%d)" % ret)
 

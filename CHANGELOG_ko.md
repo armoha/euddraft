@@ -1,5 +1,8 @@
 # 변경 사항 (한국어)
 
+## [0.9.4.2] - 2021.11.21
+- [freeze] 비한국어 윈도우에서 파일명에 비ASCII 문자 있을 때 오류 수정
+
 ## [0.9.4.1] - 2021.11.17
 - `StringBuffer.DisplayAt`, `StringBuffer.printAt`에서 `line`이 변수일 때 잘못 출력되는 버그 수정
  

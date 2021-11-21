@@ -98,7 +98,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.9.4.1"
+version = "0.9.4.2"
 
 
 if __name__ == "__main__" or __name__ == "euddraft__main__":
@@ -211,7 +211,11 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
         ofname = sfname[:-4] + " prt.scx"
         ep.SaveMap(ofname, payloadMain)
         print("[Stage 4/3] Applying freeze mpq modification...")
-        ret = freezeMpq.applyFreezeMpqModification(ep.u2b(ofname), ep.u2b(ofname))
+        try:
+            ofname = ofname.encode("mbcs")
+        except (LookupError, UnicodeEncodeError):
+            ofname = ofname.encode(sys.getfilesystemencoding())
+        ret = freezeMpq.applyFreezeMpqModification(ofname, ofname)
         if ret != 0:
             raise RuntimeError("Error on mpq protection (%d)" % ret)
 
