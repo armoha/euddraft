@@ -98,7 +98,7 @@ def hasModifiedFile(dirname, since):
     return ret
 
 
-version = "0.9.4.2"
+version = "0.9.4.3"
 
 
 if __name__ == "__main__" or __name__ == "euddraft__main__":
@@ -213,7 +213,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
         print("[Stage 4/3] Applying freeze mpq modification...")
         try:
             ofname = ofname.encode("mbcs")
-        except (LookupError, UnicodeEncodeError):
+        except LookupError:
             ofname = ofname.encode(sys.getfilesystemencoding())
         ret = freezeMpq.applyFreezeMpqModification(ofname, ofname)
         if ret != 0:
