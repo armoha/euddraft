@@ -1,7 +1,7 @@
 # 변경 사항 (한국어)
 
 ## [0.9.4.5] - 2021.12.23
-- `freezeMpq.pyd` 버그 수정
+- `freezeMpq.pyd` 불러오기 관련 버그 수정
 - `StormLib` 업데이트
 - `MPQ.Extract(fname)` 유니코드 파일명도 추출 시도하도록 변경
 - `orphan condition` 오류 메시지 개선
