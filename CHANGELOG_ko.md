@@ -1,5 +1,16 @@
 # 변경 사항 (한국어)
 
+## [0.9.4.5] - 2021.12.23
+- `freezeMpq.pyd` 버그 수정
+- `StormLib` 업데이트
+- `MPQ.Extract(fname)` 유니코드 파일명도 추출 시도하도록 변경
+- `orphan condition` 오류 메시지 개선
+- eudplib 함수 성능 개선
+  * 모든 EPD 읽기 함수: 트리거 1개, SetDeaths 3개 감소. 매개변수 안 거치고 CurrentPlayer (0x6509B0) 에 바로 대입
+  (`dwread_epd`, `cunitread_epd`, `maskread_epd`, `bread_epd`, `posread_epd`, ...)
+  * `cunitread_epd`: 트리거 2개, SetDeaths 5개 감소. 비트마스크 `0x3FFFF0`로 변경, 초기값에 `0x40008` 추가
+  * `setloc_epd(loc, epd)`: 트리거 5개, SetDeaths 13개 감소. 내부에서 `posread_cp` 사용, x, y 반환값 로케 설정 액션에 바로 대입
+
 ## [0.9.4.4] - 2021.12.09
 - `SCArchive` 관련 수정
 

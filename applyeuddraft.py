@@ -193,7 +193,7 @@ def applyEUDDraft(sfname):
             print("[Stage 4/3] Applying freeze mpq modification...")
             try:
                 ofname = ofname.encode("mbcs")
-            except (LookupError, UnicodeEncodeError):
+            except LookupError:
                 ofname = ofname.encode(sys.getfilesystemencoding())
             ret = freezeMpq.applyFreezeMpqModification(ofname, ofname)
             if ret != 0:
