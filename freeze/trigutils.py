@@ -230,11 +230,14 @@ def RestorePUPx():
     if EUDWhile()(k <= 360 // 4 - 1):
         x = f_dwread_cp(0)
         dst << x.getDestAddr()
-        VProc(x, [
-            SetMemoryC(dst, Add, 1),
-            SetMemoryC(k.getValueAddr(), Add, 1),
-            SetMemoryC(0x6509B0, Add, 1),
-        ])
+        VProc(
+            x,
+            [
+                SetMemoryC(dst, Add, 1),
+                SetMemoryC(k.getValueAddr(), Add, 1),
+                SetMemoryC(0x6509B0, Add, 1),
+            ],
+        )
     EUDEndWhile()
     DoActions(
         srand(),
@@ -242,11 +245,14 @@ def RestorePUPx():
     )
     if EUDWhile()(k <= (360 + 480) // 4 - 1):
         f_dwread_cp(0, ret=[x])
-        VProc(x, [
-            SetMemoryC(0x6509B0, Add, 1),
-            SetMemoryC(dst, Add, 1),
-            SetMemoryC(k.getValueAddr(), Add, 1),
-        ])
+        VProc(
+            x,
+            [
+                SetMemoryC(0x6509B0, Add, 1),
+                SetMemoryC(dst, Add, 1),
+                SetMemoryC(k.getValueAddr(), Add, 1),
+            ],
+        )
     EUDEndWhile()
     t, acts = list(), list()
     for i, v in enumerate(restore_pupx):
@@ -261,7 +267,7 @@ def RestorePUPx():
     DoActions(t)
 
 
-@_EUDPredefineReturn(_ev[:1])
+@_EUDPredefineReturn(1)
 @EUDFunc
 def fread():
     ret = fread._frets[0]
@@ -299,9 +305,7 @@ def ObfuscatedAdd(var, amount, acts=[]):
     dst2, e2 = getObf()
     DoActions(srand(), MoveCP(EPD(dst1)))
     f1 = fread()
-    DoActions(
-        srand(), SetMemoryS(ptr, Add, f1), srand(), MoveCP(EPD(dst2))
-    )
+    DoActions(srand(), SetMemoryS(ptr, Add, f1), srand(), MoveCP(EPD(dst2)))
     f2 = fread()
     DoActions(
         srand(),
