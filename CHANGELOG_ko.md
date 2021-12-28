@@ -1,10 +1,17 @@
 # 변경 사항 (한국어)
 
+## [0.9.4.6] - 2021.12.28
+- 로케이션 단락 프로텍션 추가
+- `EUDByteWriter.writebyte(상수)` 성능 개선
+- `변수 * 변수` 성능 개선
+- `pybind` 업데이트
+- `EPDCUnitMap` 좌표 관련 멤버 추가: `originX`, `originY`, `secondaryOrderX`, `secondaryOrderY`, `rallyX`, `rallyY`
+
 ## [0.9.4.5] - 2021.12.23
 - `freezeMpq.pyd` 불러오기 관련 버그 수정
 - `StormLib` 업데이트
 - `MPQ.Extract(fname)` 유니코드 파일명도 추출 시도하도록 변경
-- `orphan condition` 오류 메시지 개선
+- ~~`orphan condition` 오류 메시지 개선~~
 - eudplib 함수 성능 개선
   * 모든 EPD 읽기 함수: 트리거 1개, SetDeaths 3개 감소. 매개변수 안 거치고 CurrentPlayer (0x6509B0) 에 바로 대입
   (`dwread_epd`, `cunitread_epd`, `maskread_epd`, `bread_epd`, `posread_epd`, ...)
