@@ -2,6 +2,7 @@ from itertools import combinations
 from operator import itemgetter
 
 from eudplib import *
+import sys
 
 """[chatEvent]
 __addr__ : 0x58D900
@@ -20,6 +21,7 @@ def onInit():
     global Addr, lenAddr, ptrAddr, patternAddr
     chatList, regexList = [], []
     chatEncoding = set(["UTF-8"])
+    sys.stdout.reconfigure(encoding="utf-8")
 
     def delrem4(x):
         return x - x % 4
