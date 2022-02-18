@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
+import sys
 from math import ceil
 
 from eudplib import *
@@ -253,6 +254,7 @@ def MouseMoved():
 
 
 def onInit():
+    sys.stdout.reconfigure(encoding="utf-8")
     # get map size & human player
     chkt = GetChkTokenized()
     dim, ownr = chkt.getsection("DIM"), chkt.getsection("OWNR")
@@ -1031,9 +1033,10 @@ def SendQC():
             elif len(ret) == 5:
                 x = parseSource(ret[1])
                 y = parseSource(ret[2], always=True)
-                if type(src) not in (EUDVariable, EUDXVariable):
+                if type(x) not in (EUDVariable, EUDXVariable):
                     x = f_mapXread_epd(x)
-                y = f_mapYread_epd(y)[0]
+                if type(y) not in (EUDVariable, EUDXVariable):
+                    y = f_mapYread_epd(y)[0]
                 src = x + y
             VProc(
                 src,
