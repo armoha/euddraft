@@ -1,17 +1,18 @@
+"""
+[chatEvent]
+__addr__ : 0x58D900
+message 1 : value 1
+message 2 : value 2
+^start.*middle.*end$ : value
+message 3 : value 3
+...
+"""
 from itertools import combinations
 from operator import itemgetter
 
 from eudplib import *
 import sys
 
-"""[chatEvent]
-__addr__ : 0x58D900
-__encoding__ : UTF-8, cp949
-message 1 : value 1
-message 2 : value 2
-^start.*middle.*end$ : value
-message 3 : value 3
-..."""
 Addr = 0x58D900
 lenAddr, ptrAddr, patternAddr = 0, 0, 0
 minlen, maxlen = 78, 0
@@ -20,7 +21,6 @@ minlen, maxlen = 78, 0
 def onInit():
     global Addr, lenAddr, ptrAddr, patternAddr
     chatList, regexList = [], []
-    chatEncoding = set(["UTF-8"])
     sys.stdout.reconfigure(encoding="utf-8")
 
     def delrem4(x):
@@ -39,7 +39,7 @@ def onInit():
         elif k == "__patternAddr__":
             patternAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
         elif k == "__encoding__":
-            chatEncoding = set([_.strip() for _ in v.split(",")])
+            pass
         else:
             if v == "1" or v == "0":
                 raise EPError("오류: 더할 값은 2 이상이어야 합니다.")
@@ -58,7 +58,6 @@ def onInit():
         print('{} : "{}"'.format(s[0], s[1]))
     print(
         "(not belong to any pattern) : 1",
-        "__encoding__ : {}".format(chatEncoding),
         "__addr__ : %s" % hex(Addr),
         "__lenAddr__ : %s" % hex(lenAddr),
         "__ptrAddr__ : %s" % hex(ptrAddr),
@@ -73,19 +72,16 @@ def onInit():
     chatSet = set()
     global minlen, maxlen
     for i, s in enumerate(chatList):
-        for e in chatEncoding:
-            t = s[0].encode(e)
-            chatSet.add((t, s[1]))
-            if len(t) > 78:
-                raise EPError(
-                    "스타크래프트에서 채팅은 78바이트까지만 입력할 수 있습니다.\n현재 크기: {} > {}".format(
-                        len(t), s[0]
-                    )
-                )
-            if len(t) > maxlen:
-                maxlen = len(t)
-            if len(t) < minlen:
-                minlen = len(t)
+        t = s[0].encode("utf-8")
+        chatSet.add((t, s[1]))
+        if len(t) > 78:
+            raise EPError(
+                "스타크래프트에서 채팅은 78바이트까지만 입력할 수 있습니다.\n현재 크기: {} > {}".format(len(t), s[0])
+            )
+        if len(t) > maxlen:
+            maxlen = len(t)
+        if len(t) < minlen:
+            minlen = len(t)
     global chatDict
     chatDict = [0 for _ in range(maxlen - minlen + 1)]
     chatList = list(chatSet)
@@ -104,8 +100,9 @@ def onInit():
     rSet = set()
     for r in regexList:
         start, middle, end, value = r
-        for e in chatEncoding:
-            rSet.add((start.encode(e), middle.encode(e), end.encode(e), value))
+        rSet.add(
+            (start.encode("utf-8"), middle.encode("utf-8"), end.encode("utf-8"), value)
+        )
     global rList, rListlen
     rList = list(rSet)
     for i, r in enumerate(rList):
