@@ -1,6 +1,7 @@
 """
 [chatEvent]
 __addr__ : 0x58D900
+__hash__ : SipHash
 message 1 : value 1
 message 2 : value 2
 ^start.*middle.*end$ : value
@@ -16,6 +17,86 @@ import sys
 Addr = 0x58D900
 lenAddr, ptrAddr, patternAddr = 0, 0, 0
 minlen, maxlen = 78, 0
+
+
+class Hash:
+    R1, R2, R3, R4, R5, R6 = 7, 8, 16, 9, 11, 16
+    KC1 = 0x736F6D65
+    KC2 = 0x646F7261
+    KC3 = 0x6C796765
+    KC4 = 0x74656462
+
+    @staticmethod
+    def rot(a, b):
+        a, b = a & 0xFFFFFFFF, b & 0xFFFFFFFF
+        return ((a << b) | (a >> (32 - b))) & 0xFFFFFFFF
+
+    def round(self):
+        self.v0 += self.v1
+        self.v2 += self.v3
+        self.v1 = Hash.rot(self.v1, Hash.R1)
+        self.v3 = Hash.rot(self.v3, Hash.R2)
+        self.v1 ^= self.v0
+        self.v3 ^= self.v2
+        self.v0 = Hash.rot(self.v0, Hash.R3)
+        self.v2 += self.v1
+        self.v0 += self.v3
+        self.v1 = Hash.rot(self.v1, Hash.R4)
+        self.v3 = Hash.rot(self.v3, Hash.R5)
+        self.v1 ^= self.v2
+        self.v3 ^= self.v0
+        self.v2 = Hash.rot(self.v2, Hash.R6)
+        self.v0 &= 0xFFFFFFFF
+        self.v1 &= 0xFFFFFFFF
+        self.v3 &= 0xFFFFFFFF
+
+    def ksetup(self, k0, k1):
+        self.v0 = k0 ^ Hash.KC1
+        self.v1 = k1 ^ Hash.KC2
+        self.v2 = k0 ^ Hash.KC3
+        self.v3 = k1 ^ Hash.KC4
+        self.fx = 0xFF
+
+    def getword(self, s):
+        toffset = self.offset
+        shift, out = 0, 0
+        while True:
+            if toffset >= len(s):
+                out |= (len(s) & 0xFF) << 24
+                self.offset = len(s) + 1
+                return out
+            out |= s[toffset] << shift
+            shift += 8
+            toffset += 1
+            if toffset >= self.offset + 4:
+                break
+        self.offset = toffset
+        return out
+
+    def hash(self, s, k1, k2):
+        self.offset = 0
+        self.ksetup(k1, k2)
+        while self.offset <= len(s):
+            m = self.getword(s)
+            self.v3 ^= m
+            for a in range(2):
+                self.round()
+            self.v0 ^= m
+        self.v2 ^= self.fx
+        for a in range(4):
+            self.round()
+        return self.v0 ^ self.v1 ^ self.v2 ^ self.v3
+
+    def test(self):
+        s = b""
+        for i in range(64):
+            o = self.hash(s, 0x03020100, 0x07060504)
+            print(f"{o:08x}")
+            s += bytes([i])
+
+
+class EUDHash:
+    pass
 
 
 def onInit():
