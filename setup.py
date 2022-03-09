@@ -16,7 +16,6 @@ build_exe_options = {
         "idna",
         "sys",
         "importlib",
-        "importlib_metadata",
         "json",
         "eudplib",
     ],
@@ -25,7 +24,7 @@ build_exe_options = {
     "include_msvcr": True,
     "include_files": [
         "freezeMpq.pyd",
-        "StormLib32.dll",
+        "StormLib64.dll",
         "libepScriptLib.dll",
         "license.txt",
         "plugins",

@@ -9,7 +9,7 @@ from edpkgutil.cleanDir import cleanDirectory
 from edpkgutil.packageZip import packageZip
 from euddraft import version
 
-buildDir = "build/exe.win32-%u.%u" % sys.version_info[0:2]
+buildDir = "build/exe.win-amd64-%u.%u" % sys.version_info[0:2]
 outputZipList = [
     "latest/euddraft%s.zip" % version,
     # 'latest/euddraft_latest.zip'
