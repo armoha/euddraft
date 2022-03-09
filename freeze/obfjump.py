@@ -150,7 +150,7 @@ def decryptOffsets():
         EUDBreakIf(jumperEPD == 0)
 
         v = f_dwread_epd(jumperEPD)
-        f_bitxor(v, cryptKey2, ret=v)
+        v ^= cryptKey2
         acts = [
             cryptKey.QueueAddTo(v),
             jumperEPD.SetDest(EPD(v.getDestAddr())),
