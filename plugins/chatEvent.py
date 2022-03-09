@@ -55,7 +55,6 @@ class Hash:
         self.v1 = k1 ^ Hash.KC2
         self.v2 = k0 ^ Hash.KC3
         self.v3 = k1 ^ Hash.KC4
-        self.fx = 0xFF
 
     def getword(self, s):
         toffset = self.offset
@@ -69,8 +68,8 @@ class Hash:
             shift += 8
             toffset += 1
             if toffset >= self.offset + 4:
+                self.offset = toffset
                 break
-        self.offset = toffset
         return out
 
     def hash(self, s, k1, k2):
@@ -79,11 +78,11 @@ class Hash:
         while self.offset <= len(s):
             m = self.getword(s)
             self.v3 ^= m
-            for a in range(2):
+            for _ in range(2):
                 self.round()
             self.v0 ^= m
-        self.v2 ^= self.fx
-        for a in range(4):
+        self.v2 ^= 0xFF
+        for _ in range(4):
             self.round()
         return self.v0 ^ self.v1 ^ self.v2 ^ self.v3
 
@@ -95,8 +94,115 @@ class Hash:
             s += bytes([i])
 
 
-class EUDHash:
-    pass
+class EUDHash(Hash):
+    rotfx = dict()  # 7, 8, 16, 9, 11
+    rotator = EUDVariable()
+
+    def __init__(self):
+        self.v0 = EUDVariable()
+        self.v1 = EUDVariable()
+        self.v2 = EUDVariable()
+        self.v3 = EUDVariable()
+        self.offset = EUDVariable()
+        # self.epd, self.subp = EUDCreateVariables(2)
+
+    @staticmethod
+    def rot(a, b):
+        # in-place rotate-left
+        try:
+            rotf = EUDHash.rotfx[b]
+        except KeyError:
+
+            def rotf(a, b):
+                # a는 변수, b는 상수
+                EUDHash.rotator << 0
+                for i in range(32 - b):
+                    RawTrigger(
+                        conditions=a.AtLeastX(1, 1 << i),
+                        actions=EUDHash.rotator.AddNumber(1 << (i + b)),
+                    )
+                for i in range(b):
+                    RawTrigger(
+                        conditions=a.AtLeastX(1, 1 << (32 - b + i)),
+                        actions=EUDHash.rotator.AddNumber(1 << i),
+                    )
+                VProc(EUDHash.rotator, EUDHash.rotator.SetDest(a))
+
+            EUDHash.rotfx[b] = rotf
+        rotf(a, b)
+
+    def round(self):
+        f = getattr(self, "roundf", None)
+        if f is None:
+
+            @EUDFunc
+            def f():
+                SetVariables([self.v0, self.v2], [self.v1, self.v3], [Add, Add])
+                EUDHash.rot(self.v1, Hash.R1)
+                EUDHash.rot(self.v3, Hash.R2)
+                self.v1 ^= self.v0
+                self.v3 ^= self.v2
+                EUDHash.rot(self.v0, Hash.R3)
+                SetVariables([self.v2, self.v0], [self.v1, self.v3], [Add, Add])
+                EUDHash.rot(self.v1, Hash.R4)
+                EUDHash.rot(self.v3, Hash.R5)
+                self.v1 ^= self.v2
+                self.v3 ^= self.v0
+                EUDHash.rot(self.v2, Hash.R6)
+
+            self.roundf = f
+        f()
+
+    def ksetup(self, k0, k1):
+        SetVariables(
+            [self.v0, self.v1, self.v2, self.v3],
+            [k0 ^ Hash.KC1, k1 ^ Hash.KC2, k0 ^ Hash.KC3, k1 ^ Hash.KC4],
+        )
+
+    def getword(self, ptr, length):  # TODO: use EPD!!!
+        toffset, shift, out = EUDCreateVariables(3)
+        VProc(
+            self.offset,
+            [self.offset.QueueAssignTo(toffset), shift.SetNumber(0), out.SetNumber(0)],
+        )
+        if EUDWhile()(True):  # TODO: use EUDByteReader
+            if EUDIf()(toffset >= length):
+                out |= f_bread(ptr + length) << 24
+                self.offset << length + 1
+                EUDBreak()
+            EUDEndIf()
+            out |= f_bread(ptr + toffset) << shift
+            shift += 8
+            toffset += 1
+            if EUDIf()(toffset >= self.offset + 4):
+                self.offset << toffset
+                EUDBreak()
+            EUDEndIf()
+        EUDEndWhile()
+        return out
+
+    def hash(self, ptr, length, k1, k2):
+        self.offset << 0
+        self.ksetup(k1, k2)
+        if EUDWhile()(self.offset <= length):
+            m = self.getword(ptr, length)  # FIXME
+            self.v3 ^= m
+            for _ in range(2):
+                self.round()
+            self.v0 ^= m
+        EUDEndWhile()
+        self.v2 ^= 0xFF
+        for _ in range(4):
+            self.round()
+        return self.v0 ^ self.v1 ^ self.v2 ^ self.v3
+
+    def test(self):
+        s = b""
+        for i in range(8):
+            d = Db(s + b"\0")
+            o = self.hash(d, len(s), 0x03020100, 0x07060504)
+            f_printAll("{:x}", o)
+            s += bytes([i])
 
 
 def onInit():
