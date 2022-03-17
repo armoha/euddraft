@@ -1,22 +1,19 @@
 """
 [chatEvent]
-__addr__ : 0x58D900
-__hash__ : SipHash
-message 1 : value 1
-message 2 : value 2
+__addr__ : address
+message : value
 ^start.*middle.*end$ : value
-message 3 : value 3
-...
 """
 from itertools import combinations
 from operator import itemgetter
+from random import randint
 
 from eudplib import *
 import sys
 
-Addr = 0x58D900
-lenAddr, ptrAddr, patternAddr = 0, 0, 0
+Addr, lenAddr, ptrAddr, patternAddr = None, None, None, None
 minlen, maxlen = 78, 0
+KEY1, KEY2 = randint(0, 0xFFFFFFFF), randint(0, 0xFFFFFFFF)
 
 
 class Hash:
@@ -196,106 +193,92 @@ class EUDHash(Hash):
 
 
 def onInit():
-    global Addr, lenAddr, ptrAddr, patternAddr
-    chatList, regexList = [], []
+    global Addr, lenAddr, ptrAddr, patternAddr, minlen, maxlen, chatDict, regexDict, rList
+    chatDict, regexDict, rList = {}, {}, []
     sys.stdout.reconfigure(encoding="utf-8")
+    h = Hash()
 
     def delrem4(x):
         return x - x % 4
 
     for k, v in settings.items():
-        rL = k.split(".*")
-        if k[:1] == "^" and k[-1:] == "$" and len(rL) == 3:
-            regexList.append([rL[0][1:], rL[1], rL[2][:-1], int(v, 0)])
-        elif k == "__addr__":
-            Addr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
-        elif k == "__lenAddr__":
-            lenAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
-        elif k == "__ptrAddr__":
-            ptrAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
-        elif k == "__patternAddr__":
-            patternAddr = delrem4(int(v, 0))  # 주소를 정수로 가져온다.
-        elif k == "__encoding__":
-            pass
-        else:
-            if v == "1" or v == "0":
-                raise EPError("오류: 더할 값은 2 이상이어야 합니다.")
-            chatList.append([k.strip(), int(v, 0)])
-
-    detect_duplicates = list()
-    for v in (Addr, lenAddr, ptrAddr, patternAddr):
-        if v >= 1:
-            detect_duplicates.append(v)
-    if not all(a != b for a, b in combinations(detect_duplicates, 2)):
-        raise EPError("주소가 중복됐습니다; {}".format(detect_duplicates))
-
-    chatList.sort(key=itemgetter(1, 0))
-    regexList.sort()
-    for s in chatList:
-        print('{} : "{}"'.format(s[0], s[1]))
-    print(
-        "(not belong to any pattern) : 1",
-        "__addr__ : %s" % hex(Addr),
-        "__lenAddr__ : %s" % hex(lenAddr),
-        "__ptrAddr__ : %s" % hex(ptrAddr),
-        "Memory(%s, Exactly, Right-sided value); <- Use this condition for chat-detect(desync). Total: %d"
-        % (hex(Addr), len(chatList)),
-        sep="\n",
-    )
-    for r in regexList:
-        print("^{0}.*{1}.*{2}$ : {3}".format(*r))
-    print("__patternAddr__ : %s" % hex(patternAddr))
-
-    chatSet = set()
-    global minlen, maxlen
-    for i, s in enumerate(chatList):
-        t = s[0].encode("utf-8")
-        chatSet.add((t, s[1]))
-        if len(t) > 78:
-            raise EPError(
-                "스타크래프트에서 채팅은 78바이트까지만 입력할 수 있습니다.\n현재 크기: {} > {}".format(len(t), s[0])
-            )
-        if len(t) > maxlen:
-            maxlen = len(t)
-        if len(t) < minlen:
-            minlen = len(t)
-    global chatDict
-    chatDict = [0 for _ in range(maxlen - minlen + 1)]
-    chatList = list(chatSet)
-    for i, s in enumerate(chatList):
-        size = len(s[0]) - minlen
-        if isinstance(chatDict[size], list):
-            chatDict[size][0].append(Db(s[0] + b"\0"))
-            chatDict[size][1].append(s[1])
-        else:
-            chatDict[size] = [[Db(s[0] + b"\0")], [s[1]]]
-    for i, s in enumerate(chatDict):
-        if isinstance(s, list):
-            chatDict[i] = EUDArray([len(s[0])] + s[0] + s[1])
-    chatDict = EUDArray(chatDict)
-
-    rSet = set()
-    for r in regexList:
-        start, middle, end, value = r
-        rSet.add(
-            (start.encode("utf-8"), middle.encode("utf-8"), end.encode("utf-8"), value)
-        )
-    global rList, rListlen
-    rList = list(rSet)
-    for i, r in enumerate(rList):
-        start, middle, end, value = r
-        rList[i] = EUDArray(
-            (
+        if k.upper() == "__ENCODING__":
+            continue
+        try:
+            v = int(v, 0)
+        except ValueError:
+            raise EPError(f"right-sided value is not a number! {k} : {v}")
+        if k.upper() == "__ADDR__":
+            ep_assert(Addr is None, f"multiple addr error. {k} : {v}")
+            Addr = delrem4(v)  # 주소를 정수로 가져온다.
+        elif k.upper() == "__LENADDR__":
+            ep_assert(lenAddr is None, f"multiple lenAddr error. {k} : {v}")
+            lenAddr = delrem4(v)
+        elif k.upper() == "__PTRADDR__":
+            ep_assert(ptrAddr is None, f"multiple ptrAddr error. {k} : {v}")
+            ptrAddr = delrem4(v)
+        elif k.upper() == "__PATTERNADDR__":
+            ep_assert(patternAddr is None, f"multiple patternAddr error. {k} : {v}")
+            patternAddr = delrem4(v)
+        elif k[:1] == "^" and k[-1:] == "$" and k.count(".*") == 2:
+            ep_assert(v > 0, f"Value should be greater than 0. {k} : {v}")
+            t = k[1:-1].encode("utf-8")
+            ep_assert(len(t) <= 82, f'chat pattern "{k}" is too long to type (up to 78 bytes)')
+            start, middle, end = t.split(b".*")
+            key = (start, middle, end)
+            ep_assert(key not in regexDict, f"Duplicated regex pattern. {k} : {v}")
+            regexDict[key] = v
+            rList.append(EUDArray([
                 Db(start + b"\0"),
                 Db(middle + b"\0"),
                 Db(end + b"\0"),
-                value,
+                v,
                 len(start),
                 len(end),
-            )
-        )
+            ]))
+        else:
+            ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
+            t = k.encode("utf-8")
+            ep_assert(len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)')
+            if len(t) > maxlen:
+                maxlen = len(t)
+            if len(t) < minlen:
+                minlen = len(t)
+            c = h.hash(t, KEY1, KEY2)
+            ep_assert(c not in chatDict, f"Duplicated chat hash. {k} : {v}")
+            chatDict[c] = (k, v)
+
+    global rListlen
     rListlen = len(rList)
     rList = EUDArray(rList)
+
+    detect_duplicates = list()
+    for v in (Addr, lenAddr, ptrAddr, patternAddr):
+        if v and v >= 1:
+            detect_duplicates.append(v)
+    if not all(a != b for a, b in combinations(detect_duplicates, 2)):
+        raise EPError(f"Duplicated address ; {detect_duplicates}")
+
+    if Addr is None:
+        Addr = 0x58D900  # default address
+    print(f"__addr__ : 0x{Addr:X}")
+    if lenAddr:
+        print(f"__lenAddr__ : 0x{lenAddr:X}")
+    if ptrAddr:
+        print(f"__ptrAddr__ : 0x{ptrAddr:X}")
+    if patternAddr:
+        print(f"__patternAddr__ : 0x{patternAddr:X}")
+    for r, v in regexDict.items():
+        print("^{0}.*{1}.*{2}$ : {3}".format(*r, v))
+    if regexDict and not patternAddr:
+        raise EPError("patternAddr not defined for regex patterns (^start.*middle.*end$).")
+    else:
+        print(f"Memory(0x{patternAddr:X}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)")
+    for k, v in chatDict.values():
+        print('{} : "{}"'.format(k, v))
+    print("(not belong to any pattern) : 1")
+    print(f"Memory(0x{Addr:X}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)")
+    print(f"Total: {len(chatDict)}")
 
 
 onInit()
@@ -388,24 +371,31 @@ def onPluginStart():
 @EUDFunc
 def f_chatcmp():
     chatlen = f_strlen(chatptr)
-    if lenAddr >= 1:
+    if lenAddr:
         VProc(chatlen, chatlen.QueueAssignTo(EPD(lenAddr)))
-    if ptrAddr >= 1:
+    if ptrAddr:
         DoActions(SetMemory(ptrAddr, SetTo, chatptr))
     if EUDIf()([chatlen >= minlen, chatlen <= maxlen]):
-        t = EUDArray.cast(chatDict[chatlen - minlen])
-        if EUDIf()(t >= 1):
-            n = t[0]
-            i = EUDVariable()
-            i << 1
-            if EUDWhile()(i <= n):
-                if EUDIf()(f_strcmp(chatptr, t[i]) == 0):
-                    DoActions(SetMemory(Addr, SetTo, t[n + i]))
-                    EUDJump(exit)
-                EUDEndIf()
-                i += 1
-            EUDEndWhile()
-        EUDEndIf()
+        PushTriggerScope()
+        exitter = RawTrigger(
+            nextptr=exit,
+            actions=SetDeaths(0, SetTo, 0, 0)
+        )
+        PopTriggerScope()
+        e = EUDHash()
+        o = e.hash(chatptr, chatlen, KEY1, KEY2)
+        for c, kv in chatDict.items():
+            trig, nptr = Forward(), Forward()
+            trig << RawTrigger(
+                conditions=o.Exactly(c),
+                actions=[
+                    SetMemory(Addr, SetTo, kv[1]),
+                    SetNextPtr(trig, exitter),
+                    SetMemory(exitter + 344, SetTo, EPD(trig) + 1),
+                    SetMemory(exitter + 348, SetTo, nptr),
+                ]
+            )
+            nptr << NextTrigger()
     EUDEndIf()
     if rListlen >= 1:
         for i in EUDLoopRange(rListlen):
@@ -416,7 +406,7 @@ def f_chatcmp():
                     f_memcmp(chatptr + chatlen - endlen, subArray[2], endlen) == 0
                 ):
                     if EUDIfNot()(f_strnstr(chatptr, subArray[1], chatlen) == -1):
-                        DoActions(SetMemory(patternAddr, SetTo, subArray[3]))
+                        f_dwwrite(patternAddr, subArray[3])
                         EUDJump(exit)
                     EUDEndIf()
                 EUDEndIf()
@@ -482,9 +472,9 @@ def beforeTriggerExec():
 
     DoActions(
         [SetMemory(Addr, SetTo, 0), chatptr.SetNumber(0)]  # 초기화
-        + [SetMemory(lenAddr, SetTo, 0) if lenAddr >= 1 else []]
-        + [SetMemory(ptrAddr, SetTo, 0) if ptrAddr >= 1 else []]
-        + [SetMemory(patternAddr, SetTo, 0) if rListlen >= 1 else []]
+        + [SetMemory(lenAddr, SetTo, 0) if lenAddr else []]
+        + [SetMemory(ptrAddr, SetTo, 0) if ptrAddr else []]
+        + [SetMemory(patternAddr, SetTo, 0) if rListlen else []]
     )
 
     oldcp = f_getcurpl()
