@@ -88,14 +88,13 @@ class Hash:
 
     def test(self):
         s = b""
-        for i in range(64):
+        for i in range(10):
             o = self.hash(s, 0x03020100, 0x07060504)
             print(f"{o:08x}")
             s += bytes([i])
 
 
 class EUDHash(Hash):
-    rotfx = dict()  # 7, 8, 16, 9, 11
     rotator = EUDVariable()
 
     def __init__(self):
@@ -109,27 +108,18 @@ class EUDHash(Hash):
     @staticmethod
     def rot(a, b):
         # in-place rotate-left
-        try:
-            rotf = EUDHash.rotfx[b]
-        except KeyError:
-
-            def rotf(a, b):
-                # a는 변수, b는 상수
-                EUDHash.rotator << 0
-                for i in range(32 - b):
-                    RawTrigger(
-                        conditions=a.AtLeastX(1, 1 << i),
-                        actions=EUDHash.rotator.AddNumber(1 << (i + b)),
-                    )
-                for i in range(b):
-                    RawTrigger(
-                        conditions=a.AtLeastX(1, 1 << (32 - b + i)),
-                        actions=EUDHash.rotator.AddNumber(1 << i),
-                    )
-                VProc(EUDHash.rotator, EUDHash.rotator.SetDest(a))
-
-            EUDHash.rotfx[b] = rotf
-        rotf(a, b)
+        EUDHash.rotator << 0
+        for i in range(32 - b):
+            RawTrigger(
+                conditions=a.AtLeastX(1, 1 << i),
+                actions=EUDHash.rotator.AddNumber(1 << (i + b)),
+            )
+        for i in range(b):
+            RawTrigger(
+                conditions=a.AtLeastX(1, 1 << (32 - b + i)),
+                actions=EUDHash.rotator.AddNumber(1 << i),
+            )
+        VProc(EUDHash.rotator, EUDHash.rotator.SetDest(a))
 
     def round(self):
         f = getattr(self, "roundf", None)
@@ -167,11 +157,11 @@ class EUDHash(Hash):
         )
         if EUDWhile()(True):  # TODO: use EUDByteReader
             if EUDIf()(toffset >= length):
-                out |= f_bread(ptr + length) << 24
+                out |= f_bitlshift(length & 0xFF, 24)
                 self.offset << length + 1
                 EUDBreak()
             EUDEndIf()
-            out |= f_bread(ptr + toffset) << shift
+            out |= f_bitlshift(f_bread(ptr + toffset), shift)
             shift += 8
             toffset += 1
             if EUDIf()(toffset >= self.offset + 4):
@@ -198,7 +188,7 @@ class EUDHash(Hash):
 
     def test(self):
         s = b""
-        for i in range(8):
+        for i in range(10):
             d = Db(s + b"\0")
             o = self.hash(d, len(s), 0x03020100, 0x07060504)
             f_printAll("{:x}", o)
