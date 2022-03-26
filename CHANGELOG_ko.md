@@ -1,7 +1,42 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.0] - 2022.03.26
+
+### 변경 사항
+- 64비트 업데이트
+- `Python 3.10.2`, `cx_Freeze 6.10`, `pybind11` 업데이트
+- `StormLib`, `eudplib 0.69.1` 업데이트
+- `EUDVariable`를 비트마스크 `0xFFFFFFFF`인 EUDX 트리거로 변경
+- `[chatEvent]` `__encoding__` 옵션 삭제. 넣는 경우 무시됩니다
+
+### 기능 개선
+- `EUDVariable`의 기본 연산들 비트마스크 활용 성능 최적화\
+강좌글: https://blog.naver.com/kein0011/222649764825 \
+구현 참고: https://cafe.naver.com/edac/110286
+- `epScript`: `var` 초기화 때 RValue 변수를 추가로 복사하지 않도록 개선
+  ```js
+  // 이제 두 경우 트리거 실행 수 똑같음
+  const a = dwread_epd(0);
+  var b = dwread_epd(0);
+  ```
+
+### 버그 수정
+- (#51) 지역 변수를 한 줄에 여러 개 선언할 때 생기는 버그 수정
+- EUD Editor 3 컴파일에서 .eds 컴파일 때 `UnicodeEncodeError` 수정\
+버그 발생 예시: `[chatEvent]`에 일본어 곡명 작성 https://cafe.naver.com/edac/109969
+- `[MSQC]` `xy, src1, src2 : dst1, dst2` 버그 수정 https://cafe.naver.com/edac/109844
+- `[MSQC]` 마우스 로케이션 이름 출력 버그 수정
+
+### 기능 추가
+- `[chatEvent]` SipHash 기능 추가\
+맵 파일에 인식할 채팅 원문을 저장하지 않고, 채팅과 해시값을 비교합니다.\
+https://cafe.naver.com/edac/110699
+- 함수 `f_strlen_epd(epd, subp=0)` 선택인자 `subp` 추가
+- 모든 변수 타입 (EUDLightVariable, EUDVariable, ...) 에 제자리(in-place) 연산 추가\
+`&=`, `|=`, `^=`, `<<=`, `>>=`
+
 ## [0.9.4.8] - 2022.01.09
-- 페이드아웃의 마지막 색이 뒷 내용을 덮어쓰는 색깔일 때 (0: null 문자, 5:  회색, 0x14: 투명색)
+- 페이드아웃의 마지막 색이 뒷 내용을 덮어쓰는 색깔일 때 (0: null 문자, 5:  회색, 0x14: 투명색)\
   페이드아웃 텍스트 효과가 끝나도 마지막 색을 맨 앞에 넣도록 수정했습니다.
 
 ## [0.9.4.7] - 2022.01.02

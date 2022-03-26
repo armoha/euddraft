@@ -472,6 +472,8 @@ def onInit():
                     import locale
 
                     locname = locname.decode(locale.getpreferredencoding())
+                except AttributeError:  # ambiguous location name
+                    locname = mouse_loc + p
             loc_list.append("P%u:%s" % (p + 1, locname))
         print("MouseLoc=%s" % ", ".join(loc_list))
     if QCDebug:

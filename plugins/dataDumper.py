@@ -1,4 +1,5 @@
 from eudplib import *
+import sys
 
 inputDatas = []
 
@@ -37,6 +38,7 @@ def onPluginStart():
 
 
 def onInit():
+    sys.stdout.reconfigure(encoding="utf-8")
     for dataPath, outOffsetStr in settings.items():
         print(' - Loading file "%s"...' % dataPath)
         inputData = open(dataPath, "rb").read()

@@ -147,18 +147,26 @@ class EUDHash(Hash):
         )
 
     def getword(self, ptr, length):  # TODO: use EPD!!!
-        toffset, shift, out = EUDCreateVariables(3)
-        VProc(
-            self.offset,
-            [self.offset.QueueAssignTo(toffset), shift.SetNumber(0), out.SetNumber(0)],
+        toffset, prevptr, shift, out = EUDCreateVariables(4)
+        br = EUDByteReader()
+        if EUDIfNot()(prevptr == ptr):
+            br.seekoffset(ptr)
+        EUDEndIf()
+        SeqCompute(
+            [
+                (out, SetTo, 0),
+                (prevptr, SetTo, 4),
+                (prevptr, Add, ptr),
+                (toffset, SetTo, self.offset),
+            ]
         )
-        if EUDWhile()(True):  # TODO: use EUDByteReader
+        if EUDWhile()(True):
             if EUDIf()(toffset >= length):
                 out |= f_bitlshift(length & 0xFF, 24)
                 self.offset << length + 1
                 EUDBreak()
             EUDEndIf()
-            out |= f_bitlshift(f_bread(ptr + toffset), shift)
+            out |= f_bitlshift(br.readbyte(), shift)
             shift += 8
             toffset += 1
             if EUDIf()(toffset >= self.offset + 4):
@@ -223,23 +231,31 @@ def onInit():
         elif k[:1] == "^" and k[-1:] == "$" and k.count(".*") == 2:
             ep_assert(v > 0, f"Value should be greater than 0. {k} : {v}")
             t = k[1:-1].encode("utf-8")
-            ep_assert(len(t) <= 82, f'chat pattern "{k}" is too long to type (up to 78 bytes)')
+            ep_assert(
+                len(t) <= 82, f'chat pattern "{k}" is too long to type (up to 78 bytes)'
+            )
             start, middle, end = t.split(b".*")
             key = (start, middle, end)
             ep_assert(key not in regexDict, f"Duplicated regex pattern. {k} : {v}")
             regexDict[key] = v
-            rList.append(EUDArray([
-                Db(start + b"\0"),
-                Db(middle + b"\0"),
-                Db(end + b"\0"),
-                v,
-                len(start),
-                len(end),
-            ]))
+            rList.append(
+                EUDArray(
+                    [
+                        Db(start + b"\0"),
+                        Db(middle + b"\0"),
+                        Db(end + b"\0"),
+                        v,
+                        len(start),
+                        len(end),
+                    ]
+                )
+            )
         else:
             ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
             t = k.encode("utf-8")
-            ep_assert(len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)')
+            ep_assert(
+                len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)'
+            )
             if len(t) > maxlen:
                 maxlen = len(t)
             if len(t) < minlen:
@@ -271,13 +287,19 @@ def onInit():
     for r, v in regexDict.items():
         print("^{0}.*{1}.*{2}$ : {3}".format(*r, v))
     if regexDict and not patternAddr:
-        raise EPError("patternAddr not defined for regex patterns (^start.*middle.*end$).")
-    else:
-        print(f"Memory(0x{patternAddr:X}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)")
+        raise EPError(
+            "patternAddr not defined for regex patterns (^start.*middle.*end$)."
+        )
+    elif regexDict and patternAddr:
+        print(
+            f"Memory(0x{patternAddr:X}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)"
+        )
     for k, v in chatDict.values():
         print('{} : "{}"'.format(k, v))
     print("(not belong to any pattern) : 1")
-    print(f"Memory(0x{Addr:X}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)")
+    print(
+        f"Memory(0x{Addr:X}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)"
+    )
     print(f"Total: {len(chatDict)}")
 
 
@@ -371,16 +393,16 @@ def onPluginStart():
 @EUDFunc
 def f_chatcmp():
     chatlen = f_strlen(chatptr)
+    assign_list = []
     if lenAddr:
-        VProc(chatlen, chatlen.QueueAssignTo(EPD(lenAddr)))
+        assign_list.append((EPD(lenAddr), SetTo, chatlen))
     if ptrAddr:
-        DoActions(SetMemory(ptrAddr, SetTo, chatptr))
+        assign_list.append((EPD(ptrAddr), SetTo, chatptr))
+    if assign_list:
+        SeqCompute(assign_list)
     if EUDIf()([chatlen >= minlen, chatlen <= maxlen]):
         PushTriggerScope()
-        exitter = RawTrigger(
-            nextptr=exit,
-            actions=SetDeaths(0, SetTo, 0, 0)
-        )
+        exitter = RawTrigger(nextptr=exit, actions=SetDeaths(0, SetTo, 0, 0))
         PopTriggerScope()
         e = EUDHash()
         o = e.hash(chatptr, chatlen, KEY1, KEY2)
@@ -393,7 +415,7 @@ def f_chatcmp():
                     SetNextPtr(trig, exitter),
                     SetMemory(exitter + 344, SetTo, EPD(trig) + 1),
                     SetMemory(exitter + 348, SetTo, nptr),
-                ]
+                ],
             )
             nptr << NextTrigger()
     EUDEndIf()
