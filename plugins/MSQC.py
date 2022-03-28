@@ -895,6 +895,7 @@ def SendQC():
         for k, v in _ns.items():
             if (
                 IsEUDVariable(v)
+                or isUnproxyInstance(v, EUDLightBool)
                 or isUnproxyInstance(v, EUDLightVariable)
                 or isUnproxyInstance(v, EUDXVariable)
             ) and k in s:
