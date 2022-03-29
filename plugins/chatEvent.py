@@ -149,11 +149,12 @@ class EUDHash(Hash):
     def getword(self, ptr, length):  # TODO: use EPD!!!
         toffset, prevptr, shift, out = EUDCreateVariables(4)
         br = EUDByteReader()
-        if EUDIfNot()(prevptr == ptr):
+        if EUDIfNot()([prevptr == ptr, toffset == self.offset]):
             br.seekoffset(ptr)
         EUDEndIf()
         SeqCompute(
             [
+                (shift, SetTo, 0),
                 (out, SetTo, 0),
                 (prevptr, SetTo, 4),
                 (prevptr, Add, ptr),
