@@ -150,7 +150,7 @@ class EUDHash(Hash):
         toffset, prevptr, shift, out = EUDCreateVariables(4)
         br = EUDByteReader()
         if EUDIfNot()([prevptr == ptr, toffset == self.offset]):
-            br.seekoffset(ptr)
+            br.seekoffset(ptr + self.offset)
         EUDEndIf()
         SeqCompute(
             [
