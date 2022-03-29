@@ -1,5 +1,12 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.1] - 2022.03.29
+- `[chatEvent]` 버그 수정
+- EUD 변수 계산에서 임시 변수를 필요할 때만 추가하도록 최적화
+- `EUDVariable.IsRValue()` 추가
+- `EUDLightVariable`에 `>`, `<` 부등호 사용 가능
+- `[MSQC]` 조건에서 `EUDLightBool` 사용 가능
+
 ## [0.9.5.0] - 2022.03.26
 
 ### 변경 사항
@@ -391,7 +398,7 @@ decodeUnitName : utf-8
 - eudplib 오류 메시지 한글화 + 모든 경고/오류가 stderr로 출력하게 수정
 - 모든 문자열 주소를 4의 배수로 변경
 - `EUDByteStream` 추가
-  
+
   `.readbyte()`, `.writebyte(b)`를 모두 사용할 수 있고,\
   `.copyto(byterw)`로 현재 위치를 다른 `EUDByteReader`/`Writer`/`Stream`한테 전달할 수 있습니다.
 - `ep_warn`, `EPWarning`, `ep_eprint` 추가
@@ -400,7 +407,7 @@ decodeUnitName : utf-8
 ### 기능 변경
 
 - `_safe` 읽기 함수 지원 중단(deprecated) 경고
-  
+
   **eudplib 0.63**에서 `f_dwepdread_epd_safe`, `f_dwread_epd_safe`, `f_epdread_epd_safe`를 삭제할 예정입니다.
 
 
@@ -409,7 +416,7 @@ decodeUnitName : utf-8
 ### 기능 변경
 
 - `StringBuffer` 롤백
-  
+
   `soundlooper`도 사운드 파일마다 스트링 넣는 방식에서 플레이어마다 스트링 쓰게 변경했어요.
 
 
@@ -1427,7 +1434,7 @@ function afterTriggerExec() {
     const s = StringBuffer(1023);
 
     // StringBuffer.insert(EPD인덱스, 내용들, ...)
-    // 스트링 끝을 표시하는 null 문자를 넣지 않기 때문에, 
+    // 스트링 끝을 표시하는 null 문자를 넣지 않기 때문에,
     // 스트링 중간 내용만 교체하는 용도로 쓸 수 있습니다.
     s.insert(0, "sound\\Zerg\\Devourer\\");
 
