@@ -27,6 +27,15 @@ import re
 from collections import OrderedDict
 from typing import Dict
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def readconfig(fname) -> Dict[str, Dict[str, str]]:
     header_regex = re.compile(r"\[(.+)\]$")
@@ -52,11 +61,14 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
             if header_match:
                 currentSectionName = header_match.group(1)
                 if currentSectionName in config:
+                    origin_lineno_length, duplicated_lineno_length = str(header_lineno[currentSectionName]).__len__(), str(lineno).__len__()
+                    currentSectionName_length = currentSectionName.__len__()
                     raise RuntimeError(
-                        "Duplicate header [%s]" % currentSectionName,
-                        "[Line %u] [%s]"
-                        % (header_lineno[currentSectionName], currentSectionName),
-                        "[Line %u] [%s]" % (lineno, currentSectionName),
+                        f'''Duplicate header '{currentSectionName}'
+                        {header_lineno[currentSectionName]} | [{currentSectionName}]
+                        {bcolors.FAIL}{" " * (origin_lineno_length + 3)}{"^" * (currentSectionName_length + 2)}{bcolors.ENDC}
+                        {lineno} | [{currentSectionName}]
+                        {bcolors.FAIL}{" " * (duplicated_lineno_length + 3)}{"^" * (currentSectionName_length + 2)}{bcolors.ENDC}''',
                     )
                 currentSection = {}
                 config[currentSectionName] = currentSection
@@ -72,11 +84,15 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.strip()
                 value = keyvalue_match.group(3)
                 if key in currentSection:
+                    origin_lineno_length, duplicated_lineno_length = str(config_lineno[key]).__len__(), str(lineno).__len__()
+                    current_key_length = key.__len__()
                     raise RuntimeError(
-                        "Duplicate key %s" % key,
-                        "[Line %u] %s : %s"
-                        % (config_lineno[key], key, currentSection[key]),
-                        "[Line %u] %s : %s" % (lineno, key, value),
+                        f'''Duplicate key '{key}'
+                        {config_lineno[key]} | {key} : {currentSection[key]}
+                        {bcolors.FAIL}{" " * (origin_lineno_length + 3)}{"^" * current_key_length}{bcolors.ENDC}
+                        {lineno} | {key} : {value}
+                        {bcolors.FAIL}{" " * (duplicated_lineno_length + 3)}{"^" * current_key_length}{bcolors.ENDC}
+                        '''
                     )
                 currentSection[key] = value
                 config_lineno[key] = lineno
@@ -91,11 +107,15 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.replace("\\=", "=")
                 key = key.strip()
                 if key in currentSection:
+                    origin_lineno_length, duplicated_lineno_length = str(config_lineno[key]).__len__(), str(lineno).__len__()
+                    current_key_length = key.__len__()
                     raise RuntimeError(
-                        "Duplicate key %s in [%s]" % (key, currentSectionName),
-                        "[Line %u] %s : %s"
-                        % (config_lineno[key], key, currentSection[key]),
-                        "[Line %u] %s" % (lineno, key),
+                        f'''Duplicate key '{key}' in '{currentSectionName}'
+                        {config_lineno[key]} | {key} : {currentSection[key]}
+                        {bcolors.FAIL}{" " * (origin_lineno_length + 3)}{"^" * current_key_length}{bcolors.ENDC}
+                        {lineno} | {key}
+                        {bcolors.FAIL}{" " * (duplicated_lineno_length + 3)}{"^" * current_key_length}{bcolors.ENDC}
+                        '''
                     )
                 currentSection[key] = ""
                 config_lineno[key] = lineno
