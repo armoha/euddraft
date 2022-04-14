@@ -1,5 +1,14 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.2] - 2022.04.14
+- (armoha/euddraft#2) 설정 파일 오류 메시지 개선 ([**@zuhanit**](https://github.com/zuhanit) 기여)
+![better config error message](https://user-images.githubusercontent.com/36349353/163330102-91b83907-4d6d-4484-a787-22231d1d62ca.png)
+- (armoha/eudplib#5) 컴파일 속도 개선: EUD 변수 트리거 생성 개선
+- 키워드 인자 `nextptr` 추가: `EUDVArray`, `EUDVariable`, `EUDXVariable`
+- `[main] objFieldN : x` 버그 수정
+- `RawTrigger`에 키워드 인자 `currentAction` 추가 
+- eudplib 0.67.3 업데이트
+
 ## [0.9.5.1] - 2022.03.29
 - `[chatEvent]` 버그 수정
 - EUD 변수 계산에서 임시 변수를 필요할 때만 추가하도록 최적화
