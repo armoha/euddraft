@@ -29,7 +29,8 @@ import textwrap
 from typing import Dict
 from colorama import Fore, Back, init
 
-init() # Colorama auto style reset
+init()  # Colorama auto style reset
+
 
 def readconfig(fname) -> Dict[str, Dict[str, str]]:
     header_regex = re.compile(r"\[(.+)\]$")
@@ -44,6 +45,18 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
         config = OrderedDict()
         header_lineno = {}
         config_lineno = {}
+
+        def encode_error(kind, dup, fname, line1, line2, str1="", str2=""):
+            where = f"{dup!r}"
+            if kind == "key" and currentSectionName:
+                where = f"{where} in [{currentSectionName}]"
+            line_digits = len(str(line2))
+            return f"""Duplicated {kind} {where}
+{Fore.LIGHTBLACK_EX}{fname}:{line2}{Fore.RESET}
+
+{Fore.RED}>{Fore.RESET} {line1:>line_digits} | {Back.RED}{dup}{Back.RESET}{str1}
+{Fore.RED}>{Fore.RESET} {line2} | {Back.RED}{dup}{Back.RESET}{str2}"""
+
         for lineno, line in enumerate(text):
             lineno += 1
             line = line.strip()
@@ -55,14 +68,14 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
             if header_match:
                 currentSectionName = header_match.group(1)
                 if currentSectionName in config:
-                    raise RuntimeError(textwrap.dedent(f'''\
-                        Duplicate header '{currentSectionName}'
-                        {Fore.LIGHTBLACK_EX}{fname}:{lineno}{Fore.RESET}
-
-                        {Fore.RED}>{Fore.RESET} {header_lineno[currentSectionName]} | {Back.RED}[{currentSectionName}]{Back.RESET}
-                        {Fore.RED}>{Fore.RESET} {lineno} | {Back.RED}[{currentSectionName}]{Back.RESET}
-                        ''',
-                    ))
+                    errormsg = encode_error(
+                        "header",
+                        currentSectionName,
+                        fname,
+                        header_lineno[currentSectionName],
+                        lineno,
+                    )
+                    raise RuntimeError(errormsg)
                 currentSection = {}
                 config[currentSectionName] = currentSection
                 header_lineno[currentSectionName] = lineno
@@ -77,14 +90,16 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.strip()
                 value = keyvalue_match.group(3)
                 if key in currentSection:
-                    raise RuntimeError(textwrap.dedent(f'''\
-                        Duplicate key '{key}'
-                        {Fore.LIGHTBLACK_EX}{fname}:{lineno}{Fore.RESET}
-                        
-                        {Fore.RED}>{Fore.RESET} {config_lineno[key]} | {Back.RED}{key}{Back.RESET} : {currentSection[key]}
-                        {Fore.RED}>{Fore.RESET} {lineno} | {Back.RED}{key}{Back.RESET} : {value}
-                        '''
-                    ))
+                    errormsg = encode_error(
+                        "key",
+                        key,
+                        fname,
+                        config_lineno[key],
+                        lineno,
+                        f" : {currentSection[key]}",
+                        f" : {value}",
+                    )
+                    raise RuntimeError(errormsg)
                 currentSection[key] = value
                 config_lineno[key] = lineno
                 continue
@@ -98,14 +113,15 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.replace("\\=", "=")
                 key = key.strip()
                 if key in currentSection:
-                    raise RuntimeError(textwrap.dedent(f'''\
-                        Duplicate key '{key}' in '{currentSectionName}'
-                        {Fore.LIGHTBLACK_EX}{fname}:{lineno}{Fore.RESET}
-                        
-                        {Fore.RED}>{Fore.RESET} {config_lineno[key]} | {Back.RED}{key}{Back.RESET} : {currentSection[key]}
-                        {Fore.RED}>{Fore.RESET} {lineno} | {Back.RED}{key}{Back.RESET}
-                        '''
-                    ))
+                    errormsg = encode_error(
+                        "key",
+                        key,
+                        fname,
+                        config_lineno[key],
+                        lineno,
+                        f" : {currentSection[key]}",
+                    )
+                    raise RuntimeError(errormsg)
                 currentSection[key] = ""
                 config_lineno[key] = lineno
                 continue
