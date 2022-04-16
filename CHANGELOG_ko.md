@@ -1,11 +1,18 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.3] - 2022.04.17
+- 커스텀 변수 버퍼 버그 수정
+- 함수 `ShufflePayload(mode)` 추가\
+  오브젝트 수집 단계 후 섞는 단계를 끄거나 킵니다. (기본값: 켬)
+- **[main]**\
+`shufflePayload : bool` 옵션 추가.
+
 ## [0.9.5.2] - 2022.04.14
 - (armoha/euddraft#55) 설정 파일 오류 메시지 개선 ([**@zuhanit**](https://github.com/zuhanit) 기여)
 ![better config error message](https://user-images.githubusercontent.com/36349353/163330102-91b83907-4d6d-4484-a787-22231d1d62ca.png)
 - (armoha/eudplib#5) 컴파일 속도 개선: EUD 변수 트리거 생성 개선
 - 키워드 인자 `nextptr` 추가: `EUDVArray`, `EUDVariable`, `EUDXVariable`
-- `[main] objFieldN : x` 버그 수정
+- (armoha/euddraft#37) `[main] objFieldN : x` 버그 수정
 - `RawTrigger`에 키워드 인자 `currentAction` 추가 
 - eudplib 0.67.3 업데이트
 
