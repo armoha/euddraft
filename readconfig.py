@@ -54,7 +54,7 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
             return f"""Duplicated {kind} {where}
 {Fore.LIGHTBLACK_EX}{fname}:{line2}{Fore.RESET}
 
-{Fore.RED}>{Fore.RESET} {line1:>line_digits} | {Back.RED}{dup}{Back.RESET}{str1}
+{Fore.RED}>{Fore.RESET} {line1:>{line_digits}} | {Back.RED}{dup}{Back.RESET}{str1}
 {Fore.RED}>{Fore.RESET} {line2} | {Back.RED}{dup}{Back.RESET}{str2}"""
 
         for lineno, line in enumerate(text):
