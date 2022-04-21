@@ -1019,10 +1019,10 @@ def SendQC():
                 if isinstance(src, int):
                     return src
                 try:
-                    src = int(ret[1], 0)
+                    src = int(src, 0)
                 except ValueError:
                     _ns = GetEUDNamespace()
-                    src = eval(parseCond(ret[1]))
+                    src = eval(parseCond(src))
                     if isinstance(src, EUDLightVariable) or always:
                         src = EPD(src.getValueAddr())
                 else:
