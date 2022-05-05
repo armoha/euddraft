@@ -1,5 +1,12 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.4] - 2022.05.05
+- `EUDVArray`에 키워드 인자 `dest`, `nextptr` 추가
+- `nextptr`의 `ConstExpr` 체크 추가
+- `EUDVarBuffer`에 메모리 중첩 추가
+- 커스텀 변수 사용이 너무 적은 맵에서 생기는 버그 수정 (Ninfia님 제보)\
+  eudplib 함수를 적게 불러오는 CTrigAsm 맵에서 발생했습니다.
+
 ## [0.9.5.3] - 2022.04.17
 - 커스텀 변수 버퍼 버그 수정
 - 함수 `ShufflePayload(mode)` 추가\
@@ -11,7 +18,7 @@
 - (armoha/euddraft#55) 설정 파일 오류 메시지 개선 ([**@zuhanit**](https://github.com/zuhanit) 기여)
 ![better config error message](https://user-images.githubusercontent.com/36349353/163330102-91b83907-4d6d-4484-a787-22231d1d62ca.png)
 - (armoha/eudplib#5) 컴파일 속도 개선: EUD 변수 트리거 생성 개선
-- 키워드 인자 `nextptr` 추가: `EUDVArray`, `EUDVariable`, `EUDXVariable`
+- 키워드 인자 `nextptr` 추가: `EUDVariable`, `EUDXVariable`
 - (armoha/euddraft#37) `[main] objFieldN : x` 버그 수정
 - `RawTrigger`에 키워드 인자 `currentAction` 추가 
 - eudplib 0.67.3 업데이트
