@@ -1,8 +1,99 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.5] - 2022.05.15
+
+### 변경 사항
+- ```ini
+  :: 유닛 이름 스트링 강제 재인코딩 기능 삭제
+  :: UTF-8 스트링 맵에서 decodeUnitName : UTF-8 안 써도 됩니다.
+
+  :: 이제 CP949 스트링 맵에서 아래 옵션 추가해야
+  :: 문자열 조합에 유닛 이름 사용할 수 있어요.
+  :: 구버전 맵 에디터 사용자, 또는 신버전에서 65001 로케일 (UTF-8) 안 쓰는 경우에
+  :: StringBuffer나 customText에 유닛 이름 넣고 싶으면 필수입니다.
+  [main]
+  decodeUnitName : CP949
+  ```
+- epScript: dll에 `/MT` 옵션 적용
+  : vcruntime 포함하여 배포
+- pybind11 업데이트
+
+### 기능 개선
+- `EUDSwitch` 최적화\
+  : 이제 모든 cases를 XOR한 비트들만 읽습니다. 이진 탐색 안 해요.\
+  내부적으로 0조건 0액션 트리거의 점프 테이블을 사용합니다.
+- 트리거 액션/조건 오류 메시지 개선
+  ```py
+  DoActions(CreateUnit(1, "Artanis", P8, "Anywhere"))
+  # EPError: [경고] "P8"는 location가 아닙니다
+  ```
+- `StringBuffer.print/printAll`, `DisplayTextAll` 최적화
+- 한국어 번역 업데이트
+
+### 기능 추가
+- 모든 유저 대상 액션 추가 (관전자 포함)\
+  : `DisplayTextAll(text)`, `PlayWAVAll(soundpath)`,
+  `MinimapPingAll(location)`, `CenterViewAll(location)`,
+  `SetMissionObjectivesAll(text)`, `TalkingPortraitAll(unit, time)`
+- 간단한 마스크 쓰기 함수 추가\
+  : `maskwrite_epd(epd, value, mask)`, `maskwrite_cp(cpoffset, value, mask)`
+- CUnit 및 CSprite 읽기 함수 추가
+  - `f_epdcunitread_epd`, `f_epdcunitread_cp`\
+    : CUnit의 epd를 읽습니다.
+  - `f_spriteread_epd`, `f_spriteread_cp`\
+    : CSprite의 ptr을 읽습니다.
+  - `f_spriteepdread_epd`, `f_spriteepdread_cp`
+    : CSprite의 ptr과 epd를 동시에 읽습니다.
+  - `f_epdspriteread_epd`, `f_epdspriteread_cp`
+    : CSprite의 epd를 읽습니다.
+- `EPDOffsetMap`, `EPDCUnitMap` 기능 추가
+  - `"cunit"` 타입은 `ptr, epd` 쌍을 리턴합니다.
+  - `"sprite"` 타입은 `epd` 를 리턴합니다.
+  - `buildQueue` 인덱싱이 1부터 5까지로 변경됐습니다.
+  - `EPDCUnitMap` 메소드 추가
+    ```js
+    cunit.setloc(location);
+    cunit.set_color(player);
+    if (cunit.check_status_flag(value)) ...
+    if (cunit.check_status_flag(value, mask)) ...
+    cunit.reset_buildq();
+    cunit.reset_buildq(Q1=0xE4);
+    cunit.die();
+    cunit.set_status_flag(value);
+    cunit.set_status_flag(value, mask);
+    cunit.clear_status_flag(mask);
+    cunit.remove_collision();
+    cunit.set_invincible();
+    cunit.clear_invincible();
+    cunit.set_gathering();
+    cunit.clear_gathering();
+    cunit.set_speed_upgrade();
+    cunit.clear_speed_upgrade();
+    cunit.set_hallucination();
+    cunit.clear_hallucination();
+    cunit.power();
+    cunit.unpower();
+    cunit.set_air();
+    cunit.set_ground();
+    cunit.set_noclip();
+    cunit.clear_noclip();
+    if (cunit.is_dying()) ...
+    if (cunit.is_completed()) ...
+    if (cunit.is_hallucination()) ...
+    if (cunit.is_in_building()) ...
+    if (cunit.is_in_transport()) ...
+    if (cunit.is_burrowed()) ...
+    ```
+  - `EPDCUnitMap` 항목 추가\
+    : [각 항목 별 타입, 크기, 오프셋 참고용 링크](https://github.com/armoha/eudplib/blob/b94a3ff0fe2a90d189f92b9b24e33fa700efa583/eudplib/eudlib/epdoffsetmap.py#L132-L327)
+    ```
+    prev, next, hp, hitPoints, sprite, moveTargetXY, moveTargetPosition, moveTargetX, moveTargetY, moveTarget, moveTargetUnit, nextMovementWaypoint, nextTargetWaypoint, movementFlags, direction, currentDirection1, flingyTurnRadius, velocityDirection1, flingyID, _unknown_0x026, flingyMovementType, pos, position, posX, positionX, posY, positionY, haltX, haltY, topSpeed, flingyTopSpeed, current_speed1, current_speed2, current_speedX, current_speedY, flingyAcceleration, currentDirection2, velocityDirection2, owner, playerID, order, orderID, orderState, orderSignal, orderUnitType, cooldown, orderTimer, mainOrderTimer, gCooldown, groundWeaponCooldown, aCooldown, airWeaponCooldown, spellCooldown, orderTargetXY, orderTargetPosition, orderTargetX, orderTargetY, orderTarget, orderTargetUnit, shield, shieldPoints, unitId, unitType, previousPlayerUnit, nextPlayerUnit, subUnit, orderQHead, orderQueueHead, orderQTail, orderQueueTail, autoTargetUnit, connectedUnit, orderQCount, orderQueueCount, orderQTimer, orderQueueTimer, _unknown_0x086, attackNotifyTimer, previousUnitType, lastEventTimer, lastEventColor, _unused_0x08C, rankIncrease, killCount, lastAttackingPlayer, secondaryOrderTimer, AIActionFlag, userActionFlags, currentButtonSet, isCloaked, movementState, buildQ12, buildQ1, buildQueue1, buildQ2, buildQueue2, buildQ34, buildQ3, buildQueue3, buildQ4, buildQueue4, buildQ5, buildQueue5, energy, buildQueueSlot, uniquenessIdentifier, secondaryOrder, secondaryOrderID, buildingOverlayState, hpGain, shieldGain, remainingBuildTime, previousHP, loadedUnitIndex0, loadedUnitIndex1, loadedUnitIndex2, loadedUnitIndex3, loadedUnitIndex4, loadedUnitIndex5, loadedUnitIndex6, loadedUnitIndex7, mineCount, spiderMineCount, pInHanger, pOutHanger, inHangerCount, outHangerCount, parent, prevFighter, nextFighter, inHanger, _unknown_00, _unknown_04, flagSpawnFrame, addon, addonBuildType, upgradeResearchTime, techType, upgradeType, larvaTimer, landingTimer, creepTimer, upgradeLevel, __E, pPowerup, targetResourcePosition, targetResourceX, targetResourceY, targetResourceUnit, repairResourceLossTimer, isCarryingSomething, resourceCarryCount, resourceCount, resourceIscript, gatherQueueCount, nextGatherer, resourceGroup, resourceBelongsToAI, exit, nydusExit, nukeDot, pPowerTemplate, pNuke, bReady, harvestValueLU, harvestValueL, harvestValueU, harvestValueRB, harvestValueR, harvestValueB, originXY, origin, originX, originY, harvestTarget, prevHarvestUnit, nextHarvestUnit, statusFlags, resourceType, wireframeRandomizer, secondaryOrderState, recentOrderTimer, visibilityStatus, secondaryOrderPosition, secondaryOrderX, secondaryOrderY, currentBuildUnit, previousBurrowedUnit, nextBurrowedUnit, rallyXY, rallyPosition, rallyX, rallyY, rallyUnit, prevPsiProvider, nextPsiProvider, path, pathingCollisionInterval, pathingFlags, _unused_0x106, isBeingHealed, contourBoundsLU, contourBoundsL, contourBoundsU, contourBoundsRB, contourBoundsR, contourBoundsB, removeTimer, matrixDamage, defenseMatrixDamage, matrixTimer, defenseMatrixTimer, stimTimer, ensnareTimer, lockdownTimer, irradiateTimer, stasisTimer, plagueTimer, stormTimer, irradiatedBy, irradiatePlayerID, parasiteFlags, cycleCounter, isBlind, maelstromTimer, _unused_0x125, acidSporeCount, acidSporeTime0, acidSporeTime1, acidSporeTime2, acidSporeTime3, acidSporeTime4, acidSporeTime5, acidSporeTime6, acidSporeTime7, acidSporeTime8, bulletBehaviour3by3AttackSequence, pAI, airStrength, groundStrength, _repulseUnknown, repulseAngle, bRepMtxXY, bRepMtxX, bRepMtxY
+    ```
+
 ## [0.9.5.4] - 2022.05.05
 - `EUDVArray`에 키워드 인자 `dest`, `nextptr` 추가
 - `nextptr`의 `ConstExpr` 체크 추가
+- `SeqCompute`의 nonConstActions에서 `None` 허용
 - `EUDVarBuffer`에 메모리 중첩 추가
 - 커스텀 변수 사용이 너무 적은 맵에서 생기는 버그 수정 (Ninfia님 제보)\
   eudplib 함수를 적게 불러오는 CTrigAsm 맵에서 발생했습니다.
