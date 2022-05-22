@@ -1,5 +1,64 @@
 # 변경 사항 (한국어)
 
+## [0.9.5.9] - 2022.05.22
+- `epdswitch`에 변수 썼을 때 버그 수정
+- 스위치 버그 수정
+- 스위치에서 단순 비교, 점프 테이블, 이진 탐색 세가지 방법 사용하도록 변경
+- `UnitGroup` 추가
+  ```js
+  // epScript 사용법
+
+  // UnitGroup 선언
+  const zerglings = UnitGroup(1000);  // 최대 크기
+
+  // 유닛 등록
+  zerglings.add(epd);
+
+  // UnitGroup 루프
+  foreach(unit : zerglings.cploop) {
+      // 여기 트리거는 **모든** zerglings한테 실행 (살았건 죽었건)
+      foreach(dead : unit.dying) {
+          // 사망한 zerglings한테 트리거 실행
+      }  // <- 사망한 유닛은 dying 블럭 끝에서 UnitGroup에서 제거된다
+      // 살아있는 zerglings한테 트리거 실행
+  }
+
+  // epScript 예제
+  function afterTriggerExec() {
+      const zerglings = UnitGroup(1000);
+      // 새 저글링이 생성되면 UnitGroup에 등록하기
+      foreach(ptr, epd : EUDLoopNewUnit()) {
+          const cunit = EPDCUnitMap(epd);
+          if (cunit.unitId = $U("Zerg Zergling")) {
+              zerglings.add(epd);
+          }
+      }
+      foreach(unit : zerglings.cploop) {
+          foreach(dead : unit.dying) {
+              // 저글링 죽으면 감염된 테란 소환
+              dead.move_cp(0x4C / 4);  // 소유주
+              const owner = bread_cp(0, 0);
+              dead.move_cp(0x28 / 4);  // 유닛 위치
+              const x, y = posread_cp(0);
+
+              setloc("loc", x, y);  // 로케이션 설정
+              CreateUnit(1, "Infested Terran", "loc", owner);
+          }
+      }
+  }
+  ```
+- `EUDQueue` 추가
+  ```js
+  const queue = EUDQueue(20)();  // 최대 크기
+  queue.append(1);
+  queue.append(4);
+  queue.append(2);
+  const a = queue.popleft();
+  const b = queue.popleft();
+  const c = queue.popleft();
+  simpleprint(a, b, c);  // 1, 4, 2
+  ```
+
 ## [0.9.5.8] - 2022.05.16
 - 스위치 문에 상수 허용
 - 스위치 문에 비트마스크 추가
