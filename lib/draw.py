@@ -100,7 +100,7 @@ class LinePath:
         total_length = self.lengths[n + 1] - self.lengths[n]
         x = x0 + length * (x1 - x0) / total_length
         y = y0 + length * (y1 - y0) / total_length
-        return (int(round(x)), int(round(y)))
+        return x, y
 
 
 class Painter:
@@ -177,12 +177,12 @@ class Painter:
             ox, oy = self.translation
             while length < self.perimeter():
                 tx, ty = path.interpolate(length)
-                tx += ox
-                ty += oy
-                xmask |= tx & 0xFFFFFFFF
-                ymask |= ty & 0xFFFFFFFF
-                x.append(tx & 0xFFFFFFFF)
-                y.append(ty & 0xFFFFFFFF)
+                tx = int(round(tx + ox)) & 0xFFFFFFFF
+                ty = int(round(ty + oy)) & 0xFFFFFFFF
+                xmask |= tx
+                ymask |= ty
+                x.append(tx)
+                y.append(ty)
             vx, vy = EUDArray(x), EUDArray(y)
             self._items = (x, y, vx, vy, xmask, ymask)
         return self._items
@@ -239,9 +239,11 @@ class Painter:
         ox, oy = self.translation
         for i in range(self.dots):
             x, y = path.interpolate(i * self.spacing)
+            x = int(round(x + ox))
+            y = int(round(y + oy))
             heappush(
                 points,
-                (x + ox, y + oy, unitf(i), playerf(i), propf(i)),
+                (x, y, unitf(i), playerf(i), propf(i)),
             )
         moveloc = lambda *pairs: _move_loc(actions, self.center, *pairs)
 
@@ -289,7 +291,7 @@ class CirclePath:
                 f"arc length ({length}) must be less than perimeter ({self.perimeter})"
             )
         x, y = rotate(0, -self.radius, length / self.radius + self.rotation)
-        return (int(round(x)), int(round(y)))
+        return x, y
 
 
 class Circle(Painter):
