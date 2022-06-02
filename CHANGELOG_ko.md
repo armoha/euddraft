@@ -1,5 +1,16 @@
 # 변경 사항 (한국어)
 
+## [0.9.6.0] - 2022.06.02
+- `f_pow(a, b)` 추가
+  a의 b제곱 (a ** b)을 계산합니다.
+- `EUDLoopUnit2` 최적화
+  살아있는 유닛마다 트리거 9개 -> 5개 실행
+  (`UnitGroup` 순회보다 느렸는데 이제 같아짐)
+- `soundlooper` 버그 수정
+- `EncodeUnit`이 UTF-8과 CP949 둘 다 시도하도록 수정
+- epScript에서 `AddCurrentPlayer` 작동 안 하는 버그 수정
+- eudplib 0.69.8 업데이트
+
 ## [0.9.5.9] - 2022.05.22
 - `epdswitch`에 변수 썼을 때 버그 수정
 - 스위치 버그 수정
