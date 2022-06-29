@@ -5,12 +5,12 @@
 - `PVariable` cast 버그, 인자 타입 버그 수정함
 - `PVariable` 성능 추가 개선
 - `UnitGroup.cploop`에 읽기전용 프로퍼티 `epd` 추가\
-  `const epd = unit.epd;` 처럼 4트리거 실행해서 epd를 변수로 가져올 수 있습니다.
+  `const epd = unit.epd;` 처럼 4트리거 실행해서 `epd`를 변수로 가져올 수 있습니다.
 - epScript: stubCode들 분리함\
   `_CGFW` 등 헬퍼 함수들 파일 분리함\
   내부 함수에 쓰이는 파이썬 코드들 덮어쓰지 못하게 개선
-- `EUDLoopUnit2` 최적화
-  살아있는 유닛마다 트리거 5개 -> 3개 실행
+- `EUDLoopUnit2` 최적화\
+  살아있는 유닛마다 트리거 5개 -> 3개 실행\
   (`UnitGroup` 순회랑 같았다가 더 빨라짐)
 - `switch` 문 이진탐색 성능 개선
 - `EPDCUnitMap`: `unit.is_dying` 버그 수정
