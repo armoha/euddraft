@@ -1,12 +1,15 @@
 # 변경 사항 (한국어)
 
+## [0.9.7.1] - 2022.10.09
+- `ItemProxy` % 연산자 빠진 것 추가 (34464 님 제보)
+
 ## [0.9.7.0] - 2022.10.08
 - `EncodeAIScript` 오류 수정 (@joshow 님 기여)
 - 기본 트리거 문서화, 설명 추가 (@zuhanit 님 기여)
 - `EPDCUnitMap.isBlind()` 오류 수정 (wdcqc 님 제보)
 - `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
   * `EUDVArray[상수] -= 변수` 랑 `EUDVArray[변수] &= 값` 등은 아직 작업 필요
-- EUDLoopPlayer(플레이어타입, 포스, 종족) 오류 메시지 개선
+- `EUDLoopPlayer(플레이어타입, 포스, 종족)` 오류 메시지 개선
 - eudplib 0.70.0 업데이트
 
 ## [0.9.6.1] - 2022.07.03
