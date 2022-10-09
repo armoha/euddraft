@@ -1,7 +1,11 @@
 # 변경 사항 (한국어)
 
-## [0.9.7.1] - 2022.10.09
+## [0.9.7.2] - 2022.10.09
+- `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
+  * 누락되었던 `EUDVArray` 연산들 추가함
 - `ItemProxy` % 연산자 빠진 것 추가 (34464 님 제보)
+- [epScript] helper.py 오류 수정 (34464 님 제보)
+- `ItemProxy`의 EUDVariable 메소드 관련 오류 수정 (택하이 님 제보)
 
 ## [0.9.7.0] - 2022.10.08
 - `EncodeAIScript` 오류 수정 (@joshow 님 기여)
