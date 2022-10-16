@@ -18,6 +18,7 @@ build_exe_options = {
         "importlib",
         "json",
         "eudplib",
+        "numpy",
     ],
     "excludes": ["tkinter"],
     "optimize": 2,

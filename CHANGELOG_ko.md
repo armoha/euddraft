@@ -1,5 +1,10 @@
 # 변경 사항 (한국어)
 
+## [0.9.7.4] - 2022.10.17
+- `numpy` 추가, 파이썬 3.10.8 업데이트
+- [epScript] `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화 관련 버그 수정 (34464 님 제보)
+- 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
+
 ## [0.9.7.3] - 2022.10.09
 - `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
   * 누락되었던 `EUDVArray` 연산들 추가함

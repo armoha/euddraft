@@ -125,6 +125,9 @@ def isEpExc(s):
 
 
 def applyEUDDraft(sfname):
+    from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
+    from eudplib.eudlib.objpool import SetGlobalPoolFieldN
+
     try:
         config = readconfig(sfname)
         mainSection = config["main"]
@@ -133,35 +136,26 @@ def applyEUDDraft(sfname):
         if ifname == ofname:
             raise RuntimeError("input and output file should be different.")
 
-        try:
-            if mainSection["debug"]:
-                ep.EPS_SetDebug(True)
-        except KeyError:
-            pass
-        try:
+        if "shufflePayload" in mainSection:
+            ep.ShufflePayload(eval(mainSection["shufflePayload"]))
+
+        if "debug" in mainSection:
+            ep.EPS_SetDebug(True)
+
+        if "decodeUnitName" in mainSection:
             unitname_encoding = mainSection["decodeUnitName"]
-            from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
-
             DecodeUnitNameAs(unitname_encoding)
-        except KeyError:
-            pass
-        try:
-            if mainSection["objFieldN"]:
-                from eudplib.eudlib.objpool import SetGlobalPoolFieldN
 
-                field_n = int(mainSection["objFieldN"])
-                SetGlobalPoolFieldN(field_n)
-        except KeyError:
-            pass
+        if "objFieldN" in mainSection:
+            field_n = int(mainSection["objFieldN"])
+            SetGlobalPoolFieldN(field_n)
 
         sectorSize = 15
-        try:
-            if mainSection["sectorSize"]:
+        if "sectorSize" in mainSection:
+            try:
                 sectorSize = int(mainSection["sectorSize"])
-        except KeyError:
-            pass
-        except:
-            sectorSize = None
+            except:
+                sectorSize = None
 
         print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
