@@ -183,12 +183,12 @@
         },
         "eudplib": {
             "hashes": [
-                "sha256:2dfea9ab89ef57caa615cfad04a7b2b8586b95389f91aa8ba03999d481cf6fe5",
-                "sha256:d291620301688d03a3215eacc006e2ea6016b8af1ab66ef3e7b9872cdef8746b",
-                "sha256:e081ecee52854cec8e52d47030b59e54750f249717adf64fb682cbcdbb56befb"
+                "sha256:19f1c27f8f39b4057236e5f2c52b9eb97ce749bd583b2aa92b661f7f591e0343",
+                "sha256:516ac497d87e041860343e91350d2726c336b302e9ce852208dcdc530768af7f",
+                "sha256:e84cf6bc34d84af9203c4b314df54c212d4e2d9eab6c17a87f38128c05e71999"
             ],
             "index": "pypi",
-            "version": "==0.70.4"
+            "version": "==0.70.6"
         },
         "idna": {
             "hashes": [
