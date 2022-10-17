@@ -6,12 +6,12 @@ name = "pypi"
 [packages]
 pywin32 = "*"
 cx-freeze = "*"
-eudplib = "*"
 colorama = "*"
 cython = "*"
 cffi = "*"
 idna = "*"
 numpy = "*"
+eudplib = {path = "./../eudplib"}
 
 [dev-packages]
 
