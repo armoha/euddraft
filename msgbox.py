@@ -27,7 +27,7 @@ import ctypes
 import sys
 
 try:
-    from winsound import MB_OK, MB_ICONHAND, MessageBeep
+    from winsound import MB_ICONHAND, MB_OK, MessageBeep
 
     def MessageBox(title, text, style=0, textio=sys.stdout):
         print("[%s]\n%s" % (title, text), file=textio)
@@ -41,7 +41,7 @@ try:
 
     isWindows = True
 
-    from ctypes import WINFUNCTYPE, windll, c_int
+    from ctypes import WINFUNCTYPE, c_int, windll
     from ctypes.wintypes import HWND, SHORT
 
     prototype = WINFUNCTYPE(HWND)
@@ -54,7 +54,6 @@ try:
 
     def IsThisForeground():
         return GetForegroundWindow() == GetConsoleWindow()
-
 
 except ImportError:
     MB_OK = 1

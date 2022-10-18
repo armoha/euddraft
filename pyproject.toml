@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "euddraft"
+version = "0.9.7.10"
+description = "Framework for creating & applying various plugins to StarCraft map."
+authors = ["armoha <kein0011@naver.com>", "Park Hyun Woo <phu54321@naver.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pywin32 = "^304"
+cx-Freeze = "^6.12.0"
+colorama = "^0.4.5"
+Cython = "^0.29.32"
+cffi = "^1.15.1"
+idna = "^3.4"
+numpy = "^1.23.4"
+eudplib = "^0.70.13"
+
+
+[build-system]
+requires = ["poetry-core", "cython"]
+build-backend = "poetry.core.masonry.api"

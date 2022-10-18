@@ -198,10 +198,11 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
     # Freeze protection
     elif sfname[-4:].lower() == ".scx":
         print(" - Freeze protector mode.")
+        import subprocess
+
         import applyeuddraft
         import freezeMpq
         import pluginLoader
-        import subprocess
 
         pluginLoader.freeze_enabled = True
 

@@ -19,7 +19,8 @@ def f():
 
 if False:
     from tests import profile_tool
-    profile_tool.profile(f, '../euddraft/profile.json')
+
+    profile_tool.profile(f, "../euddraft/profile.json")
 else:
     f()
 
