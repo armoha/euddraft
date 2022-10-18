@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0862275e729db4ba37482d1c47f909ab6e1020228c0fb7353cd0ca97bb4f764b"
+            "sha256": "527fc2ad2b88328264f349450692c15a3497df80182308963026ddc72c5cd42a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -182,8 +182,13 @@
             "version": "==0.29.32"
         },
         "eudplib": {
-            "path": "./../eudplib",
-            "version": "==0.70.9"
+            "hashes": [
+                "sha256:150ebfdfa5698b7a83ea951da5f9084360a2e74670e58629f6b7df17c17c064d",
+                "sha256:a4b9e3691f1173b3d9f004a7d7ed63e3f7d0607386751151a62a4d7b15616576",
+                "sha256:bb2e63e1352975ce0dbf7ef02c03bda4dc9235e099a6fed3e06667701d4d9b4e"
+            ],
+            "index": "pypi",
+            "version": "==0.70.12"
         },
         "idna": {
             "hashes": [

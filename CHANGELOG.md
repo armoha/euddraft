@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.7.10] - 2022.10.18
+- Fixed bug causing unsupported EUD error in `PVariable[var] -= var;` (reported by @westreed )
+- Fixed compile error for `PVariable` with `<<=`, `>>=`, `^=`
+- Fixed bug in `var <<= var;`not storing output to variable
+
 ## [0.9.7.9] - 2022.10.17
 - Added `numpy` library
 - Updated to Python 3.10.8

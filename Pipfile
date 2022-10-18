@@ -11,7 +11,7 @@ cython = "*"
 cffi = "*"
 idna = "*"
 numpy = "*"
-eudplib = {path = "./../eudplib"}
+eudplib = "*"
 
 [dev-packages]
 
