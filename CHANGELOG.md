@@ -1,22 +1,30 @@
 # Changelog
 
+## [0.9.7.11] - 2022.10.19
+- Updated eudplib 0.70.17
+- `UnitGroup`: `unit.dying` block checks currentHP too (Prevent 0-hp zombie unit)
+- `getattr(EPDCUnitMap, attrName)` correctly raises `AttributeError`
+- `EUDLoopUnit2`: rollback to use `0x0C CSprite` to detect unit death when there's no plugin whose name has `unlimiter`
+
 ## [0.9.7.10] - 2022.10.18
-- Fixed bug causing unsupported EUD error in `PVariable[var] -= var;` (reported by @westreed )
+- Updated eudplib 0.70.12
+- Fixed bug causing unsupported EUD error in `PVariable[var] -= value;` (reported by @westreed )
 - Fixed compile error for `PVariable` with `<<=`, `>>=`, `^=`
 - Fixed bug in `var <<= var;`not storing output to variable
 
 ## [0.9.7.9] - 2022.10.17
 - Added `numpy` library
 - Updated to Python 3.10.8
+- Updated eudplib 0.70.9
 - [epScript] Fixed bugs in in-place item comparisons and writes, and migrate to epScript side (reported by 34464 and others)
   * Fixed bugs in comparison operator precedence
   * Fixed bug in `>`, `<`, `&=`
-- Fixed #82 : wrongly replace `Disabled(PreserveTrigger())` to `preserved=True` trigger flag (reported by @Chromowolf )
+- Fixed armoha/euddraft#82 : wrongly replace `Disabled(PreserveTrigger())` to `preserved=True` trigger flag (reported by @Chromowolf )
 - Fixed some triggers did not running repeatedly (reported by ehwl)
 - Fixed `var << number` compile error (reported by GGrush)
 - Fixed bug in `EUDNot`
 - Fixed `*=`, `/=`, `<<=`, `>>=` wrongly convert Lvalue `var` into Rvalue
-- Fixed #65 : better error message for `if (Action)`
+- Fixed armoha/euddraft#65 : better error message for `if (Action)`
 
 ## [0.9.7.3] - 2022.10.09
 - Optimize in-place item comparisons and writes for `EUDArray` and `EUDVArray` (https://github.com/armoha/eudplib/commit/3a1287507cda4d9988b96e983a22b9d7c61c170c)
