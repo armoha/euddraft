@@ -1,21 +1,30 @@
 # 변경 사항 (한국어)
 
+## [0.9.7.11] - 2022.10.19
+- eudplib 0.70.17 업데이트
+- `UnitGroup`: `unit.dying` 블럭에서 현재체력도 체크하게 수정 (HP 0 좀비 유닛 방지)
+- `getattr(EPDCUnitMap, attrName)`이 `AttributeError` 내도록 수정
+- `EUDLoopUnit2`: 이름에 `unlimiter`가 들어간 플러그인이 없으면 `0x0C CSprite`로 사망 인식하도록 롤백
+
 ## [0.9.7.10] - 2022.10.18
-- `PVariable[변수] -= 변수;` 가 EUD미지원 오류내는 버그 수정 (갈대님 제보)
+- eudplib 0.70.12 업데이트
+- `PVariable[변수] -= 값;` 이 EUD미지원 오류내는 버그 수정 (갈대님 제보)
 - `PVariable`에서 `<<=`, `>>=`, `^=` 컴파일 오류 수정
 - `변수 <<= 변수;`가 연산 결과를 변수에 대입하지 않는 버그 수정
 
 ## [0.9.7.9] - 2022.10.17
 - `numpy` 추가
 - 파이썬 3.10.8 업데이트
+- eudplib 0.70.9 업데이트
 - [epScript] 아이템 비교/쓰기 버그 수정, epScript에서 최적화하도록 구조 변경 (34464님 제보)
   * 비교 연산자 우선순위 버그 수정
   * `>`, `<`, `&=` 버그 수정
-- 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
+- armoha/euddraft#82 : 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
 - 연결맵 트리거 일부가 반복 실행되지 않는 버그 수정 (ehwl 님 제보)
 - `var >> 값` 컴파일 오류 수정 (GGrush님 제보)
 - `EUDNot` 버그 수정
 - `*=`, `/=`, `<<=`, `>>=`가 LValue 변수를 RValue로 변경하는 버그 수정
+- armoha/euddraft#65 : `if (액션)` 오류 메시지 개선
 
 ## [0.9.7.3] - 2022.10.09
 - `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화

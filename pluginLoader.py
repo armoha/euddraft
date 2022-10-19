@@ -84,7 +84,7 @@ def loadPluginsFromConfig(ep, config):
 
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != "main"]
-    if "unlimiter" in pluginList:
+    if any("unlimiter" in name.casefold() for name in pluginList):
         from eudplib.eudlib.utilf.listloop import _turnUnlimiterOn
 
         _turnUnlimiterOn()
