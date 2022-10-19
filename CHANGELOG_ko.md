@@ -1,7 +1,8 @@
 # 변경 사항 (한국어)
 
-## [0.9.7.11] - 2022.10.19
-- eudplib 0.70.17 업데이트
+## [0.9.7.12] - 2022.10.19
+- eudplib 0.70.18 업데이트
+- 전역 리스트 순회에서 `TypeError: iter() returned non-iterator of type 'list'` 오류 수정 (줸님 제보)
 - `UnitGroup`: `unit.dying` 블럭에서 현재체력도 체크하게 수정 (HP 0 좀비 유닛 방지)
 - `getattr(EPDCUnitMap, attrName)`이 `AttributeError` 내도록 수정
 - `EUDLoopUnit2`: 이름에 `unlimiter`가 들어간 플러그인이 없으면 `0x0C CSprite`로 사망 인식하도록 롤백

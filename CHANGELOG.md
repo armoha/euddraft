@@ -1,7 +1,8 @@
 # Changelog
 
-## [0.9.7.11] - 2022.10.19
-- Updated eudplib 0.70.17
+## [0.9.7.12] - 2022.10.19
+- Updated eudplib 0.70.18
+- Fixed error iterating globals raises `TypeError: iter() returned non-iterator of type 'list'` (reported by 줸님)
 - `UnitGroup`: `unit.dying` block checks currentHP too (Prevent 0-hp zombie unit)
 - `getattr(EPDCUnitMap, attrName)` correctly raises `AttributeError`
 - `EUDLoopUnit2`: rollback to use `0x0C CSprite` to detect unit death when there's no plugin whose name has `unlimiter`
