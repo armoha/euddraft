@@ -36,6 +36,8 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
+version = "0.9.8.0"
+
 
 def applylib():
     if getattr(sys, "frozen", False):
@@ -96,9 +98,6 @@ def hasModifiedFile(dirname, since):
                 print("[File modified] %s" % finalpath)
                 ret = True
     return ret
-
-
-version = "0.9.7.12"
 
 
 if __name__ == "__main__" or __name__ == "euddraft__main__":

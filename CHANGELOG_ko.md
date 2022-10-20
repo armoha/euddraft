@@ -1,5 +1,56 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.0] - 2022.10.21
+- eudplib 0.71.0 업데이트
+- `EUDDeque(크기)()` 기능 추가\
+  데크는 데이터를 왼쪽/오른쪽 양쪽으로 추가하고 꺼낼 수 있는 자료구조입니다.\
+  데크가 가득 차면 새 항목이 추가될 때 해당하는 수의 항목이 반대쪽 끝에서 삭제됩니다.
+  * `.length` : 현재 개수
+  * `.append(값)` : 데크의 오른쪽에 값을 추가합니다.
+  * `.pop()` : 데크의 오른쪽에서 값을 꺼냅니다.
+  * `.appendleft(값)` : 데크의 왼쪽에 값을 추가합니다.
+  * `.popleft()` : 데크의 왼쪽에서 값을 꺼냅니다.
+  * `.empty()` : 데크가 비어있으면 참인 조건
+  * `foreach` 반복문도 지원합니다.\
+    왼쪽에서 오른쪽으로 순회합니다.
+    ```js
+    // dq3은 크기가 3인 데크
+    const dq3 = EUDDeque(3)();
+    const ret = EUDCreateVariables(6);
+  
+    // 빈 데크를 순회하면 아무 일도 안 일어납니다
+    foreach(v : dq3) { ret[0] += v; }
+  
+    // 1과 2를 오른쪽에 추가
+    dq3.append(1);  // dq3 : (1)
+    dq3.append(2);  // dq3 : (1, 2)
+    foreach(v : dq3) { ret[1] += v; }  // 3 = 1 + 2
+  
+    // 3와 4을 오른쪽에 추가
+    dq3.append(3);  // dq3 : (1, 2, 3)
+    dq3.append(4);  // dq3 : (2, 3, 4)
+    foreach(v : dq3) { ret[2] += v; }  // 9 = 2 + 3 + 4
+    
+    // 5를 오른쪽에 추가
+    dq3.append(5);  // dq3 : (3, 4, 5)
+    foreach(v : dq3) { ret[3] += v; }  // 12 = 3 + 4 + 5
+  
+    // 왼쪽에서 3을 꺼냄 (제거하고 리턴)
+    const three = dq3.popleft();  // dq3 : (4, 5)
+    foreach(v : dq3) { ret[4] += v; }  // 9 = 4 + 5
+  
+    // 6과 7을 오른쪽에 추가
+    dq3.append(6);  // dq3 : (4, 5, 6)
+    dq3.append(7);  // dq3 : (5, 6, 7)
+    foreach(v : dq3) { ret[5] += v; }  // 18 = 5 + 6 + 7
+    ```
+  * 파이썬 `collections.deque(maxlen=크기)`와 동일하게 동작합니다.
+- [epScript] armoha/euddraft#86 : 함수 인자 뒤에 쉼표 허용하도록 수정
+- [epScript] armoha/euddraft#87 : 이진법 숫자 표현 추가 (@Chromowolf 님 건의)
+  * `0b1 == 1`, `0b10 == 2`, `0b11 == 3`
+- `EUDQueue.empty()`가 항상 참인 버그 수정
+- `EUDQueue.popleft()` 없이 `EUDQueue.append(x)`만 사용할 때 컴파일 오류 수정 (HeartKlass님 제보)
+
 ## [0.9.7.12] - 2022.10.19
 - eudplib 0.70.18 업데이트
 - 전역 리스트 순회에서 `TypeError: iter() returned non-iterator of type 'list'` 오류 수정 (줸님 제보)
