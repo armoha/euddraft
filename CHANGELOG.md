@@ -1,5 +1,55 @@
 # Changelog
 
+## [0.9.8.0] - 2022.10.21
+- Updated eudplib 0.71.0
+- Added `EUDDeque(length)()`\
+  `EUDDeque` is a double-ended queue with fixed-size buffer. It supports efficient insertions and removals from both ends.\
+  Once a deque is full, when new items are added, a corresponding number of items are discarded from the opposite end.
+  * `.length` : current length
+  * `.append(x)` : Add x to the right side of the deque.
+  * `.pop()` : Remove and return an element from the right side of the deque.
+  * `.appendleft(x)` : Add x to the left side of the deque.
+  * `.popleft()` : Remove and return an element from the left side of the deque
+  * `.empty()` : Condition evaluated to True when deque is empty
+  * Also supports `foreach` iteration
+    ```js
+    // dq3 is deque with length 3
+    const dq3 = EUDDeque(3)();
+    const ret = EUDCreateVariables(6);
+  
+    // Nothing happen if you loop empty deque
+    foreach(v : dq3) { ret[0] += v; }
+  
+    // Add 1 and 2 to the right
+    dq3.append(1);  // dq3 : (1)
+    dq3.append(2);  // dq3 : (1, 2)
+    foreach(v : dq3) { ret[1] += v; }  // 3 = 1 + 2
+  
+    // Add 3 and 4 to the right
+    dq3.append(3);  // dq3 : (1, 2, 3)
+    dq3.append(4);  // dq3 : (2, 3, 4)
+    foreach(v : dq3) { ret[2] += v; }  // 9 = 2 + 3 + 4
+    
+    // Add 5 to the right
+    dq3.append(5);  // dq3 : (3, 4, 5)
+    foreach(v : dq3) { ret[3] += v; }  // 12 = 3 + 4 + 5
+  
+    // Remove and return 3 from the left
+    const three = dq3.popleft();  // dq3 : (4, 5)
+    foreach(v : dq3) { ret[4] += v; }  // 9 = 4 + 5
+  
+    // Add 6 and 7 to the right
+    dq3.append(6);  // dq3 : (4, 5, 6)
+    dq3.append(7);  // dq3 : (5, 6, 7)
+    foreach(v : dq3) { ret[5] += v; }  // 18 = 5 + 6 + 7
+    ```
+  * `EUDDeque` behaves like Python `collections.deque(maxlen=length)`.
+- [epScript] armoha/euddraft#86 : Allow trailing comma after function arguments
+- [epScript] armoha/euddraft#87 : Allow binary number representation
+  * `0b1 == 1`, `0b10 == 2`, `0b11 == 3`
+- Fixed bug `EUDQueue.empty()` was always `true`
+- Fixed compile error when only one of `EUDQueue.append(x)` and `EUDQueue.popleft()` is used
+
 ## [0.9.7.12] - 2022.10.19
 - Updated eudplib 0.70.18
 - Fixed error iterating globals raises `TypeError: iter() returned non-iterator of type 'list'` (reported by 줸님)

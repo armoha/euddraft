@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "euddraft"
-version = "0.9.7.11"
+version = "0.9.8.0"
 description = "Framework for creating & applying various plugins to StarCraft map."
 authors = ["armoha <kein0011@naver.com>", "Park Hyun Woo <phu54321@naver.com>"]
 license = "MIT"
@@ -15,7 +15,7 @@ Cython = "^0.29.32"
 cffi = "^1.15.1"
 idna = "^3.4"
 numpy = "^1.23.4"
-eudplib = "^0.70.15"
+eudplib = "^0.71.0"
 
 
 [build-system]
