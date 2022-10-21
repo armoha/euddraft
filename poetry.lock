@@ -46,7 +46,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "eudplib"
-version = "0.71.0"
+version = "0.71.1"
 description = "EUD Trigger generator"
 category = "main"
 optional = false
@@ -141,7 +141,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "3bc4ee5f6d76f61c167936c17a59ca445e86ecac31c396d9fbce4ff1b8e1f196"
+content-hash = "c77b013256ad53f1667c576273330ea942a2136f19004f0e657d5cad702e3315"
 
 [metadata.files]
 cffi = [
@@ -294,7 +294,7 @@ cython = [
     {file = "Cython-0.29.32.tar.gz", hash = "sha256:8733cf4758b79304f2a4e39ebfac5e92341bce47bcceb26c1254398b2f8c1af7"},
 ]
 eudplib = [
-    {file = "eudplib-0.71.0-cp310-cp310-win_amd64.whl", hash = "sha256:13641b7ed9355fc6be5e81dad22de11864af2940d29de1755b75d7d4656abebc"},
+    {file = "eudplib-0.71.1-cp310-cp310-win_amd64.whl", hash = "sha256:68f714b00e415703aeb6d67cf5c46c3697ed2e3013708a93f1a7a9821631754d"},
 ]
 idna = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},

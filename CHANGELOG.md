@@ -1,7 +1,9 @@
 # Changelog
 
-## [0.9.8.0] - 2022.10.21
-- Updated eudplib 0.71.0
+## [0.9.8.1] - 2022.10.21
+- Updated eudplib 0.71.1
+- Fixed bug breaking preserved TRIG triggers
+- Fixed compile error when `import numpy` (reported by PyroManiac)
 - Added `EUDDeque(length)()`\
   `EUDDeque` is a double-ended queue with fixed-size buffer. It supports efficient insertions and removals from both ends.\
   Once a deque is full, when new items are added, a corresponding number of items are discarded from the opposite end.
