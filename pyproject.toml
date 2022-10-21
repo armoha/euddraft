@@ -14,7 +14,7 @@ colorama = "^0.4.5"
 Cython = "^0.29.32"
 cffi = "^1.15.1"
 idna = "^3.4"
-numpy = "^1.23.4"
+numpy = "==1.23.4"  # See https://github.com/armoha/euddraft/issues/88
 eudplib = "^0.71.0"
 
 
