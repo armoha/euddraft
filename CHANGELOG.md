@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.8.2] - 2022.10.24
+- Updated eudplib 0.71.2
+- Fix bug in `pow(a, b)` function (contributed by @Chromowolf )
+- [epScript] Fix bug with global variable and `%` operator (reported by @Chromowolf )
+- Fixed armoha/euddraft#56 : Assigning constant to another module's variable 'rebinds' variable to constant
+  * No longer need to workaround with `SetVariables`
+
 ## [0.9.8.1] - 2022.10.21
 - Updated eudplib 0.71.1
 - Fixed bug breaking preserved TRIG triggers
