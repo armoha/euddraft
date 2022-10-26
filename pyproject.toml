@@ -16,6 +16,7 @@ cffi = "^1.15.1"
 idna = "^3.4"
 numpy = "==1.23.4"  # See https://github.com/armoha/euddraft/issues/88
 eudplib = "^0.71.2"
+matplotlib = "^3.6.1"
 
 
 [build-system]
