@@ -1,5 +1,32 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.3] - 2022.11.03
+### 변경사항
+- `EPDOffsetMap`이 *(이름, 오프셋, 타입)* 쌍의 튜플을 받도록 롤백
+- `EPDOffsetMap`의 타입 종류 추가 및 변경
+  * 현재 사용 가능한 타입: bool, 1, 2, 4, "CUnit", "CSprite", "Position", "PositionX", "PositionY", `Flingy`, `TrgPlayer`, `TrgUnit`, `UnitOrder`, `Upgrade`, `Tech`
+
+### 기능 개선
+- eudplib 0.71.3, cx-freeze 6.13.1, pybind11 업데이트
+- epScript `object`(=`EUDStruct`)의 제자리 연산과 비교 연산 최적화
+- `EPDCUnitMap`의 수정/비교 성능 최적화
+
+### 버그 수정
+- [epScript] armoha/euddraft#73 : 파이썬 컬렉션 내 변수를 수정하면 새 변수가 덮어쓰는 버그 수정
+- `dwread(상수객체)`가 컴파일 시간에 *EPD*를 계산하도록 수정 (Cocoa님 제보)
+- `EUDDeque.append(value)`에서 꼬리가 왼쪽으로 돌아올 때 버그 수정
+- 일부 `Image` 이름 뒤에 공백 문자 오타 수정
+- `UnitGroup`의 `.dying` 블럭 조건에 *hp < 0.5* 대신 *hp == 0*으로 수정
+
+### 기능 추가
+- `matplotlib` 라이브러리 추가
+- `EUDQueue.clear()`, `EUDDeque.clear()` 추가
+- `f_wadd_epd(epd, subp, value)`, `f_wsubtract_epd(epd, subp, value)`, `f_badd_epd(epd, subp, value)`, `f_bsubtract_epd(epd, subp, value)` 추가
+  * `f_wadd_epd`와 `f_wsubtract_epd`의 *subp*에는 0, 1, 2만 사용 가능합니다.
+- 타입 추가: `Weapon`, `Flingy`, `Sprite`, `Upgrade`, `Tech`, `UnitOrder`, `Icon`, `Portrait`
+- 함수 추가: `EncodeWeapon`, `EncodeFlingy`, `EncodeSprite`, `EncodeUpgrade`, `EncodeTech`, `EncodeUnitOrder`, `EncodeIcon`, `EncodePortrait`
+- 로케이션 함수에 *action* 키워드 인자 추가: `f_(set/add/dilate)loc(loc, x, y, action=true)`
+
 ## [0.9.8.2] - 2022.10.24
 - eudplib 0.71.2 업데이트
 - `pow(a, b)` 거듭제곱 함수에서 b가 2의 제곱수 일 때 항상 1을 리턴하는 버그 수정 (@Chromowolf 님 기여)
@@ -1578,7 +1605,7 @@ StringBuffer.Display();
 
 ## [0.8.4.7] - 2019.03.26
 
-### 버그수정
+### 버그 수정
 
 - `Disabled(컨디션/액션)`이 컴파일 오류나는 버그 수정.
 - StringBuffer를 선언한 이후에 스트링을 추가하면, StringBuffer 주소가 4의 배수를 벗어나는 버그 수정.
@@ -1587,7 +1614,7 @@ StringBuffer.Display();
 
 ## [0.8.4.6] - 2019.03.24
 
-### 버그수정
+### 버그 수정
 
 - (트리거왕님 기여) `f_wwrite_epd(epd, subp, word)` 버그 수정:
     - subp가 상수일 때 f_bwrite_epd처럼 작동하는 버그. 12월 27일에 추가된 내용인데 이제 발견됐네요 ㅠㅠ
@@ -1600,7 +1627,7 @@ StringBuffer.Display();
 
 ## [0.8.4.5] - 2019.03.24
 
-### 버그수정
+### 버그 수정
 
 - `TextFX_Remove` 버그 수정.
 - 같은 크기의 StringBuffer가 같은 스트링을 가리키는 버그 수정.

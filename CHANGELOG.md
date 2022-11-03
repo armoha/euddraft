@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.9.8.3] - 2022.11.03
+### Changed
+- `EPDOffsetMap` rollbacked to accept a tuple of *(name, offset, type)* pairs
+
+### Improved
+- Updated eudplib 0.71.3, cx-freeze 6.13.1, pybind11
+- Optimize epScript object (EUDStruct) in-place operations and comparisons
+- Optimize EPDCUnitMap edit/comparison
+
+### Bugfix
+- [epScript] Fixed armoha/euddraft#73 : Modifying python collections resulted in shadowing var
+- Fixed `dwread(constexpr)` to calculate EPD on compile time (reported by Cocoa)
+- Fixed bug in `EUDDeque.append(value)` when tail warps around
+- Fixed trailing-whitespace typos in `Image`
+- `UnitGroup`: `.dying` block checks *hp == 0*, instead of *hp < 0.5*
+
+### Added
+- Added `matplotlib` library
+- Added `EUDQueue.clear()`, `EUDDeque.clear()`
+- Added `f_wadd_epd(epd, subp, value)`, `f_wsubtract_epd(epd, subp, value)`, `f_badd_epd(epd, subp, value)`, `f_bsubtract_epd(epd, subp, value)`
+  * Only 0, 1, 2 are allowed in *subp* for `f_wadd_epd` and `f_wsubtract_epd`
+- Added types `Weapon`, `Flingy`, `Sprite`, `Upgrade`, `Tech`, `UnitOrder`, `Icon`, `Portrait`
+- Added functions `EncodeWeapon`, `EncodeFlingy`, `EncodeSprite`, `EncodeUpgrade`, `EncodeTech`, `EncodeUnitOrder`, `EncodeIcon`, `EncodePortrait`
+- Added `f_(set/add/dilate)loc(loc, x, y, action=true)`
+
 ## [0.9.8.2] - 2022.10.24
 - Updated eudplib 0.71.2
 - Fix bug in `pow(a, b)` function (contributed by @Chromowolf )
