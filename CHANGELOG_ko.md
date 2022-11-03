@@ -7,9 +7,10 @@
   * 현재 사용 가능한 타입: bool, 1, 2, 4, "CUnit", "CSprite", "Position", "PositionX", "PositionY", `Flingy`, `TrgPlayer`, `TrgUnit`, `UnitOrder`, `Upgrade`, `Tech`
 
 ### 기능 개선
-- eudplib 0.71.3, cx-freeze 6.13.1, pybind11 업데이트
+- eudplib 0.71.7, cx-freeze 6.13.1, pybind11 업데이트
 - epScript `object`(=`EUDStruct`)의 제자리 연산과 비교 연산 최적화
 - `EPDCUnitMap`의 수정/비교 성능 최적화
+- `f_bitlshift(a, b)`가 a, b 둘 다 상수면 컴파일 시간에 `a << b`를 계산하도록 수정
 
 ### 버그 수정
 - [epScript] armoha/euddraft#73 : 파이썬 컬렉션 내 변수를 수정하면 새 변수가 덮어쓰는 버그 수정
@@ -17,6 +18,7 @@
 - `EUDDeque.append(value)`에서 꼬리가 왼쪽으로 돌아올 때 버그 수정
 - 일부 `Image` 이름 뒤에 공백 문자 오타 수정
 - `UnitGroup`의 `.dying` 블럭 조건에 *hp < 0.5* 대신 *hp == 0*으로 수정
+- 일부 최적화가 적용되지 않는 버그 수정 (@Chromowolf 님 제보)
 
 ### 기능 추가
 - `matplotlib` 라이브러리 추가

@@ -3,11 +3,14 @@
 ## [0.9.8.3] - 2022.11.03
 ### Changed
 - `EPDOffsetMap` rollbacked to accept a tuple of *(name, offset, type)* pairs
+- Added and changed types `EPDOffsetMap` takes
+  * Available type: bool, 1, 2, 4, "CUnit", "CSprite", "Position", "PositionX", "PositionY", `Flingy`, `TrgPlayer`, `TrgUnit`, `UnitOrder`, `Upgrade`, `Tech`
 
 ### Improved
-- Updated eudplib 0.71.3, cx-freeze 6.13.1, pybind11
+- Updated eudplib 0.71.7, cx-freeze 6.13.1, pybind11
 - Optimize epScript object (EUDStruct) in-place operations and comparisons
 - Optimize EPDCUnitMap edit/comparison
+- `f_bitlshift(a, b)` calculates `a << b` on compile time when both are constants
 
 ### Bugfix
 - [epScript] Fixed armoha/euddraft#73 : Modifying python collections resulted in shadowing var
@@ -15,6 +18,7 @@
 - Fixed bug in `EUDDeque.append(value)` when tail warps around
 - Fixed trailing-whitespace typos in `Image`
 - `UnitGroup`: `.dying` block checks *hp == 0*, instead of *hp < 0.5*
+- Fixed missing optimization (reported by @Chromowolf)
 
 ### Added
 - Added `matplotlib` library
