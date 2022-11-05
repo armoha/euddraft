@@ -29,11 +29,11 @@ import sys
 import traceback
 
 import eudplib as ep
+import scbank_core
+from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 
 import freezeMpq
 import msgbox
-import scbank_core
-from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
 from pluginLoader import (
     isFreezeIssued,
@@ -136,6 +136,11 @@ def applyEUDDraft(sfname):
         if ifname == ofname:
             raise RuntimeError("input and output file should be different.")
 
+        mainOptions = ("shufflePayload", "debug", "decodeUnitName", "objFieldN", "sectorSize")
+        for mainOption in mainSection:
+            if mainOption not in mainOptions:
+                raise RuntimeError(f"Invalid option in [main]: {mainOption}")
+
         if "shufflePayload" in mainSection:
             ep.ShufflePayload(eval(mainSection["shufflePayload"]))
 
@@ -207,10 +212,7 @@ def applyEUDDraft(sfname):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
             ver = ep.eudplibVersion()
-            plibPath = (
-                'File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8-win32.egg\\eudplib\\'
-                % ver
-            )
+            plibPath = 'File "E:\\WORKON_HOME\\pypoetry\\Cache\\virtualenvs\\euddraft-C5Qh0W77-py3.10\\lib\\site-packages\\eudplib\\'
             exc.replace(plibPath, 'eudplib File"')
             formatted_excs.append(exc)
 
