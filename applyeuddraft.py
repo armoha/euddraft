@@ -29,11 +29,11 @@ import sys
 import traceback
 
 import eudplib as ep
-import scbank_core
-from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 
 import freezeMpq
 import msgbox
+import scbank_core
+from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
 from pluginLoader import (
     isFreezeIssued,
@@ -212,7 +212,9 @@ def applyEUDDraft(sfname):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
             ver = ep.eudplibVersion()
-            plibPath = 'File "E:\\WORKON_HOME\\pypoetry\\Cache\\virtualenvs\\euddraft-C5Qh0W77-py3.10\\lib\\site-packages\\eudplib\\'
+            plibPath = (
+                'File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8-win32.egg\\eudplib\\' % ver
+            )
             exc.replace(plibPath, 'eudplib File"')
             formatted_excs.append(exc)
 

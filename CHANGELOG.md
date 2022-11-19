@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.9.8.4] - 2022.11.29
+### Changed
+- `EUDLoopNewUnit` no longer modify **CUnit +0xA5** `uniquenessIdentifier`
+- Can call `cunit.remove();` multiple times in `UnitGroup.cploop`
+
+### Bugfix
+- Allow `selftype` for non-const method call
+- Fixed armoha/euddraft#34 : non-const `EUDTypedMethod` call raises `EPError: Different number of variables(n) from type declarations(n-1)`
+
+### Improved
+- Optimize `f_playerexist(player)`
+- Optimize read functions for empty case
+  * **Example)** Local (desync) unit selection
+  ```js
+  const localSelect = EPD(0x6284B8);
+  for(var mySelect = localSelect; mySelect < localSelect + 12; localSelect++) {
+    // Much faster and cleaner when mySelect is *not* empty
+    const ptr, epd = cunitepdread_epd(mySelect);
+    if (epd == 0) break;
+
+    // .. than this, which substitutes mySelect on condition
+    if (MemoryEPD(mySelect, Exactly, 0)) break;
+    const ptr, epd = cunitepdread_epd(mySelect);
+  }
+  ```
+- `switch`: Omit masked range check if bitmask == 0
+
 ## [0.9.8.3] - 2022.11.03
 ### Changed
 - `EPDOffsetMap` rollbacked to accept a tuple of *(name, offset, type)* pairs

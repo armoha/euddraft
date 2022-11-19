@@ -72,7 +72,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "eudplib"
-version = "0.71.7"
+version = "0.71.8"
 description = "EUD Trigger generator"
 category = "main"
 optional = false
@@ -165,7 +165,7 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "patchelf"
-version = "0.16.1.0"
+version = "0.17.0.0"
 description = "A small utility to modify the dynamic linker and RPATH of ELF executables."
 category = "main"
 optional = false
@@ -226,7 +226,7 @@ python-versions = "*"
 
 [[package]]
 name = "setuptools"
-version = "65.5.0"
+version = "65.6.3"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
@@ -234,7 +234,7 @@ python-versions = ">=3.7"
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-hoverxref (<2)", "sphinx-inline-tabs", "sphinx-notfound-page (==0.8.3)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8 (<5)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mock", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
+testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8 (<5)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pip (>=19.1)", "pip-run (>=8.8)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-timeout", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
 testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
@@ -282,7 +282,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "cd290c12243e6170c3dbbaf9f7239ddb6c42abb19af47a62812ad8343b115f6b"
+content-hash = "2eb91ea3f6cd5acd4c375472733c8d9f58e4eda2197431489a25f31ee15125b6"
 
 [metadata.files]
 cffi = [
@@ -510,7 +510,7 @@ cython = [
     {file = "Cython-0.29.32.tar.gz", hash = "sha256:8733cf4758b79304f2a4e39ebfac5e92341bce47bcceb26c1254398b2f8c1af7"},
 ]
 eudplib = [
-    {file = "eudplib-0.71.7-cp310-cp310-win_amd64.whl", hash = "sha256:55466724b671d33a54985ce1b85a06cefb5689cb3dd5bdac7d77085f6759bf1c"},
+    {file = "eudplib-0.71.8-cp310-cp310-win_amd64.whl", hash = "sha256:0e1ff45cb187e574eedb542e3280158309f69854c1aad36f249f5eb872dc53c4"},
 ]
 fonttools = [
     {file = "fonttools-4.38.0-py3-none-any.whl", hash = "sha256:820466f43c8be8c3009aef8b87e785014133508f0de64ec469e4efb643ae54fb"},
@@ -698,12 +698,12 @@ packaging = [
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
 patchelf = [
-    {file = "patchelf-0.16.1.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:c8345911769ace4e068dfe3ac4c04ec5e4965907954e77781ef031854eb408e8"},
-    {file = "patchelf-0.16.1.0-py2.py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.musllinux_1_1_ppc64le.whl", hash = "sha256:f363938d86e141ac9a6319e03f49886ec56073bbc4b5fd318d5f511f06636264"},
-    {file = "patchelf-0.16.1.0-py2.py3-none-manylinux_2_17_s390x.manylinux2014_s390x.musllinux_1_1_s390x.whl", hash = "sha256:557be98265cfbb48648a912519044f1add1bcc872713a9e087db5779c22b14c2"},
-    {file = "patchelf-0.16.1.0-py2.py3-none-manylinux_2_5_i686.manylinux1_i686.musllinux_1_1_i686.whl", hash = "sha256:39cc1d22724f0006ec7497cf40d7996177049411094d7c2217882abde1d81bd7"},
-    {file = "patchelf-0.16.1.0-py2.py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:bbbed2e5a244f122835f700049172d562955b4411a73ed91b18ce342efbfac5b"},
-    {file = "patchelf-0.16.1.0.tar.gz", hash = "sha256:b5d38936fdb5256142ba30dc6fe93b1b5cb892bfa5029f32febea0dcfa5ddd13"},
+    {file = "patchelf-0.17.0.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:bb675f65ad3d999763e7332a53ec98d5ae186fb057e15f781de0d108e2258f5d"},
+    {file = "patchelf-0.17.0.0-py2.py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.musllinux_1_1_ppc64le.whl", hash = "sha256:634e7b0c389251f2f8ae3f30a0cfb15873048113fcd22ae18ca354a96dc94368"},
+    {file = "patchelf-0.17.0.0-py2.py3-none-manylinux_2_17_s390x.manylinux2014_s390x.musllinux_1_1_s390x.whl", hash = "sha256:80008417d50f66a82747a1a851f100c0f2de5f0df7aec9eaca0b479ad10a3caa"},
+    {file = "patchelf-0.17.0.0-py2.py3-none-manylinux_2_5_i686.manylinux1_i686.musllinux_1_1_i686.whl", hash = "sha256:f01e680cdfbbcdfd70dc95b23fe19f6c05b76a92961d04bf812ee188b8bd013a"},
+    {file = "patchelf-0.17.0.0-py2.py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:858447ad58f84818afce32ad870c559fa27c3fe102302e9906d376461055e599"},
+    {file = "patchelf-0.17.0.0.tar.gz", hash = "sha256:a90c0244593ad353513b098a3c46a5fd60a71c160b7acf86ed16f1b5cb98878b"},
 ]
 pillow = [
     {file = "Pillow-9.3.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:0b7257127d646ff8676ec8a15520013a698d1fdc48bc2a79ba4e53df792526f2"},
@@ -795,8 +795,8 @@ pywin32 = [
     {file = "pywin32-304-cp39-cp39-win_amd64.whl", hash = "sha256:d24a3382f013b21aa24a5cfbfad5a2cd9926610c0affde3e8ab5b3d7dbcf4ac9"},
 ]
 setuptools = [
-    {file = "setuptools-65.5.0-py3-none-any.whl", hash = "sha256:f62ea9da9ed6289bfe868cd6845968a2c854d1427f8548d52cae02a42b4f0356"},
-    {file = "setuptools-65.5.0.tar.gz", hash = "sha256:512e5536220e38146176efb833d4a62aa726b7bbff82cfbc8ba9eaa3996e0b17"},
+    {file = "setuptools-65.6.3-py3-none-any.whl", hash = "sha256:57f6f22bde4e042978bcd50176fdb381d7c21a9efa4041202288d3737a0c6a54"},
+    {file = "setuptools-65.6.3.tar.gz", hash = "sha256:a7620757bf984b58deaf32fc8a4577a9bbc0850cf92c20e1ce41c38c19e5fb75"},
 ]
 setuptools-scm = [
     {file = "setuptools_scm-7.0.5-py3-none-any.whl", hash = "sha256:7930f720905e03ccd1e1d821db521bff7ec2ac9cf0ceb6552dd73d24a45d3b02"},

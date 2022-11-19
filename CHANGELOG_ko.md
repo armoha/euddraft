@@ -1,5 +1,34 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.4] - 2022.11.29
+### 변경사항
+- `EUDLoopNewUnit`이 더이상 **CUnit +0xA5** `uniquenessIdentifier`를 변경하지 않습니다.
+  * `EUDLoopNewUnit`을 사용하는 밀리기반 유즈맵에서 게임 시작하자마자 빠르게 본진 건물을 클릭하고 일꾼 생산을 해도 씹히는 문제가 해결되었습니다.
+- `UnitGroup.cploop`에서 `cunit.remove();`을 이제 여러번 사용할 수 있습니다.
+
+### 버그 수정
+- 변수 객체의 메소드에서 `selftype`을 사용하지 못하는 버그 수정
+- armoha/euddraft#34 : 변수 객체의 메소드를 호출할 때 인자 타입이 있으면 다음과 같이 오류나는 버그 수정 `EUDTypedMethod` call raises `EPError: Different number of variables(n) from type declarations(n-1)`
+
+### 기능 개선
+- `f_playerexist(player)` 최적화
+- 주소가 비어있는 상황에서 읽기 함수 성능 최적화
+  * **예제)** 비공유 선택 유닛 인식
+  ```js
+  const mySelect = EPD(0x6284B8);
+
+  // 이렇게 쓰는게 훨씬 빠르고 편해요
+  const ptr, epd = cunitepdread_epd(mySelect);
+  if (epd > 0) { ...... }
+
+  // 아래는 유닛이 있을 때 더 느립니다. 조건에 변수를 대입해야 돼요.
+  if (!MemoryEPD(mySelect, Exactly, 0)) {
+    const ptr, epd = cunitepdread_epd(mySelect);
+    ......
+  }
+  ```
+- `switch`문: 비트마스크가 0일 때 비트마스크 내 범위 체크 생략
+
 ## [0.9.8.3] - 2022.11.03
 ### 변경사항
 - `EPDOffsetMap`이 *(이름, 오프셋, 타입)* 쌍의 튜플을 받도록 롤백
