@@ -15,7 +15,7 @@
   * **Example)** Local (desync) unit selection
   ```js
   const localSelect = EPD(0x6284B8);
-  for(var mySelect = localSelect; mySelect < localSelect + 12; localSelect++) {
+  for(var mySelect = localSelect; mySelect < localSelect + 12; mySelect++) {
     // Much faster and cleaner when mySelect is *not* empty
     const ptr, epd = cunitepdread_epd(mySelect);
     if (epd == 0) break;

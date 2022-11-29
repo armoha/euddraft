@@ -15,16 +15,15 @@
 - 주소가 비어있는 상황에서 읽기 함수 성능 최적화
   * **예제)** 비공유 선택 유닛 인식
   ```js
-  const mySelect = EPD(0x6284B8);
-
-  // 이렇게 쓰는게 훨씬 빠르고 편해요
-  const ptr, epd = cunitepdread_epd(mySelect);
-  if (epd > 0) { ...... }
-
-  // 아래는 유닛이 있을 때 더 느립니다. 조건에 변수를 대입해야 돼요.
-  if (!MemoryEPD(mySelect, Exactly, 0)) {
+  const localSelect = EPD(0x6284B8);
+  for(var mySelect = localSelect; mySelect < localSelect + 12; mySelect++) {
+    // 이렇게 쓰는게 훨씬 빠르고 편해요
     const ptr, epd = cunitepdread_epd(mySelect);
-    ......
+    if (epd == 0) break;
+
+    // 아래는 유닛이 있을 때 더 느립니다. 조건에 변수를 대입해야 돼요.
+    if (MemoryEPD(mySelect, Exactly, 0)) break;
+    const ptr, epd = cunitepdread_epd(mySelect);
   }
   ```
 - `switch`문: 비트마스크가 0일 때 비트마스크 내 범위 체크 생략

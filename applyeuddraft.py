@@ -136,7 +136,15 @@ def applyEUDDraft(sfname):
         if ifname == ofname:
             raise RuntimeError("input and output file should be different.")
 
-        mainOptions = ("shufflePayload", "debug", "decodeUnitName", "objFieldN", "sectorSize")
+        mainOptions = (
+            "input",
+            "output",
+            "shufflePayload",
+            "debug",
+            "decodeUnitName",
+            "objFieldN",
+            "sectorSize",
+        )
         for mainOption in mainSection:
             if mainOption not in mainOptions:
                 raise RuntimeError(f"Invalid option in [main]: {mainOption}")
