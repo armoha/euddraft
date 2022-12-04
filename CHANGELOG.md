@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.8.5] - 2022.12.06
+### Bugfix
+- Fixed typo in `Trigger(preserved=False)` and `DoActions(preserved=False)` (reported by 콤)
+
+### Improved
+- Print null tile coordinates for 00.0000 warning
+- Optimized `f_atan2(y, x)` and `f_lengthdir(length, angle)`
+
+### Added
+- Added `f_atan2_256(y, x)` and `f_lengthdir_256(length, angle)`
+
 ## [0.9.8.4] - 2022.11.29
 ### Changed
 - `EUDLoopNewUnit` no longer modify **CUnit +0xA5** `uniquenessIdentifier`

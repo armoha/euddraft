@@ -1,5 +1,16 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.5] - 2022.12.06
+### 버그 수정
+- `Trigger(preserved=False)` 와 `DoActions(preserved=False)` 컴파일 오류 수정 (콤님 제보)
+
+### 기능 개선
+- 00.0000 경고 메시지에 널 타일 좌표 출력
+- `f_atan2(y, x)` 와 `f_lengthdir(length, angle)` 성능 최적화
+
+### 기능 추가
+- 함수 `f_atan2_256(y, x)` 와 `f_lengthdir_256(length, angle)` 추가
+
 ## [0.9.8.4] - 2022.11.29
 ### 변경사항
 - `EUDLoopNewUnit`이 더이상 **CUnit +0xA5** `uniquenessIdentifier`를 변경하지 않습니다.
