@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.9.8.6] - 2022.12.13
+### Bugfix
+- Fixed `EPDCUnitMap.isBlind` type from `bool` to `u8` (reported by Skywindragoon)
+- `EPDCUnitMap.is_dying()` was not working with `[unlimiter]` plugin, and now it raises compile error
+  * CSprite is always 0 for units spawned after running `[unlimiter]`, and looking into just CUnit, we can't tell whether it is already dead or dying. To distinguish between dead and dying with `[unlimiter]`, we need to store that unit is in usage, on additional memory space using `EUDLoopNewUnit` etc. It involves non-trivial cost so we'd rather explicitly state current status and leave this matter to end users.
+
+### Added
+- Added `IsUnlimiterOn()`: useful for library writers
+- Added `InitialWireframe` class/namespace\
+  Supports both 32 bit and 64 bit StarCraft.
+  * `InitialWireframe.wireframes(unit, wireframe)`
+    - Set initial TranWire.grp, GrpWire.grp, Wirefram.grp of unit.
+    - Must called at outermost scope!
+  * `InitialWireframe.tranwire(unit, wireframe)`
+  * `InitialWireframe.grpwire(unit, wireframe)`
+  * `InitialWireframe.wirefram(unit, wireframe)`
+- Added `SetWireframes(unit, wireframe)`, `SetTranWire(unit, wireframe)`, `SetGrpWire(unit, wireframe)`, `SetWirefram(unit, wireframe)`
+  * Edit wireframe at runtime. Supports both 32 bit and 64 bit StarCraft.
+  * Only works when `InitialWireframe` is used!
+
 ## [0.9.8.5] - 2022.12.06
 ### Bugfix
 - Fixed typo in `Trigger(preserved=False)` and `DoActions(preserved=False)` (reported by 콤)

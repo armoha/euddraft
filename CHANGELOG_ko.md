@@ -1,5 +1,25 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.6] - 2022.12.13
+### 버그 수정
+- `EPDCUnitMap.isBlind`의 타입을 `bool`에서 바이트로 수정했습니다. (하늘바라군님 제보)
+- `[unlimiter]` 맵에서 작동하지 않던 `EPDCUnitMap.is_dying()`을 컴파일 오류를 내도록 수정했습니다.
+  * `[unlimiter]` 작동 후 생성된 유닛은 CSprite가 항상 0이기 때문에, 이미 죽은 유닛인지 죽는 중인지를 CUnit만 봐서는 구별할 수 없습니다. `[unlimiter]` 맵에서 유닛이 죽는 중인지 인식하려면 `EUDLoopNewUnit` 등을 이용해 별도의 메모리 공간에 유닛이 사용 중인지 저장해야 하므로 사소하지 않은 과정이 필요하여 유저 재량에 맡기는 방향으로 수정했습니다.
+
+### 기능 추가
+- `IsUnlimiterOn()` 추가: 라이브러리 제작자한테 유용할거에요.
+- `InitialWireframe` 추가\
+  와이어프레임 초기값을 설정합니다. 32비트와 64비트 스타크래프트를 모두 지원합니다.
+  * `InitialWireframe.wireframes(unit, wireframe)`\
+    - 유닛의 TranWire.grp, GrpWire.grp, Wirefram.grp 초기값을 설정합니다.
+    - 가장 바깥 스코프에서만 사용할 수 있습니다!
+  * `InitialWireframe.tranwire(unit, wireframe)`
+  * `InitialWireframe.grpwire(unit, wireframe)`
+  * `InitialWireframe.wirefram(unit, wireframe)`
+- `SetWireframes(unit, wireframe)`, `SetTranWire(unit, wireframe)`, `SetGrpWire(unit, wireframe)`, `SetWirefram(unit, wireframe)` 추가
+  * 게임 중에 유닛의 와이어프레임을 수정합니다. 32비트와 64비트 스타크래프트를 모두 지원합니다.
+  * `InitialWireframe`을 하나라도 사용해야 작동합니다!
+
 ## [0.9.8.5] - 2022.12.06
 ### 버그 수정
 - `Trigger(preserved=False)` 와 `DoActions(preserved=False)` 컴파일 오류 수정 (콤님 제보)
