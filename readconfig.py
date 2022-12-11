@@ -24,10 +24,11 @@ THE SOFTWARE.
 """
 
 import re
-from collections import OrderedDict
 import textwrap
+from collections import OrderedDict
 from typing import Dict
-from colorama import Fore, Back, init
+
+from colorama import Back, Fore, init
 
 init()  # Colorama auto style reset
 
@@ -89,6 +90,8 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key_replace_regex.sub(r"\1", key)
                 key = key.strip()
                 value = keyvalue_match.group(3)
+                if currentSection is None:
+                    raise RuntimeError("'key : value' pair should be below [header]")
                 if key in currentSection:
                     errormsg = encode_error(
                         "key",
@@ -112,6 +115,8 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.replace("\\:", ":")
                 key = key.replace("\\=", "=")
                 key = key.strip()
+                if currentSection is None:
+                    raise RuntimeError("plugin option should be below [header]")
                 if key in currentSection:
                     errormsg = encode_error(
                         "key",
