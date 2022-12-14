@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.8.7] - 2022.12.14
+### Bugfix
+- `[chatEvent]` Fixed wrong pattern length (reported by Yuuki-Asuna)
+- `[unlimiter]` Fixed compile error (reported by 파냥이)
+
 ## [0.9.8.6] - 2022.12.13
 ### Bugfix
 - Fixed `EPDCUnitMap.isBlind` type from `bool` to `u8` (reported by Skywindragoon)
