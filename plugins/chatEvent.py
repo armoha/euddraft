@@ -4,12 +4,12 @@ __addr__ : address
 message : value
 ^start.*middle.*end$ : value
 """
+import sys
 from itertools import combinations
 from operator import itemgetter
 from random import randint
 
 from eudplib import *
-import sys
 
 Addr, lenAddr, ptrAddr, patternAddr = None, None, None, None
 minlen, maxlen = 78, 0
@@ -203,9 +203,10 @@ class EUDHash(Hash):
 
 def onInit():
     global Addr, lenAddr, ptrAddr, patternAddr, minlen, maxlen, chatDict, regexDict, rList
-    chatDict, regexDict, rList = {}, {}, []
+    chatDict, regexDict, rList = {}, {}, [[] for _ in range(6)]
     sys.stdout.reconfigure(encoding="utf-8")
     h = Hash()
+    empty_db = Db(b"\0")
 
     def delrem4(x):
         return x - x % 4
@@ -231,26 +232,21 @@ def onInit():
             patternAddr = delrem4(v)
         elif k[:1] == "^" and k[-1:] == "$" and k.count(".*") == 2:
             ep_assert(v > 0, f"Value should be greater than 0. {k} : {v}")
-            t = k[1:-1].encode("utf-8")
+            t = k[1:-1]
             ep_assert(
-                len(t) <= 82, f'chat pattern "{k}" is too long to type (up to 78 bytes)'
+                len(t.encode("utf-8")) <= 82,
+                f'chat pattern "{k}" is too long to type (up to 78 bytes)',
             )
-            start, middle, end = t.split(b".*")
+            start, middle, end = t.split(".*")
             key = (start, middle, end)
             ep_assert(key not in regexDict, f"Duplicated regex pattern. {k} : {v}")
             regexDict[key] = v
-            rList.append(
-                EUDArray(
-                    [
-                        Db(start + b"\0"),
-                        Db(middle + b"\0"),
-                        Db(end + b"\0"),
-                        v,
-                        len(start),
-                        len(end),
-                    ]
-                )
-            )
+            rList[0].append(Db(start.encode("utf-8")) if start else empty_db)
+            rList[1].append(len(start.encode("utf-8")))
+            rList[2].append(Db(end.encode("utf-8")) if end else empty_db)
+            rList[3].append(len(end.encode("utf-8")))
+            rList[4].append(Db(middle.encode("utf-8")) if middle else empty_db)
+            rList[5].append(v)
         else:
             ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
             t = k.encode("utf-8")
@@ -266,8 +262,8 @@ def onInit():
             chatDict[c] = (k, v)
 
     global rListlen
-    rListlen = len(rList)
-    rList = EUDArray(rList)
+    rListlen = len(rList[0])
+    rList = EUDArray(FlattenList(rList))
 
     detect_duplicates = list()
     for v in (Addr, lenAddr, ptrAddr, patternAddr):
@@ -422,14 +418,16 @@ def f_chatcmp():
     EUDEndIf()
     if rListlen >= 1:
         for i in EUDLoopRange(rListlen):
-            subArray = EUDArray.cast(rList[i])
-            if EUDIf()(f_memcmp(chatptr, subArray[0], subArray[4]) == 0):
-                endlen = subArray[5]
-                if EUDIf()(
-                    f_memcmp(chatptr + chatlen - endlen, subArray[2], endlen) == 0
-                ):
-                    if EUDIfNot()(f_strnstr(chatptr, subArray[1], chatlen) == -1):
-                        f_dwwrite(patternAddr, subArray[3])
+            start = f_dwread_epd(EPD(rList) + i)
+            startlen = f_dwread_epd(EPD(rList) + rListlen + i)
+            if EUDIf()(f_memcmp(chatptr, start, startlen) == 0):
+                end = f_dwread_epd(EPD(rList) + 2 * rListlen + i)
+                endlen = f_dwread_epd(EPD(rList) + 3 * rListlen + i)
+                if EUDIf()(f_memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
+                    middle = f_dwread_epd(EPD(rList) + 4 * rListlen + i)
+                    if EUDIfNot()(f_strnstr(chatptr, middle, chatlen) == -1):
+                        value = f_dwread_epd(EPD(rList) + 5 * rListlen + i)
+                        f_dwwrite(patternAddr, value)
                         EUDJump(exit)
                     EUDEndIf()
                 EUDEndIf()
