@@ -208,29 +208,44 @@ def onInit():
     h = Hash()
     empty_db = Db(b"\0")
 
-    def delrem4(x):
-        return x - x % 4
+    def addr_rhs(x):
+        try:
+            x = int(x, 0)
+        except ValueError:
+            return x.strip()
+        else:
+            return x - x % 4
 
     for k, v in settings.items():
-        if k.upper() == "__ENCODING__":
+        if k.upper() == "__ENCODING__":  # deprecated option
             continue
+
+        if k.upper() == "__ADDR__":
+            ep_assert(Addr is None, f"multiple addr error: {Addr} and {k} : {v}")
+            Addr = addr_rhs(v)  # 주소를 정수로 가져온다.
+            continue
+        if k.upper() == "__LENADDR__":
+            ep_assert(lenAddr is None, f"multiple lenAddr error: {lenAddr} and {k} : {v}")
+            lenAddr = addr_rhs(v)
+            continue
+        if k.upper() == "__PTRADDR__":
+            ep_assert(ptrAddr is None, f"multiple ptrAddr error: {ptrAddr} and {k} : {v}")
+            ptrAddr = addr_rhs(v)
+            continue
+        if k.upper() == "__PATTERNADDR__":
+            ep_assert(
+                patternAddr is None,
+                f"multiple patternAddr error: {patternAddr} and {k} : {v}",
+            )
+            patternAddr = addr_rhs(v)
+            continue
+
         try:
             v = int(v, 0)
         except ValueError:
             raise EPError(f"right-sided value is not a number! {k} : {v}")
-        if k.upper() == "__ADDR__":
-            ep_assert(Addr is None, f"multiple addr error. {k} : {v}")
-            Addr = delrem4(v)  # 주소를 정수로 가져온다.
-        elif k.upper() == "__LENADDR__":
-            ep_assert(lenAddr is None, f"multiple lenAddr error. {k} : {v}")
-            lenAddr = delrem4(v)
-        elif k.upper() == "__PTRADDR__":
-            ep_assert(ptrAddr is None, f"multiple ptrAddr error. {k} : {v}")
-            ptrAddr = delrem4(v)
-        elif k.upper() == "__PATTERNADDR__":
-            ep_assert(patternAddr is None, f"multiple patternAddr error. {k} : {v}")
-            patternAddr = delrem4(v)
-        elif k[:1] == "^" and k[-1:] == "$" and k.count(".*") == 2:
+
+        if k[:1] == "^" and k[-1:] == "$" and k.count(".*") == 2:
             ep_assert(v > 0, f"Value should be greater than 0. {k} : {v}")
             t = k[1:-1]
             ep_assert(
@@ -247,19 +262,18 @@ def onInit():
             rList[3].append(len(end.encode("utf-8")))
             rList[4].append(Db(middle.encode("utf-8")) if middle else empty_db)
             rList[5].append(v)
-        else:
-            ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
-            t = k.encode("utf-8")
-            ep_assert(
-                len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)'
-            )
-            if len(t) > maxlen:
-                maxlen = len(t)
-            if len(t) < minlen:
-                minlen = len(t)
-            c = h.hash(t, KEY1, KEY2)
-            ep_assert(c not in chatDict, f"Duplicated chat hash. {k} : {v}")
-            chatDict[c] = (k, v)
+            continue
+
+        ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
+        t = k.encode("utf-8")
+        ep_assert(len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)')
+        if len(t) > maxlen:
+            maxlen = len(t)
+        if len(t) < minlen:
+            minlen = len(t)
+        c = h.hash(t, KEY1, KEY2)
+        ep_assert(c not in chatDict, f"Duplicated chat hash. {k} : {v}")
+        chatDict[c] = (k, v)
 
     global rListlen
     rListlen = len(rList[0])
@@ -267,35 +281,40 @@ def onInit():
 
     detect_duplicates = list()
     for v in (Addr, lenAddr, ptrAddr, patternAddr):
-        if v and v >= 1:
+        if isinstance(v, int) and v >= 1:
             detect_duplicates.append(v)
     if not all(a != b for a, b in combinations(detect_duplicates, 2)):
         raise EPError(f"Duplicated address ; {detect_duplicates}")
 
     if Addr is None:
         Addr = 0x58D900  # default address
-    print(f"__addr__ : 0x{Addr:X}")
+
+    def hex_or_str(x):
+        try:
+            return f"0x{x:X}"
+        except ValueError:
+            return x
+
+    print(f"__addr__ : {hex_or_str(Addr)}")
     if lenAddr:
-        print(f"__lenAddr__ : 0x{lenAddr:X}")
+        print(f"__lenAddr__ : {hex_or_str(lenAddr)}")
     if ptrAddr:
-        print(f"__ptrAddr__ : 0x{ptrAddr:X}")
+        print(f"__ptrAddr__ : {hex_or_str(ptrAddr)}")
     if patternAddr:
-        print(f"__patternAddr__ : 0x{patternAddr:X}")
+        print(f"__patternAddr__ : {hex_or_str(patternAddr)}")
     for r, v in regexDict.items():
         print("^{0}.*{1}.*{2}$ : {3}".format(*r, v))
     if regexDict and not patternAddr:
-        raise EPError(
-            "patternAddr not defined for regex patterns (^start.*middle.*end$)."
-        )
+        raise EPError("patternAddr not defined for regex patterns (^start.*middle.*end$).")
     elif regexDict and patternAddr:
         print(
-            f"Memory(0x{patternAddr:X}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)"
+            f"Memory({hex_or_str(patternAddr)}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)"
         )
     for k, v in chatDict.values():
         print('{} : "{}"'.format(k, v))
     print("(not belong to any pattern) : 1")
     print(
-        f"Memory(0x{Addr:X}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)"
+        f"Memory({hex_or_str(Addr)}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)"
     )
     print(f"Total: {len(chatDict)}")
 
@@ -387,16 +406,29 @@ def onPluginStart():
     f_init()
 
 
+def globalAddr(s):
+    if isinstance(s, int):
+        return s
+    _ns = GetEUDNamespace()
+    ep_assert(s in _ns, f"Can't find {s} in EUDNamespace")
+    ret = _ns[s]
+    if hasattr(ret, "getValueAddr"):
+        ret = ret.getValueAddr()
+    return ret
+
+
 @EUDFunc
 def f_chatcmp():
     chatlen = f_strlen(chatptr)
+
     assign_list = []
     if lenAddr:
-        assign_list.append((EPD(lenAddr), SetTo, chatlen))
+        assign_list.append((EPD(globalAddr(lenAddr)), SetTo, chatlen))
     if ptrAddr:
-        assign_list.append((EPD(ptrAddr), SetTo, chatptr))
+        assign_list.append((EPD(globalAddr(ptrAddr)), SetTo, chatptr))
     if assign_list:
         SeqCompute(assign_list)
+
     if EUDIf()([chatlen >= minlen, chatlen <= maxlen]):
         PushTriggerScope()
         exitter = RawTrigger(nextptr=exit, actions=SetDeaths(0, SetTo, 0, 0))
@@ -408,7 +440,7 @@ def f_chatcmp():
             trig << RawTrigger(
                 conditions=o.Exactly(c),
                 actions=[
-                    SetMemory(Addr, SetTo, kv[1]),
+                    SetMemory(globalAddr(Addr), SetTo, kv[1]),
                     SetNextPtr(trig, exitter),
                     SetMemory(exitter + 344, SetTo, EPD(trig) + 1),
                     SetMemory(exitter + 348, SetTo, nptr),
@@ -416,22 +448,25 @@ def f_chatcmp():
             )
             nptr << NextTrigger()
     EUDEndIf()
-    if rListlen >= 1:
-        for i in EUDLoopRange(rListlen):
-            start = f_dwread_epd(EPD(rList) + i)
-            startlen = f_dwread_epd(EPD(rList) + rListlen + i)
-            if EUDIf()(f_memcmp(chatptr, start, startlen) == 0):
-                end = f_dwread_epd(EPD(rList) + 2 * rListlen + i)
-                endlen = f_dwread_epd(EPD(rList) + 3 * rListlen + i)
-                if EUDIf()(f_memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
-                    middle = f_dwread_epd(EPD(rList) + 4 * rListlen + i)
-                    if EUDIfNot()(f_strnstr(chatptr, middle, chatlen) == -1):
-                        value = f_dwread_epd(EPD(rList) + 5 * rListlen + i)
-                        f_dwwrite(patternAddr, value)
-                        EUDJump(exit)
-                    EUDEndIf()
+
+    if rListlen == 0:
+        return
+
+    for i in EUDLoopRange(rListlen):
+        start = f_dwread_epd(EPD(rList) + i)
+        startlen = f_dwread_epd(EPD(rList) + rListlen + i)
+        if EUDIf()(f_memcmp(chatptr, start, startlen) == 0):
+            end = f_dwread_epd(EPD(rList) + 2 * rListlen + i)
+            endlen = f_dwread_epd(EPD(rList) + 3 * rListlen + i)
+            if EUDIf()(f_memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
+                middle = f_dwread_epd(EPD(rList) + 4 * rListlen + i)
+                if EUDIfNot()(f_strnstr(chatptr, middle, chatlen) == -1):
+                    value = f_dwread_epd(EPD(rList) + 5 * rListlen + i)
+                    f_dwwrite(globalAddr(patternAddr), value)
+                    EUDJump(exit)
                 EUDEndIf()
             EUDEndIf()
+        EUDEndIf()
 
 
 temp = EUDVariable()
@@ -440,14 +475,8 @@ temp = EUDVariable()
 def chatEvent():
     event_init << RawTrigger(  # 조건의 EPD 초기화
         actions=[chatptr.SetNumber(0x640B63)]
-        + [
-            SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c)
-            for c in range(7)
-        ]
-        + [
-            SetMemory(detect_evenline + 8 + 4 + 20 * c, SetTo, EPD(0x640C3A) + c)
-            for c in range(8)
-        ]
+        + [SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c) for c in range(7)]
+        + [SetMemory(detect_evenline + 8 + 4 + 20 * c, SetTo, EPD(0x640C3A) + c) for c in range(8)]
     )
 
     if EUDWhile()(chatptr <= 0x640B60 + 436 * 6 - 1):
@@ -487,15 +516,15 @@ def chatEvent():
 
 
 def beforeTriggerExec():
-    if EUDIf()(Memory(Addr, Exactly, -1)):
+    if EUDIf()(Memory(globalAddr(Addr), Exactly, -1)):
         f_init()
     EUDEndIf()
 
     DoActions(
-        [SetMemory(Addr, SetTo, 0), chatptr.SetNumber(0)]  # 초기화
-        + [SetMemory(lenAddr, SetTo, 0) if lenAddr else []]
-        + [SetMemory(ptrAddr, SetTo, 0) if ptrAddr else []]
-        + [SetMemory(patternAddr, SetTo, 0) if rListlen else []]
+        [SetMemory(globalAddr(Addr), SetTo, 0), chatptr.SetNumber(0)]  # 초기화
+        + [SetMemory(globalAddr(lenAddr), SetTo, 0) if lenAddr else []]
+        + [SetMemory(globalAddr(ptrAddr), SetTo, 0) if ptrAddr else []]
+        + [SetMemory(globalAddr(patternAddr), SetTo, 0) if rListlen else []]
     )
 
     oldcp = f_getcurpl()
@@ -503,7 +532,7 @@ def beforeTriggerExec():
 
     PushTriggerScope()
     chat_detected << RawTrigger(
-        actions=[SetMemory(0, SetTo, 0), SetMemory(Addr, SetTo, 1)]
+        actions=[SetMemory(0, SetTo, 0), SetMemory(globalAddr(Addr), SetTo, 1)]
     )
     f_wwrite(chatptr - 2, 0x0720)
     f_chatcmp()
