@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.9.8.8] - 2022.12.20
+### Changed
+- `$T`, `EncodeString`, `GetStringIndex` uses UTF-8 encoding for new string.
+
+### Bugfix
+- Fixed coordinates in null tiles warning
+
+### Improved
+- eudplib supports Python 3.11
+- `[chatEvent]` Support global eud namespace
+  ```ini
+  :: edd/eds example
+  [chatEvent]
+  __addr__: addr
+  __patternAddr__: patternAddr
+  __ptrAddr__: ptrAddr
+  __lenAddr__: lenAddr
+  sell : 2
+  sellghost : 3
+  sellhydra : 4
+  selldragoon : 5
+  ^'ore .*.*$: 1
+  ^'gas .*.*$: 2
+  [test.eps]
+  ```
+  ```js
+  // Example epScript code (test.eps)
+  var addr, patternAddr, ptrAddr, lenAddr;
+  function onPluginStart() {
+      EUDRegisterObjectToNamespace("addr", addr);
+      EUDRegisterObjectToNamespace("patternAddr", patternAddr);
+      EUDRegisterObjectToNamespace("ptrAddr", ptrAddr);
+      EUDRegisterObjectToNamespace("lenAddr", lenAddr);
+  }
+  function chat();
+  function beforeTriggerExec() {
+      chat();
+  }
+  function chat() {
+      if (addr < 1) return;
+      setcurpl(getuserplayerid());
+      if (addr >= 2) {
+          println("\x07Chat Detected \x04(id: {})", addr);
+          return;
+      }
+      if (patternAddr) {
+          println("\x07Pattern Detected \x04(id: {})", patternAddr);
+          return;
+      }
+      DisplayText("\x05Chat not belong to [chatEvent] settings");
+  }
+  ```
+- Add duplicated entries warning for `EUDRegisterObjectToNamespace`
+- Add assertion messages for `InitialWireframe` and `EUDOnStart`
+
 ## [0.9.8.7] - 2022.12.14
 ### Bugfix
 - `[chatEvent]` Fixed wrong pattern length (reported by Yuuki-Asuna)

@@ -1,5 +1,60 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.8] - 2022.12.20
+### 변경사항
+- `$T`, `EncodeString`, `GetStringIndex`이 새 스트링을 추가할 때 UTF-8 인코딩을 사용합니다.
+
+### 버그 수정
+- Null 타일 경고 메시지에 (x, y) 좌표가 반대로 나오는 버그 수정
+
+### 기능 개선
+- eudplib이 Python 3.11을 지원합니다.
+- `[chatEvent]` 전역 EUD 이름 공간을 지원합니다.
+  ```ini
+  :: eds/edd 예시
+  [chatEvent]
+  __addr__: addr
+  __patternAddr__: patternAddr
+  __ptrAddr__: ptrAddr
+  __lenAddr__: lenAddr
+  판매 : 2
+  고스트판매 : 3
+  히드라판매 : 4
+  드라군판매 : 5
+  ^'미네랄 .*.*$: 1
+  ^'가스 .*.*$: 2
+  [test.eps]
+  ```
+  ```js
+  // epScript 예제 (test.eps)
+  var addr, patternAddr, ptrAddr, lenAddr;
+  function onPluginStart() {
+      EUDRegisterObjectToNamespace("addr", addr);
+      EUDRegisterObjectToNamespace("patternAddr", patternAddr);
+      EUDRegisterObjectToNamespace("ptrAddr", ptrAddr);
+      EUDRegisterObjectToNamespace("lenAddr", lenAddr);
+  }
+  function chat();
+  function beforeTriggerExec() {
+      chat();
+  }
+  function chat() {
+      if (addr < 1) return;
+      setcurpl(getuserplayerid());
+      if (addr >= 2) {
+          println("\x07채팅 인식 \x04(id: {})", addr);
+          return;
+      }
+      if (patternAddr) {
+          println("\x07패턴 인식 \x04(id: {})", patternAddr);
+          return;
+      }
+      DisplayText("\x05[chatEvent] 설정에 해당되지 않는 채팅");
+  }
+  ```
+- `EUDRegisterObjectToNamespace`로 중복된 이름을 추가했을 때 경고 메시지 추가
+- `InitialWireframe`와 `EUDOnStart` 오류 메시지 추가.
+
 ## [0.9.8.7] - 2022.12.14
 ### 버그 수정
 - `[chatEvent]` 패턴 인식 길이가 바이트 길이 대신 글자수였던 버그 수정 (Yuuki-Asuna님 제보)
