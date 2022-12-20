@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.8.9] - 2022.12.20
+### Bugfix
+- Fixed `InitialWireframe` bug when Marine was not editted.
+
 ## [0.9.8.8] - 2022.12.20
 ### Changed
 - `$T`, `EncodeString`, `GetStringIndex` uses UTF-8 encoding for new string.
