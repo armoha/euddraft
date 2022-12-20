@@ -1,11 +1,12 @@
 # Changelog
 
-## [0.9.8.8] - 2022.12.20
+## [0.9.8.9] - 2022.12.20
 ### Changed
 - `$T`, `EncodeString`, `GetStringIndex` uses UTF-8 encoding for new string.
 
 ### Bugfix
 - Fixed coordinates in null tiles warning
+- Fixed `InitialWireframe` bug when Marine was not editted. (reported by Oneiro)
 
 ### Improved
 - eudplib supports Python 3.11
