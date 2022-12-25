@@ -108,6 +108,8 @@
 ## [0.9.8.4] - 2022.11.29
 ### Changed
 - `EUDLoopNewUnit` no longer modify **CUnit +0xA5** `uniquenessIdentifier`
+- Multiple `EUDLoopNewUnit` now check whether unit is newly created independently (reported by PR프로덕션)
+  * Previous behavior: Only first executed `EUDLoopNewUnit` can iterate new units since previous trigger frame. Following `EUDLoopNewUnit` only iterates newly created units between loops.
 - Can call `cunit.remove();` multiple times in `UnitGroup.cploop`
 
 ### Bugfix
