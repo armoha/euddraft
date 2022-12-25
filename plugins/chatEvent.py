@@ -5,6 +5,7 @@ message : value
 ^start.*middle.*end$ : value
 """
 import sys
+from functools import reduce
 from itertools import combinations
 from operator import itemgetter
 from random import randint
@@ -14,6 +15,7 @@ from eudplib import *
 Addr, lenAddr, ptrAddr, patternAddr = None, None, None, None
 minlen, maxlen = 78, 0
 KEY1, KEY2 = randint(0, 0xFFFFFFFF), randint(0, 0xFFFFFFFF)
+xor = randint(1, 15) + (randint(1, 15) << 4)
 
 
 class Hash:
@@ -201,6 +203,12 @@ class EUDHash(Hash):
             s += bytes([i])
 
 
+def xorDb(s):
+    s = u2utf8(s)
+    ep_assert(isinstance(s, bytes))
+    return Db(bytes([b ^ xor for b in s]))
+
+
 def onInit():
     global Addr, lenAddr, ptrAddr, patternAddr, minlen, maxlen, chatDict, regexDict, rList
     chatDict, regexDict, rList = {}, {}, [[] for _ in range(6)]
@@ -249,31 +257,36 @@ def onInit():
             ep_assert(v > 0, f"Value should be greater than 0. {k} : {v}")
             t = k[1:-1]
             ep_assert(
-                len(t.encode("utf-8")) <= 82,
+                len(u2utf8(t)) <= 82,
                 f'chat pattern "{k}" is too long to type (up to 78 bytes)',
             )
             start, middle, end = t.split(".*")
             key = (start, middle, end)
             ep_assert(key not in regexDict, f"Duplicated regex pattern. {k} : {v}")
             regexDict[key] = v
-            rList[0].append(Db(start.encode("utf-8")) if start else empty_db)
-            rList[1].append(len(start.encode("utf-8")))
-            rList[2].append(Db(end.encode("utf-8")) if end else empty_db)
-            rList[3].append(len(end.encode("utf-8")))
-            rList[4].append(Db(middle.encode("utf-8")) if middle else empty_db)
+            rList[0].append(xorDb(start) if start else empty_db)
+            rList[1].append(len(u2utf8(start)))
+            rList[2].append(xorDb(end) if end else empty_db)
+            rList[3].append(len(u2utf8(end)))
+            rList[4].append(Db(u2utf8(middle)) if middle else empty_db)
             rList[5].append(v)
             continue
 
         ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
-        t = k.encode("utf-8")
+        t = u2utf8(k)
         ep_assert(len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)')
         if len(t) > maxlen:
             maxlen = len(t)
         if len(t) < minlen:
             minlen = len(t)
         c = h.hash(t, KEY1, KEY2)
-        ep_assert(c not in chatDict, f"Duplicated chat hash. {k} : {v}")
-        chatDict[c] = (k, v)
+        if c in chatDict:  # Duplicated chat hash
+            try:
+                chatDict[c].append((k, v))
+            except AttributeError:
+                chatDict[c] = [chatDict[c], (k, v)]
+        else:
+            chatDict[c] = (k, v)
 
     global rListlen
     rListlen = len(rList[0])
@@ -310,13 +323,21 @@ def onInit():
         print(
             f"Memory({hex_or_str(patternAddr)}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)"
         )
-    for k, v in chatDict.values():
-        print('{} : "{}"'.format(k, v))
+    for kv in chatDict.values():
+        if isinstance(kv, tuple):
+            print("{} : {}".format(*kv))
+        elif isinstance(kv, list):
+            for k, v in kv:
+                print("{} : {}".format(k, v))
+        else:
+            raise EPError(f"Unknown type {kv}")
     print("(not belong to any pattern) : 1")
     print(
         f"Memory({hex_or_str(Addr)}, Exactly, right-sided value); <- Use this condition for chat-detect (desync)"
     )
-    print(f"Total: {len(chatDict)}")
+    print(
+        f"Total: {reduce(lambda a, v: a + 1 if isinstance(v, tuple) else a + len(v), chatDict.values(), 0)}"
+    )
 
 
 onInit()
@@ -418,6 +439,25 @@ def globalAddr(s):
 
 
 @EUDFunc
+def memcmp(buf1, buf2, count):
+    from eudplib.eudlib.stringf.rwcommon import br1, br2
+
+    br1.seekoffset(buf1)
+    br2.seekoffset(buf2)
+
+    if EUDWhile()(count >= 1):
+        count -= 1
+        ch1 = br1.readbyte()
+        ch2 = br2.readbyte()
+        DoActions(ch2.AddNumberX(xor, 0x55), ch2.AddNumberX(xor, 0xAA))
+        EUDContinueIf(ch1 == ch2)
+        EUDReturn(ch1 - ch2)
+    EUDEndWhile()
+
+    EUDReturn(0)
+
+
+@EUDFunc
 def f_chatcmp():
     chatlen = f_strlen(chatptr)
 
@@ -429,6 +469,7 @@ def f_chatcmp():
     if assign_list:
         SeqCompute(assign_list)
 
+    check_pattern = Forward()
     if EUDIf()([chatlen >= minlen, chatlen <= maxlen]):
         PushTriggerScope()
         exitter = RawTrigger(nextptr=exit, actions=SetDeaths(0, SetTo, 0, 0))
@@ -437,28 +478,46 @@ def f_chatcmp():
         o = e.hash(chatptr, chatlen, KEY1, KEY2)
         for c, kv in chatDict.items():
             trig, nptr = Forward(), Forward()
-            trig << RawTrigger(
-                conditions=o.Exactly(c),
-                actions=[
-                    SetMemory(globalAddr(Addr), SetTo, kv[1]),
-                    SetNextPtr(trig, exitter),
-                    SetMemory(exitter + 344, SetTo, EPD(trig) + 1),
-                    SetMemory(exitter + 348, SetTo, nptr),
-                ],
-            )
+            if isinstance(kv, tuple):
+                trig << RawTrigger(
+                    conditions=o.Exactly(c),
+                    actions=[
+                        SetMemory(globalAddr(Addr), SetTo, kv[1]),
+                        SetNextPtr(trig, exitter),
+                        SetMemory(exitter + 344, SetTo, EPD(trig) + 1),
+                        SetMemory(exitter + 348, SetTo, nptr),
+                    ],
+                )
+            elif isinstance(kv, list):  # Hash collision case
+                disambiguate_start = Forward()
+                trig << RawTrigger(
+                    conditions=o.Exactly(c),
+                    actions=SetNextPtr(trig, disambiguate_start),
+                )
+                PushTriggerScope()
+                disambiguate_start << RawTrigger(actions=SetNextPtr(trig, nptr))
+                for k, v in kv:
+                    if EUDIf()(memcmp(chatptr, xorDb(k), len(k)) == 0):
+                        RawTrigger(nextptr=exit, actions=SetMemory(globalAddr(Addr), SetTo, v))
+                    EUDEndIf()
+                SetNextTrigger(check_pattern)
+                PopTriggerScope()
+            else:
+                raise EPError(f"Unknown type {kv}")
             nptr << NextTrigger()
     EUDEndIf()
 
+    check_pattern << NextTrigger()
     if rListlen == 0:
         return
 
     for i in EUDLoopRange(rListlen):
         start = f_dwread_epd(EPD(rList) + i)
         startlen = f_dwread_epd(EPD(rList) + rListlen + i)
-        if EUDIf()(f_memcmp(chatptr, start, startlen) == 0):
+        if EUDIf()(memcmp(chatptr, start, startlen) == 0):
             end = f_dwread_epd(EPD(rList) + 2 * rListlen + i)
             endlen = f_dwread_epd(EPD(rList) + 3 * rListlen + i)
-            if EUDIf()(f_memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
+            if EUDIf()(memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
                 middle = f_dwread_epd(EPD(rList) + 4 * rListlen + i)
                 if EUDIfNot()(f_strnstr(chatptr, middle, chatlen) == -1):
                     value = f_dwread_epd(EPD(rList) + 5 * rListlen + i)
