@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.8.10] - 2022.12.25
+### Bugfix
+- Allow `EUDOnStart` to be used everywhere in your code
+- Fixed `println`, `printAt`, `simpleprint` didn't work (armoha/euddraft#28)
+  * No longer need to put `GetGlobalStringBuffer()` in `onPluginStart`
+- Allow `SetWireframes` without using `InitialWireframe`
+- **[epScript]** Allow `py_len()` for global constants
+  * Allow `len()` for `ExprProxy`
+
+### Improved
+- Updated eudplib 0.72.3, pybind11 v2.10.2
+- Optimize size of `StringBuffer` initialization triggers
+
 ## [0.9.8.9] - 2022.12.20
 ### Changed
 - `$T`, `EncodeString`, `GetStringIndex` uses UTF-8 encoding for new string.

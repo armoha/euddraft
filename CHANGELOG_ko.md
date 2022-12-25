@@ -1,5 +1,18 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.10] - 2022.12.25
+### 버그 수정
+- `EUDOnStart`를 아무 위치에서 사용할 수 있게 수정
+- `println`, `printAt`, `simpleprint` 등 출력 함수가 작동 안 되는 버그 수정 (armoha/euddraft#28)
+  * 이제 `onPluginStart`에 `GetGlobalStringBuffer()` 안 넣어도 돼요
+- `InitialWireframe`을 안 써도 `SetWireframes`를 쓸 수 있게 수정
+- **[epScript]** 전역 상수에 `py_len()` 사용 가능하도록 수정
+  * `ExprProxy`에 `len()`을 사용하지 못하는 버그를 수정했습니다.
+
+### 기능 개선
+- eudplib 0.72.3 업데이트, pybind11 v2.10.2 업데이트
+- `StringBuffer` 초기화 트리거 크기 최적화
+
 ## [0.9.8.9] - 2022.12.20
 ### 변경사항
 - `$T`, `EncodeString`, `GetStringIndex`이 새 스트링을 추가할 때 UTF-8 인코딩을 사용합니다.
@@ -96,6 +109,8 @@
 ### 변경사항
 - `EUDLoopNewUnit`이 더이상 **CUnit +0xA5** `uniquenessIdentifier`를 변경하지 않습니다.
   * `EUDLoopNewUnit`을 사용하는 밀리기반 유즈맵에서 게임 시작하자마자 빠르게 본진 건물을 클릭하고 일꾼 생산을 해도 씹히는 문제가 해결되었습니다.
+- `EUDLoopNewUnit`이 여러개 있어도 새 유닛인지 각각 체크합니다. (PR프로덕션님 제보)
+  * 이전 동작: 가장 처음에 실행된 `EUDLoopNewUnit`만 이전 프레임과 비교해 새로 생긴 유닛들을 순회하고, 다음에 실행되는 `EUDLoopNewUnit`은 두 루프 사이에 생성된 유닛들을 순회했음
 - `UnitGroup.cploop`에서 `cunit.remove();`을 이제 여러번 사용할 수 있습니다.
 
 ### 버그 수정
