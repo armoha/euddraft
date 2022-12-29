@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.8.11] - 2022.12.30
+### Changed
+- `$T`, `EncodeString`, `GetStringIndex` rollbacked to use CP949 encoding for new string.
+
+### Bugfix
+- `[chatEvent]` When hash collisions, fall-back to string comparison (reported by LLAS)
+
+### Improved
+- `[chatEvent]` Added simple encryption for chat patterns
+- Added typing for eudlib/utilf
+- Updated eudplib 0.72.5
+
 ## [0.9.8.10] - 2022.12.25
 ### Bugfix
 - Allow `EUDOnStart` to be used everywhere in your code

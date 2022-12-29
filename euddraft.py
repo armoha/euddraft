@@ -36,7 +36,7 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
-version = "0.9.8.10"
+version = "0.9.8.11"
 
 
 def applylib():

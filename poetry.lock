@@ -72,7 +72,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "eudplib"
-version = "0.72.3"
+version = "0.72.5"
 description = "EUD Trigger generator"
 category = "main"
 optional = false
@@ -507,7 +507,7 @@ cython = [
     {file = "Cython-0.29.32.tar.gz", hash = "sha256:8733cf4758b79304f2a4e39ebfac5e92341bce47bcceb26c1254398b2f8c1af7"},
 ]
 eudplib = [
-    {file = "eudplib-0.72.3-cp310-cp310-win_amd64.whl", hash = "sha256:1b35dcf787a4e46e0c44d3c2f86e9d35873aaa945ee2b41b502fc9c4b1553c91"},
+    {file = "eudplib-0.72.5-cp310-cp310-win_amd64.whl", hash = "sha256:c324242e7c86c7e3fdaca9d24218179cb027a7f09aecd3878c7ddf999779a12c"},
 ]
 fonttools = [
     {file = "fonttools-4.38.0-py3-none-any.whl", hash = "sha256:820466f43c8be8c3009aef8b87e785014133508f0de64ec469e4efb643ae54fb"},
