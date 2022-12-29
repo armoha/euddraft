@@ -5,7 +5,7 @@
 - `$T`, `EncodeString`, `GetStringIndex`이 새 스트링을 추가할 때 CP949 인코딩을 사용하도록 롤백합니다.
 
 ### 버그 수정
-- `[chatEvent]` 해시 충돌 시 채팅 내용 비교하도록 수정
+- `[chatEvent]` 해시 충돌 시 채팅 내용 비교하도록 수정 (LLAS님 제보)
 
 ### 기능 개선
 - `[chatEvent]` 패턴 문자열에 간단한 암호화 추가
