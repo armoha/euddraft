@@ -1,5 +1,15 @@
 # 변경 사항 (한국어)
 
+## [0.9.8.12] - 2022.12.31
+### 버그 수정
+- `EUDVArray`, `PVariable`에 `a[index] /= 상수` 컴파일 오류 수정 (gongnamu님 제보)
+- 일부 환경에서 `EUDLoopNewUnit`이 맵에 배치된 유닛을 순회하지 않는 버그 수정 (Oneiro님 제보)
+
+### 기능 개선
+- eudplib 일부 함수에 타입 힌트 추가: localize, maprw, trigger, trigtrg, utils
+  * core, ctrlstru, epscript, eudlib은 아직 작업 필요
+- eudplib 0.72.6 업데이트
+
 ## [0.9.8.11] - 2022.12.30
 ### 변경사항
 - `$T`, `EncodeString`, `GetStringIndex`이 새 스트링을 추가할 때 CP949 인코딩을 사용하도록 롤백합니다.

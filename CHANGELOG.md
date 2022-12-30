@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.8.12] - 2022.12.31
+### Bugfix
+- Fixed `a[index] /= constant` compile error for `EUDVArray`, `PVariable` (reported by gongnamu)
+- Fixed `EUDLoopNewUnit` missed iterating preplaced units under certain circumstances (reported by Oneiro)
+
+### Improved
+- Added type hints for some eudplib functions: localize, maprw, trigger, trigtrg, utils
+  * Work in progress: core, ctrlstru, epscript, eudlib
+- Updated eudplib 0.72.6
+
 ## [0.9.8.11] - 2022.12.30
 ### Changed
 - `$T`, `EncodeString`, `GetStringIndex` rollbacked to use CP949 encoding for new string.
