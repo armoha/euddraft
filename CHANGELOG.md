@@ -1,8 +1,17 @@
 # Changelog
 
+## [0.9.8.13] - 2023.01.01
+### Bugfix
+- Fixed various bugs
+
+### Improved
+- Added more type hints
+- Type checked eudplib with mypy
+- Updated eudplib 0.73.0
+
 ## [0.9.8.12] - 2022.12.31
 ### Bugfix
-- Fixed `a[index] /= constant` compile error for `EUDVArray`, `PVariable` (reported by gongnamu)
+- Fixed `a[index] /= (power of 2 constant)` compile error for `EUDVArray`, `PVariable` (reported by gongnamu)
 - Fixed `EUDLoopNewUnit` missed iterating preplaced units under certain circumstances (reported by Oneiro)
 
 ### Improved
