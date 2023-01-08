@@ -1,8 +1,9 @@
-from eudplib import *
-from operator import itemgetter
-from heapq import heappush, heappop
-from math import gcd, cos, sin, radians, pi, sqrt
 from functools import reduce
+from heapq import heappop, heappush
+from math import cos, gcd, pi, radians, sin, sqrt
+from operator import itemgetter
+
+from eudplib import *
 
 
 def ScannerImage(image):
@@ -138,9 +139,7 @@ class Painter:
         for k, v in props.items():
             func = getattr(self, f"set_{k}", None)
             if not callable(func):
-                raise AttributeError(
-                    f"{type(self).__name__!r} object has no property {k!r}"
-                )
+                raise AttributeError(f"{type(self).__name__!r} object has no property {k!r}")
             func(v)
 
     def set_dots(self, dots):
@@ -179,6 +178,7 @@ class Painter:
                 tx, ty = path.interpolate(length)
                 tx = int(round(tx + ox)) & 0xFFFFFFFF
                 ty = int(round(ty + oy)) & 0xFFFFFFFF
+                length += self.spacing
                 xmask |= tx
                 ymask |= ty
                 x.append(tx)
@@ -195,9 +195,7 @@ class Painter:
             y = f_maskread_epd(EPD(vy) + index, ymask)
         else:
             if index >= self.dots:
-                raise ValueError(
-                    f"index ({index}) must be less than dots ({self.dots})"
-                )
+                raise ValueError(f"index ({index}) must be less than dots ({self.dots})")
             x, y = xlist[index], ylist[index]
         return (x, y)
 
@@ -478,9 +476,7 @@ class Line(Painter):
             spacing (float): 간격. 기본=32
     """
 
-    def __init__(
-        self, center, *points, scale=1, rotation=0, translation=(0, 0), **kwargs
-    ):
+    def __init__(self, center, *points, scale=1, rotation=0, translation=(0, 0), **kwargs):
         self.points, radius = process_points(points, scale)
         super().__init__(center, radius, rotation, translation, **kwargs)
 
@@ -509,9 +505,7 @@ class Polygon(Painter):
             spacing (float): 간격. 기본=32
     """
 
-    def __init__(
-        self, center, *points, scale=1, rotation=0, translation=(0, 0), **kwargs
-    ):
+    def __init__(self, center, *points, scale=1, rotation=0, translation=(0, 0), **kwargs):
         self.points, radius = process_points(points, scale)
         super().__init__(center, radius, rotation, translation, **kwargs)
 
