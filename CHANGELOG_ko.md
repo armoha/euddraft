@@ -1,5 +1,48 @@
 # 변경 사항 (한국어)
 
+## [0.9.9.0] - 2023.01.09
+### 기능 변경
+- 예상되지 않은 상수 값이 조건으로 쓰였을 때 컴파일 오류 또는 경고 추가
+  * EUDArray, EUDVArray, EUDStruct (epScript의 object) 등 cast 가능한 상수가 조건에 쓰이면 '이 조건은 항상 참입니다' 경고
+  * 그 외 ConstExpr는 컴파일 오류
+  * -1, 0, 1 등 정수는 이전과 동일하게 0은 Never(), 0이 아닌 정수는 Always() 조건으로 변환합니다.
+- `TrgTBL` -> `StatText` 이름 변경
+- `VariableBase`와 `EUDObject`를 추상 클래스로 변경
+
+### 버그 수정
+- [epScript] 전역 상수에 ExprProxy를 전방 선언한 함수를 호출하는 등의 경우에만 씌우도록 수정
+  * 대부분의 상황에서 더 이상 `전역상수.getValue()` 안 해도 됩니다.
+- [MSQC] 우클릭 대신 이동 명령 사용하도록 수정
+  * 이제 플레이어가 임의로 QC유닛을 부대지정하여 우클릭으로 조작할 수 없습니다.
+- [draw.py] `점x, 점y = 도형[인덱스]` 무한 컴파일 버그 수정 (갈대님 제보)
+- [epScript] 상대 경로 불러오기 기능 버그 수정 (유즈맵조아조아님 제보)
+  * euddraft 0.9.8.3~0.9.8.13에 존재하는 Artanis 노래맞히기 오픈소스 컴파일 오류 수정했습니다.
+- `EPDCUnitMap.set_color(player)` 컴파일 오류 수정 (할루님 제보)
+- `TypeError: EncodePlayer() got an unexpected keyword argument 'issueError'` 오류 수정 (HuntRabbit님 제보)
+  * [BetterBrain] 플러그인 컴파일 오류 수정
+- euddraft 0.9.8.13에서 추가된 모호한 스트링이 있을 때 경고 메시지 삭제, 예전 동작 롤백 및 오류 메시지 개선 (nn2님 제보)
+- `f_dwpatch_epd` 지원되지 않는 EUD 오류 수정
+
+### 기능 개선
+- [epScript] 전역 변수 초기값이 상수일 때 초기화 트리거 없이 초기값 설정하도록 수정
+- CreateUnitWithProperties 액션에서 HP이 100%일 때 최대 체력이 167772를 초과하는 유닛을 최대 체력으로 생성하도록 수정
+- UnitProperty가 동일한 결과의 UnitProperty를 재사용하도록 수정: cloaked=None이나 cloaked=False나 같은 프로퍼티를 사용
+- EUD 반복문(EUDInfLoop, EUDLoopN, EUDLoopRange, EUDWhile)을 반복할 때 트리거 개수 1개 덜 실행하게 수정 (콤님 제보)
+- ConstExpr간의 연산 결과 rlocmode가 0이면 정수 오프셋을 반환하도록 수정
+- eudplib 오류 메시지 추가 및 개선
+- euddraft의 한국어 번역 파일 업데이트
+- eudplib 0.73.16 업데이트
+
+### 기능 추가
+- [epScript] 가장 바깥 스코프에서 함수 호출 문법 사용 가능
+  * 액션이나 EUD함수처럼 트리거를 가장 밖에 추가하면 오류 메시지로 알려줍니다.
+  `"트리거는 onPluginStart, beforeTriggerExec 또는 afterTriggerExec에 작성해야 실행됩니다"`
+  * `EUDOnStart`, `InitialWireframe`, `MPQAddFile`, `EUDRegisterObjectToNamespace`  등 eudplib 함수나\
+  py라이브러리의 함수를 epScript에서 쉽게 사용하기 위해 추가한 기능이에요.
+- 타입 힌트 정정 및 추가
+- `TriggerScopeError` 추가: `EPError`의 서브클래스입니다. 트리거를 추가할 수 없는 위치에 작성했을 때 반환됩니다.
+- `b2utf8(bytes) -> str` 함수 추가: 바이트를 UTF-8 문자열로 디코딩합니다.
+
 ## [0.9.8.13] - 2023.01.01
 ### 버그 수정
 - 여러가지 버그 수정
@@ -7,7 +50,7 @@
 ### 기능 개선
 - 타입 힌트 추가
 - eudplib에 mypy 타입 체크 적용
-- eudplib 0.73.1 업데이트
+- eudplib 0.73.0 업데이트
 
 ## [0.9.8.12] - 2022.12.31
 ### 버그 수정

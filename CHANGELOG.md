@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.9.9.0] - 2023.01.09
+### Changed
+- Raise compile error or warning when unexpected constant is used as condition, like `if (Db(4))`
+  * 'Condition is always true` warning for castable proxy classes: EUDArray, EUDVArray, EUDStruct (object in epScript) etc
+  * Compile error for the other ConstExpr
+  * Integers like -1, 0, 1 behaves same as before, converts 0 into `Never()`, non-zero integers into `Always()` condition.
+- Changed name `TrgTBL` -> `StatText`
+- Chaged `VariableBase` and `EUDObject` to abstract class
+
+### Bugfix
+- [epScript] Don't wrap global consants with ExprProxy unless there's forward-declared function call.
+  * No need to write `globalConst.getValue()` in most cases.
+- [MSQC] Use Move order instead of right click
+  * The player can't deliberately controls QCUnit by group hotkey selection and right clicking.
+- [draw.py] Fixed infinite compile bug in `Point x, y = Shape[index]` (reported by Avlos)
+- [epScript] Fixed bug in relative path import (reported by 유즈맵조아조아)
+  * Fixed compile error for Artanis song guessing game open source, exists in euddraft 0.9.8.3~0.9.8.13
+- Fixed compile error in `EPDCUnitMap.set_color(player)` (reported by 할루)
+- Fixed compile error `TypeError: EncodePlayer() got an unexpected keyword argument 'issueError'` (reported by HuntRabbit)
+  * Fixed compile error with [BetterBrain] plugin
+- Removed ambiguous string warning added in euddraft 0.9.8.13, rollbacked previous behavior and improved error message (reported by nn2)
+- Fixed unsupported EUD error in `f_dwpatch_epd`
+
+### Improved
+- [epScript] Don't add initialization trigger for global variables when their initial values are constants
+- Fixed CreateUnitWithProperties with HP 100% to create unit with MaxHP > 167772 full-health
+- UnitProperty reuses UnitProperty of equal result: ex) cloaked=None and cloaked=False share same properties
+- Optimize EUD loops (EUDInfLoop, EUDLoopN, EUDLoopRange, EUDWhile) to execute 1 less trigger for every iterations (reported by 콤)
+- Arithmetic of ConstExpr yields integer offset when rlocmode becomes 0
+- Added and improved eudplib error messages
+- Update euddraft Korean localization
+- Updated eudplib 0.73.16
+
+### Added
+- [epScript] Can write function call syntax on outermost scope
+  * Raises TriggerScopeError when you added trigger by writing Trigger action or calling EUD function.
+  : `"Must put Trigger into onPluginStart, beforeTriggerExec or afterTriggerExec"`
+  * Useful for eudplib functions like `EUDOnStart`, `InitialWireframe`, `MPQAddFile`, `EUDRegisterObjectToNamespace`\
+  or calling python library functions in epScript.
+- Revised and added type hints
+- Added `TriggerScopeError`: subclass of `EPError`. Raised when trigger was written at unusable scope
+- Added function `b2utf8(bytes) -> str`: decode bytes to UTF-8 string
+
 ## [0.9.8.13] - 2023.01.01
 ### Bugfix
 - Fixed various bugs
