@@ -902,7 +902,7 @@ def SendQC():
                 s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
 
-    RC = Db(b"...\x14XXYY\0\0\xE4\0\x00")
+    RC = Db(b"...\x15XXYY\0\0\xE4\0\x06\x00")
     SEL = Db(b"..\x09\x0112..")
     f_setcurpl(f_getuserplayerid())
 
@@ -1053,7 +1053,7 @@ def SendQC():
             raise EPError("{} is Unknown type for return value".format(ret[0]))
         # TODO: Optimize QueueGameCommand and f_memcpy
         QueueGameCommand(SEL + 2, 4)
-        QueueGameCommand(RC + 3, 10)  # RightClick
+        QueueGameCommand(RC + 3, 11)  # RightClick
         EUDEndIf()
 
 
