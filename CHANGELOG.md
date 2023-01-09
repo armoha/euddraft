@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.9.1] - 2023.01.09
+### Bugfix
+- [epScript] Fixed compile error in single global variable and global const array declarations
+
 ## [0.9.9.0] - 2023.01.09
 ### Changed
 - Raise compile error or warning when unexpected constant is used as condition, like `if (Db(4))`
