@@ -571,49 +571,42 @@ def Respawn():
     q4, q2 = 4 * w4, 4 * w2
     m4, m2 = 1 << (8 * r4), 1 << (16 * r2)
     DoActions(
-        [
-            # Set fligy to [94] Command Center
-            SetMemoryX(0x6644F8 + q4, SetTo, 94 * m4, 0xFF * m4),
-            # Units.dat: Unit Dimensions, Building Dimensions
-            SetMemory(0x6617C8 + QCUnit * 8, SetTo, 0x20002),
-            SetMemory(0x6617CC + QCUnit * 8, SetTo, 0x20002),
-            SetMemory(0x662860 + QCUnit * 4, SetTo, 0),
-            # Ground Weapon, Air Weapon
-            SetMemoryX(0x6636B8 + q4, SetTo, 130 * m4, 0xFF * m4),
-            SetMemoryX(0x6616E0 + q4, SetTo, 130 * m4, 0xFF * m4),
-            # Seek Range, Sight Range
-            SetMemoryX(0x662DB8 + q4, SetTo, 0, 0xFF * m4),
-            SetMemoryX(0x663238 + q4, SetTo, 0, 0xFF * m4),
-            # Advanced Flags, Editor Ability Flags, Group
-            SetMemory(0x664080 + QCUnit * 4, SetTo, 0x38000025),
-            SetMemoryX(0x661518 + q2, SetTo, 0x1CF * m2, 0xFFFF * m2),
-            SetMemoryX(0x6637A0 + q4, SetTo, 0, 0xFF * m4),
-            # MovementFlags & Elevation
-            SetMemoryX(0x660FC8 + q4, SetTo, 0xC5 * m4, 0xFF * m4),
-            SetMemoryX(0x663150 + q4, SetTo, 0x13 * m4, 0xFF * m4),
-            # Temporary save previous data of QCLocation
-            SetMemory(LOC_TEMP, SetTo, f_dwread_epd(LocEPD)),
-            SetMemory(LOC_TEMP + 4, SetTo, f_dwread_epd(LocEPD + 1)),
-            SetMemory(LOC_TEMP + 8, SetTo, f_dwread_epd(LocEPD + 2)),
-            SetMemory(LOC_TEMP + 12, SetTo, f_dwread_epd(LocEPD + 3)),
-            SetMemory(LOC_TEMP + 16, SetTo, f_dwread_epd(LocEPD + 4)),
-            SetMemoryXEPD(LocEPD + 4, SetTo, 0, 0xFFFF0000),
-            cp.SetNumber(min(humans)),
-        ]
+        # Set fligy to [94] Command Center
+        SetMemoryX(0x6644F8 + q4, SetTo, 94 * m4, 0xFF * m4),
+        # Units.dat: Unit Dimensions, Building Dimensions
+        SetMemory(0x6617C8 + QCUnit * 8, SetTo, 0x20002),
+        SetMemory(0x6617CC + QCUnit * 8, SetTo, 0x20002),
+        SetMemory(0x662860 + QCUnit * 4, SetTo, 0),
+        # Ground Weapon, Air Weapon
+        SetMemoryX(0x6636B8 + q4, SetTo, 130 * m4, 0xFF * m4),
+        SetMemoryX(0x6616E0 + q4, SetTo, 130 * m4, 0xFF * m4),
+        # Seek Range, Sight Range, Right Click
+        SetMemoryX(0x662DB8 + q4, SetTo, 0, 0xFF * m4),
+        SetMemoryX(0x663238 + q4, SetTo, 0, 0xFF * m4),
+        SetMemoryX(0x662098 + q4, SetTo, 6 * m4, 0xFF * m4),
+        # Advanced Flags, Editor Ability Flags, Group
+        SetMemory(0x664080 + QCUnit * 4, SetTo, 0x38000025),
+        SetMemoryX(0x661518 + q2, SetTo, 0x1CF * m2, 0xFFFF * m2),
+        SetMemoryX(0x6637A0 + q4, SetTo, 0, 0xFF * m4),
+        # MovementFlags & Elevation
+        SetMemoryX(0x660FC8 + q4, SetTo, 0xC5 * m4, 0xFF * m4),
+        SetMemoryX(0x663150 + q4, SetTo, 0x13 * m4, 0xFF * m4),
+        # Temporary save previous data of QCLocation
+        SetMemory(LOC_TEMP, SetTo, f_dwread_epd(LocEPD)),
+        SetMemory(LOC_TEMP + 4, SetTo, f_dwread_epd(LocEPD + 1)),
+        SetMemory(LOC_TEMP + 8, SetTo, f_dwread_epd(LocEPD + 2)),
+        SetMemory(LOC_TEMP + 12, SetTo, f_dwread_epd(LocEPD + 3)),
+        SetMemory(LOC_TEMP + 16, SetTo, f_dwread_epd(LocEPD + 4)),
+        SetMemoryXEPD(LocEPD + 4, SetTo, 0, 0xFFFF0000),
+        cp.SetNumber(min(humans)),
     )
     EUDHumanLoop()()
     i = EUDVariable()
     arrayEPD = ArrayEPDs[cp]
     DoActions(
-        [
-            i.SetNumber(0),
-            arrayEPD.AddNumber(328 // 4 + 5),
-            [
-                DisplayText("\x13\x04[QCDebug] \x16Respawning QC Units...")
-                if QCDebug
-                else []
-            ],
-        ]
+        i.SetNumber(0),
+        arrayEPD.AddNumber(328 // 4 + 5),
+        DisplayText("\x13\x04[QCDebug] \x16Respawning QC Units...") if QCDebug else [],
     )
     if EUDWhile()(i <= QCCount - 1):
         if EUDIf()(Memory(0x628438, Exactly, 0)):
@@ -622,17 +615,15 @@ def Respawn():
         ptr, epd = f_cunitepdread_epd(EPD(0x628438))
 
         DoActions(
-            [
-                # reset QCLocation to QC_XY
-                SetMemoryEPD(LocEPD, SetTo, QCX),
-                SetMemoryEPD(LocEPD + 1, SetTo, QCY),
-                SetMemoryEPD(LocEPD + 2, SetTo, QCX),
-                SetMemoryEPD(LocEPD + 3, SetTo, QCY),
-                CreateUnitWithProperties(
-                    1, QCUnit, QCLoc + 1, max(humans), UnitProperty(intransit=True)
-                ),
-                SetMemoryEPD(arrayEPD, SetTo, epd),
-            ]
+            # reset QCLocation to QC_XY
+            SetMemoryEPD(LocEPD, SetTo, QCX),
+            SetMemoryEPD(LocEPD + 1, SetTo, QCY),
+            SetMemoryEPD(LocEPD + 2, SetTo, QCX),
+            SetMemoryEPD(LocEPD + 3, SetTo, QCY),
+            CreateUnitWithProperties(
+                1, QCUnit, QCLoc + 1, max(humans), UnitProperty(intransit=True)
+            ),
+            SetMemoryEPD(arrayEPD, SetTo, epd),
         )
         pos_x, pos_y = f_posread_epd(epd + 0x28 // 4)
         SetLoc2UnitPos, Loc2PosTrg = Forward(), Forward()
@@ -653,21 +644,19 @@ def Respawn():
         )
         Loc2PosTrg << NextTrigger()
         DoActions(
-            [
-                # Move QCLocation to QCUnitq
-                SetLoc2UnitPos << SetMemoryEPD(LocEPD, SetTo, 0),
-                SetMemoryEPD(LocEPD + 1, SetTo, 0),
-                SetMemoryEPD(LocEPD + 2, SetTo, 0),
-                SetMemoryEPD(LocEPD + 3, SetTo, 0),
-                GiveUnits(1, QCUnit, max(humans), QCLoc + 1, QCPlayer),
-                SetMemoryEPD(epd + 0x10 // 4, SetTo, 64 * 65537),  # reset waypoint
-                SetMemoryEPD(epd + 0x34 // 4, SetTo, 0),  # immobilize
-                SetMemoryEPD(
-                    epd + 0x4C // 4, Add, cp - QCPlayer
-                ),  # modify unit's player
-                SetMemoryEPD(epd + 0xDC // 4, Add, 0xA00000),  # stackable
-                SetMemoryXEPD(epd + 0xA5 // 4, SetTo, 0, 0xFF00),  # uniqueIdentifier
-            ]
+            # Move QCLocation to QCUnitq
+            SetLoc2UnitPos << SetMemoryEPD(LocEPD, SetTo, 0),
+            SetMemoryEPD(LocEPD + 1, SetTo, 0),
+            SetMemoryEPD(LocEPD + 2, SetTo, 0),
+            SetMemoryEPD(LocEPD + 3, SetTo, 0),
+            GiveUnits(1, QCUnit, max(humans), QCLoc + 1, QCPlayer),
+            SetMemoryEPD(epd + 0x10 // 4, SetTo, 64 * 65537),  # reset waypoint
+            SetMemoryEPD(epd + 0x34 // 4, SetTo, 0),  # immobilize
+            SetMemoryEPD(
+                epd + 0x4C // 4, Add, cp - QCPlayer
+            ),  # modify unit's player
+            SetMemoryEPD(epd + 0xDC // 4, Add, 0xA00000),  # stackable
+            SetMemoryXEPD(epd + 0xA5 // 4, SetTo, 0, 0xFF00),  # uniqueIdentifier
         )
         if EUDIf()(Memory(0x512684, Exactly, cp)):
             MyQCptrsArray = EUDArray([EPD(t) + 2 for t in MyQCptrs])
@@ -693,23 +682,21 @@ def Respawn():
             )
         EUDEndIf()
         EUDSetContinuePoint()
-        DoActions([i.AddNumber(1), arrayEPD.AddNumber(18)])
+        DoActions(i.AddNumber(1), arrayEPD.AddNumber(18))
     EUDEndWhile()
     EUDSetContinuePoint()
     cp += 1
     EUDEndHumanLoop()
 
     DoActions(
-        [
-            # Restore previouse data of QCLocation
-            SetMemoryEPD(LocEPD, SetTo, LOC_TEMP[0]),
-            SetMemoryEPD(LocEPD + 1, SetTo, LOC_TEMP[1]),
-            SetMemoryEPD(LocEPD + 2, SetTo, LOC_TEMP[2]),
-            SetMemoryEPD(LocEPD + 3, SetTo, LOC_TEMP[3]),
-            SetMemoryEPD(LocEPD + 4, SetTo, LOC_TEMP[4]),
-            # Editor Ability Flags
-            SetMemoryX(0x661518 + q2, SetTo, 0, 0xFFFF * m2),
-        ]
+        # Restore previouse data of QCLocation
+        SetMemoryEPD(LocEPD, SetTo, LOC_TEMP[0]),
+        SetMemoryEPD(LocEPD + 1, SetTo, LOC_TEMP[1]),
+        SetMemoryEPD(LocEPD + 2, SetTo, LOC_TEMP[2]),
+        SetMemoryEPD(LocEPD + 3, SetTo, LOC_TEMP[3]),
+        SetMemoryEPD(LocEPD + 4, SetTo, LOC_TEMP[4]),
+        # Editor Ability Flags
+        SetMemoryX(0x661518 + q2, SetTo, 0, 0xFFFF * m2),
     )
     EUDReturn(0)
 
@@ -938,7 +925,7 @@ def SendQC():
             )
             # TODO: Optimize QueueGameCommand and f_memcpy
             QueueGameCommand(SEL + 2, 4)
-            QueueGameCommand(RC + 3, 10)  # RightClick
+            QueueGameCommand(RC + 3, 11)  # RightClick
         EUDEndIf()
 
     for n, (con, ret) in enumerate(zip(xy_cons, xy_rets)):
