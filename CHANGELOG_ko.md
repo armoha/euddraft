@@ -1,5 +1,21 @@
 # 변경 사항 (한국어)
 
+## [0.9.9.2] - 2023.01.12
+### 기능 변경
+- Cython, numpy, matplotlib, pywin32, cffi, idna 의존성 삭제
+  * 아직 Cython의 typing 지원이 부족하여 각종 오류를 일으켜서 삭제했습니다. 컴파일이 느려진 건 mypyc를 도입해서 해결할 예정입니다. 
+  * Cython을 삭제하면서 Cython과 밀접하게 연계되는 numpy도 삭제했습니다.
+  * Ren'Py 같은 파이썬 기반 게임 엔진과 달리, euddraft는 eps/py로 작성한 플러그인으로 EUD맵을 만드는 컴파일러이고, 스타크래프트가 게임 엔진 역할을 합니다. 스타크래프트가 실행하는 건 오로지 트리거이고, numpy와 matplotlib는 트리거를 만드는 데 도움을 줄 수는 있어도 스타크래프트에서 직접 사용할 수는 없습니다만 이러한 사실을 잘 모르는 초심자한테 혼란을 주기도 합니다. 추후 cx_freeze가 업데이트되어 파이썬 3.11을 도입하면 numpy의 컴파일 시간 단축 이득도 적어질거라 예상됩니다. 또한 numpy와 matplotlib을 이용한 트리거 생성은 EUD Editor처럼 eps/py 코드 생성으로 해결할 수 있으므로 삭제했습니다.
+  * pywin32, cffi, idna는 euddraft에서 오랫동안 사용하지 않아서 삭제했습니다.
+
+### 버그 수정
+- [MSQC] 작동 안 되는 버그 수정
+- `NotImplementedError: You should not call an overloaded function.` 오류 수정 (택하이님 제보)
+
+### 기능 개선
+- openpyxl 의존성 추가: 엑셀 파일을 읽거나 쓸 수 있습니다
+- [epScript] 상대 경로로 전역 변수, 함수도 불러올 수 있게 수정 (Low Signal님 제보)
+
 ## [0.9.9.1] - 2023.01.09
 ### 버그 수정
 - [epScript] 단일 비상수 초기값 전역 변수 또는 전역 배열 선언시 컴파일 오류 수정

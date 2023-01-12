@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.9.2] - 2023.01.12
+### Changed
+- Removed dependencies: Cython, numpy, matplotlib, pywin32, cffi, idna
+  * Cython's typing support is not mature yet, causing various errors so it's removed. The slow compilation will be solved by introducing mypyc.
+  * While removing Cython, numpy is also removed since it is closely linked to Cython.
+  * Unlike Python-based game engines such as Ren'Py, euddraft is a compiler that creates EUD maps with plug-ins written in eps/py, and Starcraft acts as a game engine. What Starcraft executes is only a trigger. numpy and matplotlib can help create trigger, but they can't be used directly in Starcraft, which is confusing for beginners who aren't awared of this details. When cx_freeze is updated in the future and Python 3.11 is introduced, numpy's compilation time savings are also expected to be minimal. Using numpy and matplotlib to generate eps/py code can also be achived by external code generation like how EUD Editor does, so they're removed.
+  * pywin32, cffi, idna have been unused in euddraft for a long time, so they're removed.
+
+### Bugfix
+- [MSQC] Fixed not working bug
+- Fixed error `NotImplementedError: You should not call an overloaded function.` (reported by 택하이)
+
+### Improved
+- Added dependency openpyxl: can read/write excel file
+- [epScript] Allow relative import to load global variables and functions (reported by Low Signal)
+
 ## [0.9.9.1] - 2023.01.09
 ### Bugfix
 - [epScript] Fixed compile error in single global variable and global const array declarations
