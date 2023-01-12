@@ -11,15 +11,12 @@ if "build_exe" not in sys.argv:
 build_exe_options = {
     "packages": [
         "os",
-        "cffi",
         "ctypes",
-        "idna",
         "sys",
         "importlib",
         "json",
         "eudplib",
-        "numpy",
-        "matplotlib",
+        "openpyxl",
     ],
     "excludes": ["tkinter"],
     "optimize": 2,
