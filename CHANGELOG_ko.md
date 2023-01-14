@@ -1,5 +1,9 @@
 # 변경 사항 (한국어)
 
+## [0.9.9.3] - 2023.01.14
+### 버그 수정
+- EUD Editor 3 BGM Player와 노래맞히기 오픈소스 컴파일 오류 수정
+
 ## [0.9.9.2] - 2023.01.12
 ### 기능 변경
 - Cython, numpy, matplotlib, pywin32, cffi, idna 의존성 삭제
@@ -15,6 +19,8 @@
 ### 기능 개선
 - openpyxl 의존성 추가: 엑셀 파일을 읽거나 쓸 수 있습니다
 - [epScript] 상대 경로로 전역 변수, 함수도 불러올 수 있게 수정 (Low Signal님 제보)
+- [epScript] armoha/euddraft#66: 파이썬 키워드를 덮어쓰려할 때 오류나게 수정 (Low Signal님 제보)
+- SetVariables, SeqCompute, EUDVariable.SetModifier의 modifier에 변수 사용했을 때 오류 메시지 개선 (Low Signal님 제보)
 
 ## [0.9.9.1] - 2023.01.09
 ### 버그 수정

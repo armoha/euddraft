@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.9.3] - 2023.01.14
+### Bugfix
+- Fixed compile error for EUD Editor 3 BGM Player and Open source Song guessing games
+
 ## [0.9.9.2] - 2023.01.12
 ### Changed
 - Removed dependencies: Cython, numpy, matplotlib, pywin32, cffi, idna
@@ -15,6 +19,8 @@
 ### Improved
 - Added dependency openpyxl: can read/write excel file
 - [epScript] Allow relative import to load global variables and functions (reported by Low Signal)
+- [epScript] armoha/euddraft#66: Raise compile error when trying to overwrite Python keyword (reported by Low Signal)
+- Improve error message when modifier is variable in SetVariables, SeqCompute, EUDVariable.SetModifier (reported by Low Signal)
 
 ## [0.9.9.1] - 2023.01.09
 ### Bugfix
