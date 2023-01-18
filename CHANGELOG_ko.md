@@ -1,5 +1,39 @@
 # 변경 사항 (한국어)
 
+## [0.9.9.4] - 2023.01.19
+### 기능 변경
+- `EPDOffsetMap`을 함수에서 추상 클래스로 변경, `EPDCUnitMap`을 `CUnit`의 별칭으로 변경
+- `_EUDStructArray`를 동적 클래스에서 정적 클래스로 변경
+
+### 버그 수정
+- [dataDumper] 플러그인 작성 순서와 상관없이 가장 먼저 실행되도록 수정 (iDoodler님 제보)
+  * EUD Editor 2 TriggerEditor의 onPluginStart에서 실행한 changeStarText와 settblf가 적용되지 않는 버그 수정
+- `f_badd_epd`에서 값이 변수일 때 `f_bwrite_epd`가 실행되는 버그 수정 (wdcqc님 제보)
+- `RunAIScript("4글자 코드")`가 오류나는 버그 수정 (wdcqc님 제보)
+- `EUDDeque.appendleft`가 `foreach` 데큐 순회 트리거를 고장내는 버그 수정
+
+### 기능 추가
+- 비공유 조건 `Is64bitWireframe()` 추가
+  * 64비트 스타크래프트에서 참, 32비트에서 거짓인 비공유 조건입니다.
+  * 와이어프레임 사용맵이 됩니다: 시즈탱크, 하이템플러, 질럿 등 와이어프레임 버그 부작용이 발생합니다.
+- 프록시 클래스 `CUnit`, `CSprite` 추가
+  * 크게 4가지 방법으로 생성할 수 있습니다.
+  * `CUnit(epd)`: 구조오프셋의 epd만 있을 때 CUnit 생성자 (인자타입 또는 CUnit.cast 시 epd만 입력받습니다)
+  * `CUnit(epd, ptr=ptr)`: ptr과 epd 둘 다 입력하는 생성자
+  * `CUnit.from_read(epd)`: epd 주소에서 CUnit 값을 읽어서 CUnit 클래스를 생성합니다.
+  * `CUnit.from_ptr(ptr)`: 게임 중에 트리거로 나눗셈을 하여 ptr에서 epd를 계산하여 CUnit 클래스를 생성합니다.
+  * 멤버 목록: https://github.com/armoha/eudplib/blob/master/eudplib/offsetmap/cunit.py#L84-L371
+- `EUDLoopCUnit`, `EUDLoopNewCUnit`, `EUDLoopPlayerCUnit` 추가
+- `offsetmap` 모듈 추가
+  * `offsetmap.EPDOffsetMap`
+  * `offsetmap.MemberKind`
+  * `offsetmap.BaseMember`
+  * `offsetmap.Member`
+  * `offsetmap.CUnitMember`
+  * `offsetmap.CSpriteMember`
+  * `offsetmap.EnumMember`
+  * `offsetmap.Flag`
+
 ## [0.9.9.3] - 2023.01.14
 ### 버그 수정
 - EUD Editor 3 BGM Player와 노래맞히기 오픈소스 컴파일 오류 수정

@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.9.9.4] - 2023.01.19
+### Changed
+- Changed `EPDOffsetMap` from function to abstract class, changed `EPDCUnitMap` to alias of `CUnit`
+- Changed `_EUDStructArray` from dynamic class to static class
+
+### Bugfix
+- [dataDumper] always run firstmost, regardless of the order of plugins (reported by iDoodler)
+  * Fixed ChangeStarText and settblf not working in onPluginStart of EUD Editor 2 TriggerEditor
+- Fixed `f_badd_epd` calling `f_bwrite_epd` when value is variable (reported by wdcqc)
+- Fixed compile error for `RunAIScript("4-character code")` (reported by wdcqc)
+- Fixed `EUDDeque.appendleft` corrupting `foreach` deque iterator triggers
+
+### Added
+- Added `Is64bitWireframe()` local (desync) condition
+  * evaluated to True on 64 bit StarCraft, False on 32 bit StarCraft.
+  * Output map becomes custom wireframe UMS map: causing wireframe bug side-effects for Siege Tank, High Templar, Zealot etc.
+- Added proxy classes `CUnit`, `CSprite`
+  * You can create a `CUnit` instance with 4 methods
+  * `CUnit(epd)`: epd-only CUnit constructor (typed parameter and CUnit.cast only accept epd)
+  * `CUnit(epd, ptr=ptr)`: ptr and epd constructor
+  * `CUnit.from_read(epd)`: read CUnit value from epd address to construct CUnit instance
+  * `CUnit.from_ptr(ptr)`: calculate EPD with triggers by subtraction and division to construct CUnit instance
+  * List of members: https://github.com/armoha/eudplib/blob/master/eudplib/offsetmap/cunit.py#L84-L371
+- Added `EUDLoopCUnit`, `EUDLoopNewCUnit`, `EUDLoopPlayerCUnit`
+- Added `offsetmap` module
+  * `offsetmap.EPDOffsetMap`
+  * `offsetmap.MemberKind`
+  * `offsetmap.BaseMember`
+  * `offsetmap.Member`
+  * `offsetmap.CUnitMember`
+  * `offsetmap.CSpriteMember`
+  * `offsetmap.EnumMember`
+  * `offsetmap.Flag`
+
 ## [0.9.9.3] - 2023.01.14
 ### Bugfix
 - Fixed compile error for EUD Editor 3 BGM Player and Open source Song guessing games
