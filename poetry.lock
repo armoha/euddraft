@@ -82,13 +82,13 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.74.1"
+version = "0.74.3"
 description = "EUD Trigger generator"
 category = "main"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "eudplib-0.74.1-py3-none-any.whl", hash = "sha256:76870afb037a693c480a3821e57c59c5192dd642504614f9a05ec6116ea1d543"},
+    {file = "eudplib-0.74.3-py3-none-any.whl", hash = "sha256:4ac166958e1ac7bcc1e35ed6b5a84254c687307ef32d6a299f39ffaef8aaa8f2"},
 ]
 
 [[package]]

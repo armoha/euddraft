@@ -325,10 +325,10 @@ def onInit():
         )
     for kv in chatDict.values():
         if isinstance(kv, tuple):
-            print("{} : {}".format(*kv))
+            print('{} : {}'.format(*kv))
         elif isinstance(kv, list):
             for k, v in kv:
-                print("{} : {}".format(k, v))
+                print('{} : {}'.format(k, v))
         else:
             raise EPError(f"Unknown type {kv}")
     print("(not belong to any pattern) : 1")
@@ -491,8 +491,7 @@ def f_chatcmp():
             elif isinstance(kv, list):  # Hash collision case
                 disambiguate_start = Forward()
                 trig << RawTrigger(
-                    conditions=o.Exactly(c),
-                    actions=SetNextPtr(trig, disambiguate_start),
+                    conditions=o.Exactly(c), actions=SetNextPtr(trig, disambiguate_start)
                 )
                 PushTriggerScope()
                 disambiguate_start << RawTrigger(actions=SetNextPtr(trig, nptr))
