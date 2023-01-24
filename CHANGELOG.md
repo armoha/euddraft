@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.9.5] - 2023.01.24
+### Bugfix
+- Fixed CUnit.posY bug (reported by 할루)
+- Fixed CSprite(integer)
+
+### Added
+- Added `CUnit.cgive(player)`
+
+### Improved
+- `CUnit`, `CSprite`: copy variable on initialization, deleted `__slots__`
+- Updated eudplib 0.74.5
+
 ## [0.9.9.4] - 2023.01.19
 ### Changed
 - Changed `EPDOffsetMap` from function to abstract class, changed `EPDCUnitMap` to alias of `CUnit`
