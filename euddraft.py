@@ -36,7 +36,7 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
-version = "0.9.9.5"
+version = "0.9.9.6"
 
 
 def applylib():
@@ -52,6 +52,9 @@ def applylib():
     sys.path.append(libdir)
 
 
+sys.stdin.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 applylib()
 
 

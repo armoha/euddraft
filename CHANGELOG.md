@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.9.6] - 2023.01.29
+### Improved
+- Updated to Python 3.11.1
+  * eudplib now supports both Python 3.10 and 3.11
+- **epScript:** local `var v = rvalue_variable;` won't additionally copy
+  * Fixed some corner cases to wrongly elide copy or miss opportunity
+- `SetVariables(rvalue_variable, value)`now raises compile error
+- Updated Korean localization
+- Forcing stdin, stdout, stderr of euddraft to always use UTF-8
+- Updated eudplib 0.74.8, cx-freeze 6.14.1
+
 ## [0.9.9.5] - 2023.01.24
 ### Bugfix
 - Fixed CUnit.posY bug (reported by 할루)

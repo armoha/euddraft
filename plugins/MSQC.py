@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import re
-import sys
 from math import ceil
 
 from eudplib import *
@@ -254,7 +253,6 @@ def MouseMoved():
 
 
 def onInit():
-    sys.stdout.reconfigure(encoding="utf-8")
     # get map size & human player
     chkt = GetChkTokenized()
     dim, ownr = chkt.getsection("DIM"), chkt.getsection("OWNR")

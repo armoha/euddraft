@@ -4,7 +4,6 @@ __addr__ : address
 message : value
 ^start.*middle.*end$ : value
 """
-import sys
 from functools import reduce
 from itertools import combinations
 from operator import itemgetter
@@ -212,7 +211,6 @@ def xorDb(s):
 def onInit():
     global Addr, lenAddr, ptrAddr, patternAddr, minlen, maxlen, chatDict, regexDict, rList
     chatDict, regexDict, rList = {}, {}, [[] for _ in range(6)]
-    sys.stdout.reconfigure(encoding="utf-8")
     h = Hash()
     empty_db = Db(b"\0")
 
