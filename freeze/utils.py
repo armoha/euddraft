@@ -31,7 +31,7 @@ from .crypt import T2, tryUnT
 
 
 class L(list):
-    """ Hashable list """
+    """Hashable list"""
 
     def __eq__(self, other):
         return self is other
@@ -53,7 +53,7 @@ def obfuscatedValueAssigner(v, vInsert):
     desiredOperationCount = random.randint(32, 96)
     t = random.randint(0, 0xFFFFFFFF)
     operations = [L(["+", v, vInsert + t, -t])]
-    constantHavingOperation = {operations[0]}
+    constantHavingOperation = [operations[0]]
 
     # Operation expander
     while len(operations) < desiredOperationCount:
@@ -99,14 +99,15 @@ def obfuscatedValueAssigner(v, vInsert):
 
         operation = L(operation)
 
-        constantHavingOperation.add(operation)
+        if operation not in constantHavingOperation:
+            constantHavingOperation.append(operation)
         operations.insert(random.randint(0, targetOperationIndex), operation)
 
     return operations
 
 
 def assignerMerge(op1, op2):
-    """ Merge 2 assigner randomly. """
+    """Merge 2 assigner randomly."""
     dst = [1] * len(op1) + [2] * len(op2)
     random.shuffle(dst)
 
@@ -123,7 +124,7 @@ def assignerMerge(op1, op2):
 
 
 def writeAssigner(operations):
-    """ Write assigner. """
+    """Write assigner."""
     queue_doactions = []
     for optype, dst, src1, src2 in operations:
         if isinstance(src1, int):
