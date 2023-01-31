@@ -1,6 +1,10 @@
 # 변경 사항 (한국어)
 
-## [0.9.9.6] - 2023.01.29
+## [0.9.9.7] - 2023.01.29
+### 버그 수정
+- `ImportError: Module use of python310.dll conflicts with this version of Python.` 오류 수정
+- `TypeError: Population must be a sequence.  For dicts or sets, use sorted(d).` 오류 수정
+
 ### 기능 개선
 - 파이썬 3.11.1 업데이트
   * 이제 eudplib 이 파이썬 3.10과 3.11을 둘 다 지원합니다
@@ -10,7 +14,7 @@
   * r-value란: `dwread_epd(0)`, `array[index]` 처럼 이름이 없는, 지칭할 수 없는 값을 의미합니다
 - 한국어 번역 업데이트
 - euddraft의 stdin, stdout, stderr가 항상 UTF-8을 사용하도록 수정
-- eudplib 0.74.8, cx-freeze 6.14.1 업데이트
+- eudplib 0.74.9, cx-freeze 6.14.2 업데이트
 
 ## [0.9.9.5] - 2023.01.24
 ### 버그 수정

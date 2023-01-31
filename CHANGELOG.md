@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.9.9.6] - 2023.01.29
+## [0.9.9.7] - 2023.01.29
+### Bugfix
+- Fixed `ImportError: Module use of python310.dll conflicts with this version of Python.`
+- Fixed `TypeError: Population must be a sequence.  For dicts or sets, use sorted(d).`
+
 ### Improved
 - Updated to Python 3.11.1
   * eudplib now supports both Python 3.10 and 3.11
@@ -9,7 +13,7 @@
 - `SetVariables(rvalue_variable, value)`now raises compile error
 - Updated Korean localization
 - Forcing stdin, stdout, stderr of euddraft to always use UTF-8
-- Updated eudplib 0.74.8, cx-freeze 6.14.1
+- Updated eudplib 0.74.9, cx-freeze 6.14.2
 
 ## [0.9.9.5] - 2023.01.24
 ### Bugfix
