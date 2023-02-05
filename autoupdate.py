@@ -140,7 +140,7 @@ del _update.bat /q
     def onExit():
         from subprocess import Popen
 
-        Popen("_update.bat")
+        Popen("_update.bat", cwd=os.path.dirname(sys.executable))
 
     atexit.register(onExit)
     print("Update downloaded. Update will begin after you close the euddraft.")
