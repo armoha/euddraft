@@ -8,10 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">= 3.10, < 3.12"
-cx-Freeze = "^6.13.1"
-eudplib = "^0.74.9"
+cx-Freeze = "^6.14.7"
+eudplib = "^0.75.0.dev2"
 colorama = "^0.4.6"
-openpyxl = "^3.0.10"
+openpyxl = "^3.1.2"
 
 [build-system]
 requires = ["poetry-core"]

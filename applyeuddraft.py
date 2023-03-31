@@ -221,7 +221,7 @@ def applyEUDDraft(sfname):
                 continue
             ver = ep.eudplibVersion()
             plibPath = (
-                'File "C:\\Py\\lib\\site-packages\\eudplib-%s-py3.8-win32.egg\\eudplib\\' % ver
+                'File "C:\\P310\\lib\\site-packages\\eudplib-%s-py3.10-win32.egg\\eudplib\\' % ver
             )
             exc.replace(plibPath, 'eudplib File"')
             formatted_excs.append(exc)
