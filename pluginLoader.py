@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import itertools
 import os
 import sys
 import types
@@ -89,13 +90,47 @@ def loadPluginsFromConfig(ep, config):
 
         _turnUnlimiterOn()
 
+    for pluginName in pluginList:
+        if pluginName.casefold() == "datadumper":
+            dataDumperConfig = config[pluginName]
+            for dataPath, outOffsetStr in dataDumperConfig.items():
+                flags = []
+                outOffsets = []
+                unknownArg = []
+                for outOffset in outOffsetStr.split(","):
+                    outOffset = outOffset.strip()
+                    if outOffset == "copy" or outOffset == "unpatchable":
+                        flags.append(outOffset)
+                        continue
+                    try:
+                        outOffset = int(outOffset, base=0)
+                    except ValueError:
+                        unknownArg.append(outOffset)
+                    else:
+                        outOffsets.append(outOffset)
+
+                tblOffset = 0x6D5A30
+                if tblOffset in outOffsets:
+                    outOffsets = list(filter(lambda x: x != tblOffset, outOffsets))
+
+                if not outOffsets and not unknownArg:
+                    from eudplib.eudlib.stringf.tblprint import _AddStatText
+
+                    print((' - Loading stat_txt.tbl file "{}"...').format(dataPath))
+                    _AddStatText(open(dataPath, "rb").read())
+                    del dataDumperConfig[dataPath]
+                    continue
+                dataDumperConfig[dataPath] = ", ".join(
+                    itertools.chain(flags, outOffsets, unknownArg)
+                )
+
     pluginFuncDict = {}
 
     initialDirectory = os.getcwd()
     initialPath = sys.path[:]
 
     for pluginName in pluginList:
-        if pluginName == "freeze":
+        if pluginName.casefold() == "freeze":
             if "freeze" in config[pluginName]:
                 freeze_enabled = False
                 continue
@@ -104,7 +139,7 @@ def loadPluginsFromConfig(ep, config):
                 prompt_enabled = True
             continue
 
-        elif pluginName == "SCBank":
+        elif pluginName.casefold() == "SCBank":
             scbank_enabled = True
             print("SCBank plugin loaded")
             SCBankSettings = config[pluginName]
@@ -116,7 +151,7 @@ def loadPluginsFromConfig(ep, config):
                 raise Exception("SCBank should be written before MSQC")
             try:
                 scbank_key = SCBankSettings["key"]
-            except (KeyError):
+            except KeyError:
                 raise Exception("SCBank key must be provided")
             import base64
             import binascii
