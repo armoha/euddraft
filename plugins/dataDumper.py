@@ -48,60 +48,7 @@ def onInit():
             else:
                 outOffsets.append(outOffset)
 
-        tblOffset = 0x6D5A30
-        if tblOffset in outOffsets:
-            inputData = AlignTBL(inputData)
-
         inputDatas.append((inputData, outOffsets, flags))
-
-
-def AlignTBL(tbl):
-    tblCount = b2i2(tbl)
-    newTbl = i2b2(tblCount)
-    tblOffset = 2 * (tblCount + 1)
-    if tblCount % 2 == 0:
-        tblOffset += 2
-    tblContents = []
-    utf8DecodableCount = tblCount
-    cp949DecodableCount = tblCount
-
-    for i in range(tblCount):
-        k = 2 * (i + 1)
-        tblStart = b2i2(tbl, k)
-        tblEnd = b2i2(tbl, k + 2)
-        if i == tblCount - 1:
-            tblEnd = len(tbl)
-        tblContent = tbl[tblStart:tblEnd] + b"\0\0\0"
-        while len(tblContent) % 4 >= 1:
-            tblContent += b"\0"
-        newTbl += i2b2(tblOffset)
-        tblContents.append(tblContent)
-        tblOffset += len(tblContent)
-
-        try:
-            tblContent.decode("utf-8")
-        except UnicodeDecodeError:
-            utf8DecodableCount -= 1
-        try:
-            tblContent.decode("cp949")
-        except UnicodeDecodeError:
-            cp949DecodableCount -= 1
-
-    if tblCount % 2 == 0:
-        newTbl += b"\0\0"
-
-    for tblContent in tblContents:
-        newTbl += tblContent
-
-    try:
-        from eudplib.eudlib.stringf.tblprint import _StatTxtTblEncoding
-    except ImportError:
-        pass
-    else:
-        if utf8DecodableCount > cp949DecodableCount:
-            _StatTxtTblEncoding.encoding = "UTF-8"
-
-    return newTbl
 
 
 onInit()
