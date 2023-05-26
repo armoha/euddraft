@@ -129,7 +129,9 @@ def applyEUDDraft(sfname):
     from eudplib.eudlib.objpool import SetGlobalPoolFieldN
 
     try:
-        config = readconfig(sfname)
+        config, excs = readconfig(sfname)
+        if excs:
+            raise ExceptionGroup("Invalid config", excs)
         mainSection = config["main"]
         ifname = mainSection["input"]
         ofname = mainSection["output"]

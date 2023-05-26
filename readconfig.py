@@ -24,7 +24,6 @@ THE SOFTWARE.
 """
 
 import re
-import textwrap
 from collections import OrderedDict
 from typing import Dict
 
@@ -33,7 +32,7 @@ from colorama import Back, Fore, init
 init()  # Colorama auto style reset
 
 
-def readconfig(fname) -> Dict[str, Dict[str, str]]:
+def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
     header_regex = re.compile(r"\[(.+)\]$")
     keyvalue_regex = re.compile(r"(([^\\:=]|\\.)+)\s*[:=]\s*(.+)$")
     keyonly_regex = re.compile(r"(([^\\:=]|\\.)+)")
@@ -46,6 +45,7 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
         config = OrderedDict()
         header_lineno = {}
         config_lineno = {}
+        exceptions = []
 
         def encode_error(kind, dup, fname, line1, line2, str1="", str2=""):
             where = f"{dup!r}"
@@ -76,7 +76,9 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                         header_lineno[currentSectionName],
                         lineno,
                     )
-                    raise RuntimeError(errormsg)
+                    exceptions.append(RuntimeError(errormsg))
+                    while currentSectionName in config:
+                        currentSectionName += "_dup"
                 currentSection = {}
                 config[currentSectionName] = currentSection
                 header_lineno[currentSectionName] = lineno
@@ -91,7 +93,9 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.strip()
                 value = keyvalue_match.group(3)
                 if currentSection is None:
-                    raise RuntimeError("'key : value' pair should be below [header]")
+                    errormsg = f"'key : value' pair ({line}) should be below [header]"
+                    exceptions.append(RuntimeError(errormsg))
+                    continue
                 if key in currentSection:
                     errormsg = encode_error(
                         "key",
@@ -102,7 +106,8 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                         f" : {currentSection[key]}",
                         f" : {value}",
                     )
-                    raise RuntimeError(errormsg)
+                    exceptions.append(RuntimeError(errormsg))
+                    continue
                 currentSection[key] = value
                 config_lineno[key] = lineno
                 continue
@@ -116,7 +121,9 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                 key = key.replace("\\=", "=")
                 key = key.strip()
                 if currentSection is None:
-                    raise RuntimeError("plugin option should be below [header]")
+                    errormsg = f"plugin option ({line}) should be below [header]"
+                    exceptions.append(RuntimeError(errormsg))
+                    continue
                 if key in currentSection:
                     errormsg = encode_error(
                         "key",
@@ -126,7 +133,8 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
                         lineno,
                         f" : {currentSection[key]}",
                     )
-                    raise RuntimeError(errormsg)
+                    exceptions.append(RuntimeError(errormsg))
+                    continue
                 currentSection[key] = ""
                 config_lineno[key] = lineno
                 continue
@@ -136,15 +144,15 @@ def readconfig(fname) -> Dict[str, Dict[str, str]]:
             if comment_match:
                 continue
 
-            raise RuntimeError("Invalid config %s" % line)
-        return config
+            exceptions.append(RuntimeError(f"Invalid config {line}"))
+            continue
+        return config, exceptions
 
     try:
         text = open(fname, encoding="UTF-8")
-        config = parse_config(text)
     except UnicodeDecodeError:
         text = open(fname)
-        config = parse_config(text)
+    with text:
+        config, excs = parse_config(text)
 
-    text.close()
-    return config
+    return config, excs

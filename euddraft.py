@@ -159,7 +159,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
             while True:
                 # input map may change with edd update. We re-read inputMap
                 # every time here.
-                config = readconfig(sfname)
+                config, _excs = readconfig(sfname)
                 mainSection = config["main"]
                 inputMap = mainSection["input"]
 
