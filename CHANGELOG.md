@@ -1,5 +1,75 @@
 # Changelog
 
+## [0.9.9.8] - 2023.06.13
+### Changed
+- Changed `atan2_256(y, x)` and `lengthdir_256(length, angle256)` to obey coordinate system that StarCraft uses (armoha/eudplib@a1cfa71926d2e024aef6333c9eb0c160eda0cbf2)
+  * No need to convert from SC system to mathematical system
+- `$T`, `EncodeString`, `GetStringIndex` use UTF-8 (armoha/eudplib@5fc70f918ecd2e5bb06a92577ef1172e79ee6262)
+- [epScript] `constructor_static` is no longer `EUDMethod`. It is now normal python method. (armoha/eudplib@48f3463709574172b6863797ae4557982d3eb165)
+- Downgrade python version, from 3.11.1 to 3.10.10
+  * Fixed `StopIteration` verbose error message
+
+### Bugfix
+- Fixed 32 bit wireframe bugs for siege tank, zealot etc. (armoha/eudplib@a611e9bd6c85a904baedeb6b4a6fff451dde4b90)
+- Fixed `cunitread_cp` function with 0-valued source (reported by paols, armoha/eudplib@4cdf88be7ad6e1f9b6bb95f4671aba639dd70e71)
+- Fixed bug for `cunit.cgive(player);` during `EUDLoopPlayerCUnit(player)` (reported by GGrush, armoha/eudplib@4e6ef5caf50daf82192251ac225477e28174ca58)
+- Fixed `UnitGroup.add(variable);` modifying variable (reported by GGrush, armoha/eudplib@9fb63fbd4a24d16b82d4bcd2a5e5fd899038e1ad)
+- Fixed relative import duplicating module instances (armoha/eudplib@9df833ce90cfba7921ee01da3228f50fbeb84cc9)
+- Fixed error message for epScript-generated python file showing different line number and content (armoha/eudplib@53cb36a1f602628943e5afbbbbc5416f7ef06aec)
+- Fixed `CUnit.statusFlags` for not raising error on attribute typos (Fixed armoha/euddraft#113 by armoha/eudplib@10c407372df2e5b912e7bd086d6e331f73235a97)
+- Fixed bug in return-typed lambda function  with no parameter type generating untyped function (armoha/eudplib@0abeaa222504682c45ef323bbec2508a28112d3e)
+- Fixed `NonSeqCompute` with `None` modifier (armoha/eudplib@bf907ce1144af4ca28c040a929e51d7648174b53)
+- Fixed bug to let eps-server retrieve CUnit member informations (armoha/eudplib@e519514b420b6811e45579e152bca61b83745c2c)
+
+### Added
+- [epScript] Added keywords `class`, `extends`
+  * You can inherit between `object` (=`EUDStruct`) (armoha/eudplib@adffdd5df7c37c6e689a85815a2830aa7071fb94)
+- Allow jumping statements while looping `EUDQueue` and `EUDDeque` (armoha/eudplib@568252c209a120c4d442522b56fe4ed783f66e66)
+  * Can use `break;`, `continue;` and `EUDSetContinuePoint();` within `foreach(element : queue) {}` loop
+- Allow `object.constTypedMember = constValue;`, like `instance.player = P1;` (armoha/eudplib@ef994979a4dbd24ad8fd90a17d0a03e51f288802)
+- Added 3 signed division functions (armoha/eudplib@674291f29a79b14798773be156402e72f86f56f7)
+  * return constants for constant arguments
+  * `const quotient, remainder = div_towards_zero(a, b);`
+    
+    Calculates the quotient and remainder of (a ÷ b), rounding the quotient towards zero.
+
+    Calculate signed division, unlike unsigned division `div(a, b)`.
+    Consistent with C-like languages including JavaScript.
+  * `const quotient, remainder = div_floor(a, b);`
+
+    Calculates the quotient and remainder of (a ÷ b), rounding the quotient towards negative infinity.
+
+    Calculate signed division, unlike unsigned division `div(a, b)`.
+    Consistent with mathematical modulo.
+  * `const quotient, remainder = div_euclid(a, b);`
+
+    Calculates the quotient and remainder of Euclidean division of a by b.
+
+    Calculate signed division, unlike unsigned division `div(a, b)`.
+    This computes the quotient such that `a = quotient * b + remainder`, and `0 <= r < abs(b)`.
+
+    In other words, the result is a ÷ b rounded to the quotient such that `a >= quotient * b`.
+    If `a > 0`, this is equal to round towards zero; if `a < 0`, this is equal to round towards +/- infinity (away from zero).
+- Added in-place negation and abs for `VariableBase` (`EUDVariable` and `EUDLightVariable`) (armoha/eudplib@077ba9061635246b25ed6aebcbe5443a17a597d8)
+  * `var.ineg();` : negate variable in-place (same as `x = -x;`)
+  * `var.iabs();` : self-assign absolute value in-place (same as `x = (x & (1 << 31) == 0) ? x : -x;`)
+  * `DoActions(var.ineg(action=true));` : action alternative
+  * `DoActions(var.iabs(action=true));`
+
+### Improved
+- Reduced the number of trigger execution for `EPD` (armoha/eudplib@115738630408fb24549be8e9f4f7916d547a5f7a)
+- Rvalue optimization for `EPD` (armoha/eudplib@7378d3273370b6a876b90cb14444fa37ec9c018c)
+- Reduced division and remainder triggers (armoha/eudplib@50cbe7f1f3846a290b46eda71036aa9a08ba97e9)
+- Added bound checks for constant subscript on `EUDArray` and `EUDVArray(size)` types (armoha/eudplib@49d8ba48b2e89fc9cb61c01c534907d5a7724cff)
+- Added support for `py_abs(ConstExpr)` and `py_divmod(ConstExpr, int)` (armoha/eudplib@15130a6801a272c7a54698e30ff290351846e7e8)
+- Reduced constant multiplication triggers for overflowing high bits (armoha/eudplib@2adf9d3c5fc721bb6451a3b0bd28c3a1fdce7fd1)
+- Utilize more space within `EUDVarBuffer` (armoha/eudplib@3407378d41214d77c304d1def1c957af8a5eb863)
+- Duplicated object field name is now compile error (armoha/eudplib@73f0d05532b33abb56b2a51d30f161a526eed0af)
+- Added support on `UnitOrder` for order names EUD Editor uses (armoha/eudplib@3a932405df0130a32c4fdd96441375d335ed9b9a)
+- Better error for non-existing unit name and consttypes (armoha/eudplib@867cedda2b1edcf2412bd3c126958c10da3dacff)
+- Fixed some error messages to print `repr` representation (armoha/eudplib@86704367bfc298d312324e02b9161daefe93780e)
+- Updated eudplib 0.75.0a1, cx-freeze 6.15.1, pybind 2.10.4
+
 ## [0.9.9.7] - 2023.01.29
 ### Bugfix
 - Fixed `ImportError: Module use of python310.dll conflicts with this version of Python.`
