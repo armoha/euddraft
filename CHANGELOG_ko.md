@@ -1,33 +1,32 @@
 # 변경 사항 (한국어)
 
-## [0.9.9.8] - 2023.06.13
+## [0.9.9.9] - 2023.06.13
 ### 기능 변경
-- `atan2_256(y, x)`와 `lengthdir_256(길이, 256각도)`가 스타크래프트에서 사용하는 좌표계를 따르도록 변경 (armoha/eudplib@a1cfa71926d2e024aef6333c9eb0c160eda0cbf2)
+- `atan2_256(y, x)`와 `lengthdir_256(길이, 256각도)`가 스타크래프트에서 사용하는 좌표계를 따르도록 변경
   * 이제 더 이상 게임에서 사용하는 좌표계에서 수학에서 쓰는 좌표계로 변환할 필요가 없습니다
-- `$T`, `EncodeString`, `GetStringIndex`가 UTF-8 인코딩 사용하게 변경 (armoha/eudplib@5fc70f918ecd2e5bb06a92577ef1172e79ee6262)
-- [epScript] `constructor_static`를 `EUDMethod`가 아닌 일반 메소드로 변경 (armoha/eudplib@48f3463709574172b6863797ae4557982d3eb165)
+- `$T`, `EncodeString`, `GetStringIndex`가 UTF-8 인코딩 사용하게 변경
 - 파이썬 3.11.1에서 3.10.10 으로 다운그레이드
   * `StopIteration` 오류 수정
 
 ### 버그 수정
-- 32비트 와이어프레임 버그 수정: 시즈탱크, 질럿 등 (armoha/eudplib@a611e9bd6c85a904baedeb6b4a6fff451dde4b90)
-- `cunitread_cp` 읽기 함수가 값이 0인 주소를 읽을 때 버그 수정 (paols님 제보, armoha/eudplib@4cdf88be7ad6e1f9b6bb95f4671aba639dd70e71)
-- `EUDLoopPlayerCUnit(플레이어)` 안에서 `cunit.cgive(플레이어);` 사용할 때 버그 수정 (GGrush님 제보, armoha/eudplib@4e6ef5caf50daf82192251ac225477e28174ca58)
-- `UnitGroup.add(변수);`가 변수의 값을 변경하는 버그 수정 (GGrush님 제보, armoha/eudplib@9fb63fbd4a24d16b82d4bcd2a5e5fd899038e1ad)
-- 상대 경로 불러오기가 모듈을 복사하는 버그 수정 (armoha/eudplib@9df833ce90cfba7921ee01da3228f50fbeb84cc9)
-- 파일이 파이썬 단계에서 오류가 났을 때 오류 메세지에서 잘못된 줄 번호와 코드 내용을 보여주는 버그 수정 (armoha/eudplib@53cb36a1f602628943e5afbbbbc5416f7ef06aec)
-- `CUnit.statusFlags` 플래그 이름에 오타가 있어도 오류나지 않는 버그 수정 (armoha/euddraft#113 수정, 커밋 armoha/eudplib@10c407372df2e5b912e7bd086d6e331f73235a97)
-- 인자 타입 없이 리턴 타입만 있는 람다 함수가 타입 없는 함수를 만드는 버그 수정 (armoha/eudplib@0abeaa222504682c45ef323bbec2508a28112d3e)
-- `NonSeqCompute`에서 `None` 수정자 넣을 때 버그 수정 (armoha/eudplib@bf907ce1144af4ca28c040a929e51d7648174b53)
-- `eps-server`가 CUnit 클래스 멤버 정보를 가져오지 못하는 버그 수정 (armoha/eudplib@e519514b420b6811e45579e152bca61b83745c2c)
+- 32비트 와이어프레임 버그 수정: 시즈탱크, 질럿 등
+- `cunitread_cp` 읽기 함수가 값이 0인 주소를 읽을 때 버그 수정 (paols님 제보)
+- `EUDLoopPlayerCUnit(플레이어)` 안에서 `cunit.cgive(플레이어);` 사용할 때 버그 수정 (GGrush님 제보)
+- `UnitGroup.add(변수);`가 변수의 값을 변경하는 버그 수정 (GGrush님 제보)
+- 상대 경로 불러오기가 모듈을 복사하는 버그 수정
+- 파일이 파이썬 단계에서 오류가 났을 때 오류 메세지에서 잘못된 줄 번호와 코드 내용을 보여주는 버그 수정
+- `CUnit.statusFlags` 플래그 이름에 오타가 있어도 오류나지 않는 버그 수정 (armoha/euddraft#113 수정)
+- 인자 타입 없이 리턴 타입만 있는 람다 함수가 타입 없는 함수를 만드는 버그 수정
+- `NonSeqCompute`에서 `None` 수정자 넣을 때 버그 수정
+- `eps-server`가 CUnit 클래스 멤버 정보를 가져오지 못하는 버그 수정
 
 ### 기능 추가
 - [epScript] `class`, `extends` 키워드 추가
-  * `object` (=`EUDStruct`) 끼리 상속 기능 추가 (armoha/eudplib@adffdd5df7c37c6e689a85815a2830aa7071fb94)
-- `EUDQueue`와 `EUDDeque`의 `foreach` 루프문에서 `break;`, `continue;`, `EUDSetContinuePoint();` 사용 가능하게 수정 (armoha/eudplib@568252c209a120c4d442522b56fe4ed783f66e66)
-- `객체.상수타입멤버 = 상수;` 작성 가능 (armoha/eudplib@ef994979a4dbd24ad8fd90a17d0a03e51f288802)
+  * `object` (=`EUDStruct`) 끼리 상속 기능 추가
+- `EUDQueue`와 `EUDDeque`의 `foreach` 루프문에서 `break;`, `continue;`, `EUDSetContinuePoint();` 사용 가능하게 수정
+- `객체.상수타입멤버 = 상수;` 작성 가능
   * 예시: `instance.player = P1;` (`TrgPlayer` 타입)
-- 3개의 부호 있는 나눗셈 함수 추가 (armoha/eudplib@674291f29a79b14798773be156402e72f86f56f7)
+- 3개의 부호 있는 나눗셈 함수 추가
   * 인자가 상수면 상수를 리턴합니다
   * `const 몫, 나머지 = div_towards_zero(a, b);`
     
@@ -50,25 +49,23 @@
 
     다르게 말하면, 결과물은 (a ÷ b)을 반올림하여 몫이 `a >= 몫 * b` 부등식을 만족하게 합니다.
     a가 양수라면, 0을 향해 반올림하는 것과 같습니다; a가 음수라면, +/- 무한대를 향해 반올림하는 것과 같습니다 (0에서 멀어짐).
-- `VariableBase`(`EUDVariable`, `EUDLightVariable`)의 제자리 부정 연산, 제자리 절대값 연산 추가 (armoha/eudplib@077ba9061635246b25ed6aebcbe5443a17a597d8)
+- `VariableBase`(`EUDVariable`, `EUDLightVariable`)의 제자리 부정 연산, 제자리 절대값 연산 추가
   * `var.ineg();` : 변수의 값을 제자리 부정합니다. (`x = -x;`와 같습니다)
   * `var.iabs();` : 변수의 값을 자신의 절대값으로 대입합니다. (`x = (x & (1 << 31) == 0) ? x : -x;`와 같습니다)
   * `DoActions(var.ineg(action=true));` : 액션 버전
   * `DoActions(var.iabs(action=true));`
 
 ### 기능 개선
-- `EPD`의 트리거 실행 수 감소 (armoha/eudplib@115738630408fb24549be8e9f4f7916d547a5f7a)
-- Rvalue 변수 `EPD` 최적화 (armoha/eudplib@7378d3273370b6a876b90cb14444fa37ec9c018c)
-- 나누기 (/), 나머지 (%) 연산 트리거 개수 감소 (armoha/eudplib@50cbe7f1f3846a290b46eda71036aa9a08ba97e9)
-- `EUDArray`, `EUDVArray(크기)` 타입들을 상수로 인덱싱할 때 경계를 벗어나면 오류나게 경계 체크 추가 (armoha/eudplib@49d8ba48b2e89fc9cb61c01c534907d5a7724cff)
-- `py_abs(ConstExpr)`와 `py_divmod(ConstExpr, int)` 지원 추가 (armoha/eudplib@15130a6801a272c7a54698e30ff290351846e7e8)
-- 상수 곱셈에서 곱할 상수의 오버플로로 0이 되는 큰 비트들에 대해 트리거 절약 (armoha/eudplib@2adf9d3c5fc721bb6451a3b0bd28c3a1fdce7fd1)
-- `EUDVarBuffer`의 내부 빈 공간 사용 가능 (armoha/eudplib@3407378d41214d77c304d1def1c957af8a5eb863)
-- 객체 필드 이름 중복되면 컴파일 오류나게 추가 (armoha/eudplib@73f0d05532b33abb56b2a51d30f161a526eed0af)
-- `UnitOrder` 타입에 EUD Editor가 사용하는 이름들도 지원하게 추가 (armoha/eudplib@3a932405df0130a32c4fdd96441375d335ed9b9a)
-- 연결맵에 존재하지 않는 유닛 이름과 상수 타입에 대해 오류 메시지 개선 (armoha/eudplib@867cedda2b1edcf2412bd3c126958c10da3dacff)
-- 몇몇 오류 메시지가 `repr` 표현을 출력하도록 개선 (armoha/eudplib@86704367bfc298d312324e02b9161daefe93780e)
-- eudplib 0.75.0a1, cx-freeze 6.15.1, pybind 2.10.4 업데이트
+- `EPD`의 트리거 실행 수 감소
+- Rvalue 변수 `EPD` 최적화
+- 나누기 (/), 나머지 (%) 연산 트리거 개수 감소
+- `EUDArray`, `EUDVArray(크기)` 타입들을 상수로 인덱싱할 때 경계를 벗어나면 오류나게 경계 체크 추가
+- 상수 곱셈에서 곱할 상수의 오버플로로 0이 되는 큰 비트들에 대해 트리거 절약
+- 객체 필드 이름 중복되면 컴파일 오류나게 추가
+- `UnitOrder` 타입에 EUD Editor가 사용하는 이름들도 지원하게 추가
+- 연결맵에 존재하지 않는 유닛 이름과 상수 타입에 대해 오류 메시지 개선
+- 몇몇 오류 메시지가 `repr` 표현을 출력하도록 개선
+- eudplib 0.75.0, cx-freeze 6.15.1, pybind 2.10.4 업데이트
 
 ## [0.9.9.7] - 2023.01.29
 ### 버그 수정

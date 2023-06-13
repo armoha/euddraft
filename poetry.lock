@@ -123,13 +123,13 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.75.0a1"
+version = "0.75.0a25"
 description = "EUD Trigger generator"
 category = "main"
 optional = false
 python-versions = ">=3.10, <3.12"
 files = [
-    {file = "eudplib-0.75.0a1-py3-none-any.whl", hash = "sha256:2d2382d98b394249e5125183cabe0371711802aae87524da67d07000b7459977"},
+    {file = "eudplib-0.75.0a25-py3-none-any.whl", hash = "sha256:1cbee8fcd55bb5fae51a9b1510ea25ec0749cbea9a6b6841d1586234675dbadc"},
 ]
 
 [[package]]
@@ -220,4 +220,4 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.10, < 3.12"
-content-hash = "2331fc49f7867f4a6531d7b789472f0b7a0b3af0a048f77f755ffef8ea8d9351"
+content-hash = "ab5020597c3fe0d6651c5a2e514043a9992cf2cfb59e1ea6f2180cb4f2e566c1"
