@@ -26,12 +26,11 @@ THE SOFTWARE.
 import random
 
 from eudplib import *
-from .pdefault import default_pupx, default_ptex
-from eudplib.eudlib.s import srand, SetMemoryS, SetMemoryC, MoveCP
-from eudplib.core.eudfunc.eudf import _EUDPredefineReturn
 from eudplib.core.variable.evcommon import _ev
-
+from eudplib.eudlib.s import MoveCP, SetMemoryC, SetMemoryS, srand
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
+
+from .pdefault import default_ptex, default_pupx
 
 
 def getExpectedTriggerCount():
@@ -100,7 +99,7 @@ obf_ptex = None
 restore_pupx = None
 restore_ptex = None
 randonset = random.randint(1, 0xFFFFFFFF)
-randbits = [random.randint(2 ** i, 0xFFFFFFFF) for i in range(32)]
+randbits = [random.randint(2**i, 0xFFFFFFFF) for i in range(32)]
 obfuData = Db(360 + 480)
 
 
@@ -267,24 +266,24 @@ def RestorePUPx():
     DoActions(t)
 
 
-@_EUDPredefineReturn(1)
 @EUDFunc
 def fread():
-    ret = fread._frets[0]
+    fread._frets = [c.SetDeaths(0, c.SetTo, 0, 0)]
+    fread._retn = 1
+    ret = EUDLightVariable(_from=fread._frets[0])
+
     ret << randonset
     r = list(range(32))
     random.shuffle(r)
     for i in r:
-        Trigger(
-            DeathsX(CurrentPlayer, AtLeast, 1, 0, 2 ** i), ret.AddNumber(randbits[i])
-        )
+        Trigger(DeathsX(CurrentPlayer, AtLeast, 1, 0, 2**i), ret.AddNumber(randbits[i]))
     # return ret
 
 
 def _fread(x):
     ret = randonset
     for i in range(32):
-        if x & (2 ** i):
+        if x & (2**i):
             ret += randbits[i]
     return ret & 0xFFFFFFFF
 
