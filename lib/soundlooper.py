@@ -255,6 +255,7 @@ def AddLoop(title, goto=1):
         title (str): 사운드 파일 이름.
         goto (int): 마지막까지 재생한 뒤에 돌아갈 사운드 번호 (기본값: 1).
     """
+    ep_assert(SoundLooper._bars is None, f"{title} 삽입 실패, AddLoop를 함수 밖으로 옮기세요.")
 
     def get_filepath(x):
         fp = _PATH + "/{0}/{0}".format(title)
@@ -390,7 +391,13 @@ def get_three_digits(x):
 class SoundLooper:
     """루프 사운드 플레이어."""
 
-    bars = EUDArray(len(_Loop.loop_dict))
+    _bars: EUDArray | None = None  # EUDArray(len(_Loop.loop_dict))
+
+    @classmethod
+    def bars(cls):
+        if cls._bars is None:
+            cls._bars = EUDArray(len(_Loop.loop_dict))
+        return cls._bars
 
     def __init__(self):
         """사운드 플레이어 생성."""
@@ -486,7 +493,7 @@ class SoundLooper:
             [
                 self.current_bar.SetNumber(bar),
                 SetMemoryX(self._set_bar + 20, SetTo, d, 0xFFFFFF),
-                SetMemoryEPD(EPD(SoundLooper.bars) + self.current_loop, SetTo, bar),
+                SetMemoryEPD(EPD(SoundLooper.bars()) + self.current_loop, SetTo, bar),
             ]
         )
 
@@ -504,7 +511,7 @@ class SoundLooper:
             index = _T2i(title)
             self._setloop(index)
         if bar is None:
-            self.setbar(SoundLooper.bars[index])
+            self.setbar(self.bars()[index])
         else:
             self.setbar(bar)
 
@@ -529,7 +536,7 @@ class SoundLooper:
             EUDSwitchCase()(loop.index)
             d2, d1, d0 = get_three_digits(loop.goto)
             goto = (d0 << 16) + (d1 << 8) + d2
-            bar = EPD(SoundLooper.bars) + loop.index
+            bar = EPD(self.bars()) + loop.index
             DoActions(
                 [
                     SetMemory(self._set_loop[0] + 20, SetTo, _u2i4(loop.id[:4])),
@@ -591,7 +598,7 @@ class SoundLooper:
         loop = _T2i(loop)
         VProc(
             self.current_bar,
-            self.current_bar.QueueAssignTo(EPD(SoundLooper.bars) + loop),
+            self.current_bar.QueueAssignTo(EPD(self.bars()) + loop),
         )
 
     @classmethod
@@ -605,15 +612,15 @@ class SoundLooper:
         """
         dst, src = _T2i(dst), _T2i(src)
 
-        if SoundLooper.bars in _fdict:
-            _f = _fdict[SoundLooper.bars]
+        if cls.bars() in _fdict:
+            _f = _fdict[cls.bars()]
         else:
 
             @EUDFunc
             def _f(dst, src):
-                SoundLooper.bars[dst] = SoundLooper.bars[src]
+                cls.bars()[dst] = cls.bars()[src]
 
-            _fdict[SoundLooper.bars] = _f
+            _fdict[cls.bars()] = _f
 
         _f(dst, src)
 
@@ -627,12 +634,12 @@ class SoundLooper:
             bar (int): 설정할 진행도.
         """
         loop = _T2i(loop)
-        return f_dwwrite_epd(EPD(SoundLooper.bars) + loop, bar)
+        return f_dwwrite_epd(EPD(cls.bars()) + loop, bar)
 
     @classmethod
     def _setloopbar(cls, loop, bar):
         loop = _T2i(loop)
-        return SetMemoryEPD(EPD(SoundLooper.bars) + loop, SetTo, bar)
+        return SetMemoryEPD(EPD(cls.bars()) + loop, SetTo, bar)
 
     @classmethod
     def cond(cls, loop, cmptype, value):
@@ -645,7 +652,7 @@ class SoundLooper:
             value (int): 진행도와 비교할 값.
         """
         loop = _T2i(loop)
-        return MemoryEPD(EPD(SoundLooper.bars) + loop, cmptype, value)
+        return MemoryEPD(EPD(cls.bars()) + loop, cmptype, value)
 
     def loopis(self, loop):
         """현재 재생중인 곡을 비교하는 조건."""
