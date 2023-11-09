@@ -572,8 +572,8 @@ def Respawn():
         # Set fligy to [94] Command Center
         SetMemoryX(0x6644F8 + q4, SetTo, 94 * m4, 0xFF * m4),
         # Units.dat: Unit Dimensions, Building Dimensions
-        SetMemory(0x6617C8 + QCUnit * 8, SetTo, 0x20002),
-        SetMemory(0x6617CC + QCUnit * 8, SetTo, 0x20002),
+        SetMemory(0x6617C8 + QCUnit * 8, SetTo, 0x10001),
+        SetMemory(0x6617CC + QCUnit * 8, SetTo, 0x10001),
         SetMemory(0x662860 + QCUnit * 4, SetTo, 0),
         # Ground Weapon, Air Weapon
         SetMemoryX(0x6636B8 + q4, SetTo, 130 * m4, 0xFF * m4),
@@ -942,7 +942,6 @@ def SendQC():
             condition = condition()
         EUDIf()(condition)
         if ret[0] == "mouse":
-            DoActions(SetMemory(RC + 4, SetTo, 64 * 65537))
             global cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY
             sX = f_mapXread_epd(EPD(0x62848C))
             sY, _csY = f_mapYread_epd(EPD(0x6284A8))
@@ -965,10 +964,14 @@ def SendQC():
             addMouseCoord << VProc(
                 [sX, mX],
                 [
-                    SetMemory(RC + 4, Add, 0),
+                    SetMemory(RC + 4, SetTo, 0),
                     sX.QueueAssignTo(EPD(cmpScreenX) + 2),
                     mX.QueueAssignTo(EPD(cmpMouseX) + 2),
                 ],
+            )
+            RawTrigger(
+                conditions=Memory(RC + 4, Exactly, 64 * 65537),
+                actions=SetMemory(RC + 4, SetTo, 65 * 65537)
             )
         elif ret[0] == "val":
             DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
@@ -1123,9 +1126,11 @@ def ReceiveQC():
     for n, ret in enumerate(xy_rets):
         vr.read()
         waypoint = qc_epd + 0x10 // 4
-        EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1))
         if ret[0] == "mouse":
-            f_dwsubtract_epd(waypoint, 64 * 65537)
+            EUDIfNot()(MemoryEPD(waypoint, Exactly, 64 * 65537))
+        else:
+            EUDIf()(MemoryEPD(waypoint, AtLeast, 64 * 65537 + 1))
+        if ret[0] == "mouse":
             x, y = f_posread_epd(waypoint)
             f_setloc(ret[1] + cp, x, y)
         elif ret[0] == "val":
