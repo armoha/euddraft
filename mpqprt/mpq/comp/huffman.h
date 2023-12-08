@@ -16,11 +16,12 @@
 // Defines
 
 #include <stddef.h>
+#include <stdint.h>
 
-#define INSERT_ITEM    1                    
+#define INSERT_ITEM    1
 #define SWITCH_ITEMS   2                    // Switch the item1 and item2
 
-#define PTR_NOT(ptr)  (THTreeItem *)(~(unsigned long)(ptr))
+#define PTR_NOT(ptr)  (THTreeItem *)(~(uintptr_t)(ptr))
 #define PTR_PTR(ptr)  ((THTreeItem *)(ptr))
 #define PTR_INT(ptr)  (ptrdiff_t)(ptr)
 
@@ -49,7 +50,7 @@ class TInputStream
 class TOutputStream
 {
     public:
-  
+
     void PutBits(unsigned long dwBuff, unsigned int nPutBits);
 
     unsigned char * pbOutBuffer;        // 00 : Output buffer
@@ -96,11 +97,11 @@ struct TQDecompress
 };
 
 // Structure for Huffman tree (Size 0x3674 bytes). Because I'm not expert
-// for the decompression, I do not know actually if the class is really a Hufmann 
+// for the decompression, I do not know actually if the class is really a Hufmann
 // tree. If someone knows the decompression details, please let me know
 class THuffmannTree
 {
-    public: 
+    public:
 
     void  BuildTree(unsigned int nCmpType);
 //  void  ModifyTree(unsigned long dwIndex);
