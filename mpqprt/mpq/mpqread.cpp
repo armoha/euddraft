@@ -12,7 +12,6 @@
 #include <sstream>
 #include <fstream>
 
-
 // I don't like using this... but I should I think.
 // mingw and vc has different method of handling min.
 // msvc uses min while gcc uses std::min
@@ -37,6 +36,8 @@ public:
     std::string getDecryptedBlockContent(const HashTableEntry* hte, const BlockTableEntry *blockEntry) const;
 
 private:
+    uint32_t getKnownFilenameKey(const HashTableEntry *hashEntry, const BlockTableEntry *blockEntry) const;
+
     MPQHeader header;
 	mutable std::set<std::string> knownFileNames;
     std::vector<HashTableEntry> hashTable;
@@ -156,58 +157,79 @@ const BlockTableEntry* MpqReadImpl::getBlockEntry(int index) const {
     return &blockTable[index];
 }
 
-std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntry, const BlockTableEntry *blockEntry) const {
-    is.seekg(blockEntry->blockOffset, std::ios_base::beg);
+uint32_t MpqReadImpl::getKnownFilenameKey(const HashTableEntry *hashEntry, const BlockTableEntry *blockEntry) const {
+    uint32_t fileKey = 0xFFFFFFFF;
+    for (const auto &s : knownFileNames) {
+        auto expectedHashA = HashString(s.c_str(), MPQ_HASH_NAME_A);
+        auto expectedHashB = HashString(s.c_str(), MPQ_HASH_NAME_B);
+        if (expectedHashA == hashEntry->hashA && expectedHashB == hashEntry->hashB) {
+            fileKey = HashString(s.c_str(), MPQ_HASH_FILE_KEY);
+            if (blockEntry->fileFlag & 0x00020000) { // File key adjusted
+                fileKey = (fileKey + blockEntry->blockOffset) ^ blockEntry->fileSize;
+            }
+            break;
+        }
+    }
+    return fileKey;
+}
 
-    if (!(blockEntry->fileFlag & BLOCK_ENCRYPTED)) {
-        // Plain file. just read-as
-        std::vector<char> buf(blockEntry->blockSize);
-        is.read(buf.data(), blockEntry->blockSize);
-        return std::string(buf.begin(), buf.end());
-    } else {
-		// Encrypted file. Should get file key.
-		uint32_t fileKey = 0xFFFFFFFF;
+std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntry, const BlockTableEntry *blockEntry) const {
+    bool compressed = blockEntry->fileFlag & BLOCK_COMPRESSED;
+    bool encrypted = blockEntry->fileFlag & BLOCK_ENCRYPTED;
+    bool imploded = blockEntry->fileFlag & BLOCK_IMPLODED;
+
+    // Read entire block
+    is.seekg(blockEntry->blockOffset, std::ios_base::beg);
+    std::vector<char> buf(blockEntry->blockSize);
+    is.read(buf.data(), blockEntry->blockSize);
+
+    // Decompress as needed
+    if (encrypted) {
 		const size_t sectorSize = 512u << header.sectorSizeShift;
 		size_t sectorNum = (blockEntry->fileSize + sectorSize - 1) / sectorSize;
 		std::vector<uint32_t> encryptedOffsetTable(sectorNum + 1);
 
-		// Get encrypted SectorOffsetTable
-		is.read(reinterpret_cast<char*>(encryptedOffsetTable.data()), 4 * (sectorNum + 1));
+		uint32_t fileKey = getKnownFilenameKey(hashEntry, blockEntry);
 
-		for (const auto& s : knownFileNames) {
-			if (HashString(s.c_str(), MPQ_HASH_NAME_A) == hashEntry->hashA &&
-				HashString(s.c_str(), MPQ_HASH_NAME_B) == hashEntry->hashB) {
-				fileKey = HashString(s.c_str(), MPQ_HASH_FILE_KEY);
-				if (blockEntry->fileFlag & 0x00020000) {  // File key adjusted
-					fileKey = (fileKey + blockEntry->blockOffset) ^ blockEntry->fileSize;
+        if (compressed || imploded) {
+
+            // Search file key with sectorOffsetTable structure.
+            if (fileKey == 0xFFFFFFFF) {
+                auto encryptedOffsetTable = reinterpret_cast<const uint32_t *>(buf.data());
+                const uint32_t offsetTableLength = 4 * (sectorNum + 1);
+
+                // Get decryption key
+                fileKey = GetFileDecryptKey(
+                    encryptedOffsetTable,
+                    offsetTableLength,
+                    offsetTableLength,
+                    [&](const void *_decrypted)
+					{
+                        const auto decryptedOffsetTable = static_cast<const uint32_t *>(_decrypted);
+                        // Last table
+                        if (decryptedOffsetTable[0] != offsetTableLength)
+                            return false;
+                        if (decryptedOffsetTable[sectorNum] != blockEntry->blockSize)
+                            return false;
+                        bool valid = true;
+                        for (size_t i = 0; i < sectorNum; i++) {
+                            if (decryptedOffsetTable[i] > decryptedOffsetTable[i + 1]) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        return valid;
+                    });
+                if (fileKey == 0xFFFFFFFF)
+                    throw std::runtime_error("Key-extraction from encrypted block failed!");
+                else {
+                    // sectorOffsetTable we found the encryption key with is encrypted with (fileKey - 1).
+                    fileKey++;
 				}
-				break;
 			}
-		}
-
-		if (fileKey == 0xFFFFFFFF) {
-			if (blockEntry->fileFlag & (BLOCK_COMPRESSED | BLOCK_IMPLODED)) {
-				// Get decryption key
-				fileKey = GetFileDecryptKey(encryptedOffsetTable.data(), blockEntry->fileSize, blockEntry->blockSize, sectorSize);
-				if (fileKey == 0xFFFFFFFF) throw std::runtime_error("Key-extraction from encrypted block failed!");
-			}
-			else {
-				printf("Cannot get key of non-compressed encrypted block\n");
-				printf(" - HASHA %08X, HASHB %08X, BLOCK %08X\n", hashEntry->hashA, hashEntry->hashB, hashEntry->blockIndex);
-				throw std::runtime_error("Cannot get key of non-compressed encrypted block");
-			}
-		}
-
-        // Read entire block
-        is.seekg(blockEntry->blockOffset, std::ios_base::beg);
-        std::vector<char> buf(blockEntry->blockSize);
-        is.read(buf.data(), blockEntry->blockSize);
-
-		// Compressed data have sectorOffsetTable.
-		if (blockEntry->fileFlag & (BLOCK_COMPRESSED)) {
 			// Decrypt sectorOffsetTable
 			DecryptData(buf.data(), 4 * (sectorNum + 1), fileKey - 1);
-			uint32_t* sectorOffsetTable = reinterpret_cast<uint32_t*>(buf.data());
+			auto sectorOffsetTable = reinterpret_cast<uint32_t*>(buf.data());
 
 			// Decrypt file data
 			for (size_t sectorIndex = 0; sectorIndex < sectorNum; sectorIndex++) {
@@ -215,24 +237,43 @@ std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntr
 				size_t thisSectorSize = sectorOffsetTable[sectorIndex + 1] - sectorOffsetTable[sectorIndex];
 				DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
 			}
+		} else {
+            // Non-compressed data don't have SectorOffsetTable
+            if (fileKey == 0xFFFFFFFF) {
+                do {
+                    if (buf.size() > 4) {
+                        fileKey = GetFileDecryptKey(
+                            buf.data(),
+                            4,
+                            0x5367674f, // OggS
+                            [](const void *)
+							{
+                                // TODO: add proper .ogg file validator
+                                return true;
+                            });
+                        if (fileKey != 0xFFFFFFFF)
+                            break;
+                    }
+                } while (false);
 
-			// Return block data
-			return std::string(buf.begin(), buf.end());
-		}
-
-		// Non-compressed data don't
-		else {
+                if (fileKey == 0xFFFFFFFF) {
+                    printf("Cannot get key of non-compressed encrypted block\n");
+                    printf(" - HASHA %08X, HASHB %08X, BLOCK %08X\n", hashEntry->hashA, hashEntry->hashB,
+                           hashEntry->blockIndex);
+                    throw std::runtime_error("Cannot get key of non-compressed encrypted block");
+                }
+            }
 			// Decrypt file data
 			for (size_t sectorIndex = 0; sectorIndex < sectorNum; sectorIndex++) {
 				size_t thisSectorOffset = sectorSize * sectorIndex;
 				size_t thisSectorSize = min(sectorSize, blockEntry->fileSize - thisSectorOffset);
 				DecryptData(buf.data() + thisSectorOffset, thisSectorSize, fileKey + sectorIndex);
 			}
-
-			// Return block data
-			return std::string(buf.begin(), buf.end());
 		}
 	}
+
+    // Return block data, compressed as-is
+    return {buf.begin(), buf.end()};
 }
 
 /////////////////////////////
