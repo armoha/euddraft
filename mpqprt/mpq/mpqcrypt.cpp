@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstring>
 #include <vector>
+#include <functional>
 #include "mpqcrypt.h"
 
 unsigned long dwCryptTable[0x500];
@@ -116,11 +117,10 @@ unsigned long HashString(const char *lpszString, unsigned long dwHashType)
 
 //////////////////////////////////////
 
-uint32_t GetFileDecryptKey(const uint32_t* encryptedOffsetTable, uint32_t fileSize, uint32_t blockSize, uint32_t sectorSize) {
-    const size_t sectorNum = (fileSize + (sectorSize - 1)) / sectorSize;
-    const uint32_t offsetTableLength = 4 * (sectorNum + 1);
-    std::vector<uint32_t> decryptedOffsetTable(sectorNum + 1);
-    if(offsetTableLength > blockSize) return 0xFFFFFFFF; // Unsupported, mpq-protected map
+uint32_t GetFileDecryptKey(const void *buffer, uint32_t bufferSize, uint32_t expectedFirstDword,
+                           const std::function<bool(const void *)> &validator) {
+    if (bufferSize < 4) return 0xffffffff;
+    uint8_t *decryptedBuffer = nullptr;
 
     // We know that decryptedOffsetTable[0] should be offsetTableLength.
     // Exploit storm encryption algorithm with that knowledge.
@@ -132,23 +132,21 @@ uint32_t GetFileDecryptKey(const uint32_t* encryptedOffsetTable, uint32_t fileSi
         // dwKey = (ch ^ *lpdwBuffer) - seed0
         // Check if this equation holds.
         const uint32_t seed = 0xEEEEEEEE + dwCryptTable[0x400 + dwKeyLobyte];
-        const uint32_t dwKey = (encryptedOffsetTable[0] ^ offsetTableLength) - seed;
+        const uint32_t dwKey = (*(uint32_t *) buffer ^ expectedFirstDword) - seed;
         if((dwKey & 0xff) == dwKeyLobyte) {  // Viable candidate
+            if (!decryptedBuffer) decryptedBuffer = new uint8_t[bufferSize];
             // Do full decryption and check if decrypted offset table is valid.
-            memcpy(decryptedOffsetTable.data(), encryptedOffsetTable, offsetTableLength);
-            DecryptData(decryptedOffsetTable.data(), offsetTableLength, dwKey);
+            memcpy(decryptedBuffer, buffer, bufferSize);
+            DecryptData(decryptedBuffer, bufferSize, dwKey);
 
-            // Last table
-			if (decryptedOffsetTable[0] != offsetTableLength) continue;
-			if (decryptedOffsetTable[sectorNum] != blockSize) continue;
-            for(size_t i = 0 ; i < sectorNum ; i++)
-                if(decryptedOffsetTable[i] > decryptedOffsetTable[i + 1]) return 0xFFFFFFFF;
-
-            // SectorOffsetKey is encrypted using (fileKey - 1), so key we've got is one less from file's original key
-            return dwKey + 1;
+            if (validator(decryptedBuffer)) {
+                delete[] decryptedBuffer;
+                return dwKey;
+            }
         }
     }
 
     // Cannot find viable candidate.
+    delete[] decryptedBuffer;  // This works even if decryptedBuffer == nullptr
     return 0xFFFFFFFF;
 }
