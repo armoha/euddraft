@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from eudplib import EUDFunc, VProc, DoActions, Add
+from eudplib import EUDFunc, VProc, DoActions, Add, SetTo, EPD
 from .trigutils import SetMemoryC
 import random
 
@@ -68,7 +68,17 @@ def mix(x, y):
     # return T(x) + y + 0x10f874f3
     t = T(x)
     obf = random.randint(1, 0xFFFFFFFF)
-    VProc(t, [t.AddNumber(obf), t.QueueAddTo(y), y.AddNumber(0x10F874F3 - obf)])
+    VProc(
+        t,
+        [
+            SetMemoryC(t.getValueAddr(), Add, obf),  # t.AddNumber(obf)
+            # t.QueueAddTo(y),
+            SetMemoryC(t.getDestAddr(), SetTo, EPD(y.getValueAddr())),
+            t.SetModifier(Add),
+            # y.AddNumber(0x10F874F3 - obf),
+            SetMemoryC(y.getValueAddr(), Add, 0x10F874F3 - obf),
+        ],
+    )
     return y
 
 

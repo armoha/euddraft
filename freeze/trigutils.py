@@ -26,8 +26,8 @@ THE SOFTWARE.
 import random
 
 from eudplib import *
-from eudplib.core.variable.evcommon import _ev
 from eudplib.eudlib.s import MoveCP, SetMemoryC, SetMemoryS, srand
+
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
 
 from .pdefault import default_ptex, default_pupx
@@ -268,7 +268,7 @@ def RestorePUPx():
 
 @EUDFunc
 def fread():
-    fread._frets = [c.SetDeaths(0, c.SetTo, 0, 0)]
+    fread._frets = [SetDeaths(0, SetTo, 0, 0)]
     fread._retn = 1
     ret = EUDLightVariable(_from=fread._frets[0])
 

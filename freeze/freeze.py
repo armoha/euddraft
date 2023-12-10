@@ -60,7 +60,7 @@ def unFreeze():
     triggerKey = EUDVariable()
 
     # Insert key to file.
-    seedKey = EUDCreateVariables(len(seedKeyVal))
+    seedKey = [EUDVariable() for _ in seedKeyVal]
     fileCursor = EUDVariable()
 
     assigner = []
@@ -101,14 +101,26 @@ def unFreeze():
     encryptTriggers(mix2(triggerKeyVal, cryptKeyVal))
     triggerKey = mix(triggerKey, cryptKey)
 
+    def reset_seedkey1():
+        random.shuffle(seedKey)
+        key = seedKey.pop()
+        return SetMemoryS(key.getValueAddr(), SetTo, 0)
+
+    def reset_seedkey2():
+        random.shuffle(seedKey)
+        key = seedKey.pop()
+        return SetMemoryC(key.getValueAddr(), SetTo, 0)
+
     for player in EUDLoopRange(8):
         tbegin = TrigTriggerBegin(player)
         if EUDIfNot()(tbegin == 0):
             tend = TrigTriggerEnd(player)
             acts = [
-                tCount.SetNumber(0),
-                tInternalCount.SetNumber(0),
-                decryptedCount.SetNumber(0),
+                reset_seedkey2(),
+                reset_seedkey2(),
+                SetMemoryC(tCount.getValueAddr(), SetTo, 0),
+                SetMemoryC(tInternalCount.getValueAddr(), SetTo, 0),
+                SetMemoryC(decryptedCount.getValueAddr(), SetTo, 0),
             ]
             random.shuffle(acts)
             DoActions(acts)
@@ -116,9 +128,13 @@ def unFreeze():
                 ObfuscatedJump()
                 offset = (8 + 320 + 2048) // 4
                 decryptedCount += decryptTrigger(epd, triggerKey)
-                ObfuscatedAdd(epd, offset, SetMemoryC(0x6509B0, SetTo, 0))
+                ObfuscatedAdd(
+                    epd, offset, [reset_seedkey2(), SetMemoryC(0x6509B0, SetTo, 0)]
+                )
                 propv = f_dwread_epd(epd)
-                ObfuscatedAdd(epd, -offset, SetMemoryC(0x6509B0, SetTo, 0))
+                ObfuscatedAdd(
+                    epd, -offset, [reset_seedkey2(), SetMemoryC(0x6509B0, SetTo, 0)]
+                )
                 if EUDIfNot()(propv == 8):
                     tCount += 1
                 if EUDElse()():
@@ -133,8 +149,8 @@ def unFreeze():
         EUDEndIf()
 
     # Reset key memory after usage
-    for i in range(4):
-        seedKey[i].makeL().Assign(0)
+    # for i in range(4):
+    #     seedKey[i].makeL().Assign(0)
 
     global g_seedKey
     g_seedKey = seedKey
