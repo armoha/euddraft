@@ -26,14 +26,16 @@ THE SOFTWARE.
 import random
 
 from eudplib import *
+
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
+
 
 from .crypt import mix, mix2, unmix2
 from .trigutils import getTriggerExecutingPlayers, ObfuscatedAdd, SetMemoryC
 
 
 def bseti4(b, pos, dw):
-    """ Inverse of b2i4 """
+    """Inverse of b2i4"""
     b[pos : pos + 4] = i2b4(dw)
 
 
@@ -48,7 +50,7 @@ def hexdump(b):
 
 
 def encryptTrigger(bTrigger_, key):
-    """ Encrypt trigger with key """
+    """Encrypt trigger with key"""
     bTrigger = bytearray(bTrigger_)
 
     # Generate key
@@ -107,7 +109,7 @@ def encryptTriggers(cryptKey):
 
 @EUDFunc
 def decryptTrigger(triggerEPD, key):
-    """ Decrypt trigger with key """
+    """Decrypt trigger with key"""
     # Skip linked list part
     ObfuscatedAdd(triggerEPD, 2 + (2368 // 4), SetMemoryC(0x6509B0, SetTo, 0))
 
