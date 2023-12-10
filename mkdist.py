@@ -21,7 +21,7 @@ if sys.platform.startswith("win"):
     runpy.run_module("setup")
 else:
     os.system("wine python setup.py")
-    shutil.copy("python310.dll", os.path.join(buildDir, "python310.dll"))
+    shutil.copy("python311.dll", os.path.join(buildDir, "python311.dll"))
 
 for outputZipPath in outputZipList:
     print("Packaging to %s" % outputZipPath)

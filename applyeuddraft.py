@@ -165,10 +165,7 @@ def applyEUDDraft(sfname):
 
         sectorSize = 15
         if "sectorSize" in mainSection:
-            try:
-                sectorSize = int(mainSection["sectorSize"])
-            except:
-                sectorSize = None
+            sectorSize = int(mainSection["sectorSize"])
 
         print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
@@ -190,7 +187,7 @@ def applyEUDDraft(sfname):
             # FIXME: Add variable sectorSize support for freeze
             print("Freeze - sectorSize disabled")
             sectorSize = None
-        ep.SaveMap(ofname, payloadMain, sectorSize=sectorSize)
+        ep.SaveMap(ofname, payloadMain, sector_size=sectorSize)
 
         if isFreezeIssued():
             if isPromptIssued():
@@ -209,7 +206,7 @@ def applyEUDDraft(sfname):
         MessageBeep(MB_OK)
         return True
 
-    except Exception as e:
+    except Exception as err:
         print("==========================================")
         MessageBeep(MB_ICONHAND)
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -219,14 +216,13 @@ def applyEUDDraft(sfname):
         for i, exc in enumerate(excs):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
-            ver = ep.eudplibVersion()
-            plibPath = (
-                'File "C:\\P310\\lib\\site-packages\\eudplib-%s-py3.10-win32.egg\\eudplib\\' % ver
-            )
-            exc.replace(plibPath, 'eudplib File"')
+            plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib\\"
+            exc = exc.replace(plibPath, 'eudplib\\"')
+            exc = exc.replace("C:\dev\euddraftPrivate\\", "euddraft\\")
             formatted_excs.append(exc)
 
-        print("[Error] %s" % e, "".join(formatted_excs), file=sys.stderr)
+        print(f"[Error] {err}", "".join(formatted_excs), file=sys.stderr)
+
         if msgbox.isWindows:
             msgbox.SetForegroundWindow(msgbox.GetConsoleWindow())
         return False

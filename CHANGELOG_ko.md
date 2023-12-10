@@ -1,5 +1,71 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.0] - 2023.12.10
+### 기능 변경
+- 파이썬 3.10.10에서 3.11.6 로 업데이트
+- [epScript] `class`와 `subobject` 문법 삭제, `object` (+`extends`) 로 통합
+- `GetMapStringAddr(스트링)`은 이제 상수 함수입니다
+  * `GetMapStringAddr(상수_스트링)`이 리턴하는 스트링 주소는 상수 표현식(ConstExpr)입니다
+- `ExprProxy`에서 inplace 연산자 기본으로 금지하게 변경
+- `_Unique`와 상수 타입(`TrgPlayer`, `TrgUnit` 등) 통합
+- `StringBuffer`를 `EUDStruct` 타입으로 변경
+
+### 버그 수정
+- [freeze] 비압축-암호화 OGG 파일이 첨부된 맵에서 버그 수정 (트리거왕님 기여)
+- [epScript] Python 3.11에서 컴파일 오류 발생 시 StopIteration 오류 수정
+- Sprite, Image, Iscript 등 오타 수정 (디펜더님 제보)
+- 상속한 epScript object/EUDStruct의 멤버 개수가 objFieldN보다 넘치는 버그 수정 (Astro님 제보)
+  * 객체 멤버 유효성을 인스턴스가 아니라 클래스 정의할 때 체크하도록 수정
+- `UnitGroup.cploop`가 끝나고 CurrentPlayer를 복구하도록 수정
+- `EUDLoopNewCUnit`이 끝나고 CurrentPlayer를 복구하도록 수정
+- `CUnit.reset_buildq()` 컴파일 오류 수정
+- Condition과 Action을 copy.copy(x)하면 순환 루프하는 버그 수정
+- `Disabled(조건 또는 액션)`이 None이 아니라 입력한 조건/액션을 리턴하도록 수정
+
+### 기능 추가
+- [dataDumper]에 stat_txt.tbl 인코딩 자동 인식 추가
+  * `f_settbl` 등 TBL 관련 함수가 인식한 인코딩을 사용합니다
+- `CUnit.are_buildq_empty()` 조건 추가
+- `CUnit.check_buildq(unit)` 조건 추가
+- `CUnit` 멤버에 컴파일 시간 범위 체크 추가
+- [epScript] 이제 문자열 리터럴을 비교문과 대입문에서 쓸 수 있습니다
+- `LocalLocale` 추가
+  * 유저가 사용하는 스타크래프트 언어 설정을 게임 시작 때 인식합니다
+
+    ```py
+    "enUS",  # [1] English
+    "frFR",  # [2] Français
+    "itIT",  # [3] Italiano
+    "deDE",  # [4] Deutsch
+    "esES",  # [5] Español - España
+    "esMX",  # [6] Español - Latino
+    "ptBR",  # [7] Português
+    "zhCN",  # [8] 简体中文
+    "zhTW",  # [9] 繁體中文
+    "jaJP",  # [10] 日本語
+    "koUS",  # [11] 한국어 (음역)
+    "koKR",  # [12] 한국어 (완역)
+    "plPL",  # [13] Polski
+    "ruRU",  # [14] Русский
+    ```
+  * 0 = (알 수 없음), 1~14 = 로케일 값
+  * 사용법
+    - LocalLocale == "koUS" : 한국어 음역 사용자인지 비교하는 조건
+    - LocalLocale != "enUS" : 영어 사용자가 아닌지 비교하는 조건
+    - LocalLocale << "zhCN" : 인식 언어를 저장하는 변수의 값을 중국어 간체자로 변경합니다 (사용자의 스타크래프트 언어 설정을 EUD로 변경하는 게 아닙니다)
+  * 스타크래프트 리마스터 비구매자의 언어 설정은 인식할 수 없습니다
+  * 제한점: 한국어 음역(koUS)과 완역(koKR) 구별이 아직 불가능합니다. 현재는 둘 다 음역(koUS)으로 인식됩니다
+- `QueueGameCommand_AddSelect(유닛수, ptr배열)` 함수 추가
+- `QueueGameCommand_RemoveSelect(유닛수, ptr배열)` 함수 추가
+
+### 기능 개선
+- freeze 취약점 개선 (트리거왕님 제보)
+- `CUnit.cgive(플레이어)`, `CUnit.set_color(플레이어)` 성능 개선
+- EUD 함수 리턴 성능 개선: 중간 변수 안 거치고 대입 트리거 사용
+- `f_getcurpl()` 변수 트리거 안 거치게 성능 개선
+- `StringBuffer` 초기화 트리거 삭제 (`GetMapStringAddr` 업데이트로 필요 없어짐)
+- `QueueGameCommand_Select(유닛수, ptr배열)` 성능 개선 : 중간 버퍼 삭제
+
 ## [0.9.9.9] - 2023.06.13
 ### 기능 변경
 - `atan2_256(y, x)`와 `lengthdir_256(길이, 256각도)`가 스타크래프트에서 사용하는 좌표계를 따르도록 변경
@@ -29,7 +95,7 @@
 - 3개의 부호 있는 나눗셈 함수 추가
   * 인자가 상수면 상수를 리턴합니다
   * `const 몫, 나머지 = div_towards_zero(a, b);`
-    
+
     (a ÷ b)의 몫과 나머지를 계산합니다. 몫을 0에 가까워지게 양수에서 버림/음수에서 올림합니다.
 
     부호 없는 나눗셈 함수 `div(a, b)` 와 다르게 제수와 피제수의 부호를 고려합니다.
@@ -136,7 +202,7 @@
 ## [0.9.9.2] - 2023.01.12
 ### 기능 변경
 - Cython, numpy, matplotlib, pywin32, cffi, idna 의존성 삭제
-  * 아직 Cython의 typing 지원이 부족하여 각종 오류를 일으켜서 삭제했습니다. 컴파일이 느려진 건 mypyc를 도입해서 해결할 예정입니다. 
+  * 아직 Cython의 typing 지원이 부족하여 각종 오류를 일으켜서 삭제했습니다. 컴파일이 느려진 건 mypyc를 도입해서 해결할 예정입니다.
   * Cython을 삭제하면서 Cython과 밀접하게 연계되는 numpy도 삭제했습니다.
   * Ren'Py 같은 파이썬 기반 게임 엔진과 달리, euddraft는 eps/py로 작성한 플러그인으로 EUD맵을 만드는 컴파일러이고, 스타크래프트가 게임 엔진 역할을 합니다. 스타크래프트가 실행하는 건 오로지 트리거이고, numpy와 matplotlib는 트리거를 만드는 데 도움을 줄 수는 있어도 스타크래프트에서 직접 사용할 수는 없습니다만 이러한 사실을 잘 모르는 초심자한테 혼란을 주기도 합니다. 추후 cx_freeze가 업데이트되어 파이썬 3.11을 도입하면 numpy의 컴파일 시간 단축 이득도 적어질거라 예상됩니다. 또한 numpy와 matplotlib을 이용한 트리거 생성은 EUD Editor처럼 eps/py 코드 생성으로 해결할 수 있으므로 삭제했습니다.
   * pywin32, cffi, idna는 euddraft에서 오랫동안 사용하지 않아서 삭제했습니다.
@@ -419,28 +485,28 @@
     // dq3은 크기가 3인 데크
     const dq3 = EUDDeque(3)();
     const ret = EUDCreateVariables(6);
-  
+
     // 빈 데크를 순회하면 아무 일도 안 일어납니다
     foreach(v : dq3) { ret[0] += v; }
-  
+
     // 1과 2를 오른쪽에 추가
     dq3.append(1);  // dq3 : (1)
     dq3.append(2);  // dq3 : (1, 2)
     foreach(v : dq3) { ret[1] += v; }  // 3 = 1 + 2
-  
+
     // 3와 4을 오른쪽에 추가
     dq3.append(3);  // dq3 : (1, 2, 3)
     dq3.append(4);  // dq3 : (2, 3, 4)
     foreach(v : dq3) { ret[2] += v; }  // 9 = 2 + 3 + 4
-    
+
     // 5를 오른쪽에 추가
     dq3.append(5);  // dq3 : (3, 4, 5)
     foreach(v : dq3) { ret[3] += v; }  // 12 = 3 + 4 + 5
-  
+
     // 왼쪽에서 3을 꺼냄 (제거하고 리턴)
     const three = dq3.popleft();  // dq3 : (4, 5)
     foreach(v : dq3) { ret[4] += v; }  // 9 = 4 + 5
-  
+
     // 6과 7을 오른쪽에 추가
     dq3.append(6);  // dq3 : (4, 5, 6)
     dq3.append(7);  // dq3 : (5, 6, 7)
@@ -725,7 +791,7 @@
 - (armoha/eudplib#5) 컴파일 속도 개선: EUD 변수 트리거 생성 개선
 - 키워드 인자 `nextptr` 추가: `EUDVariable`, `EUDXVariable`
 - (armoha/euddraft#37) `[main] objFieldN : x` 버그 수정
-- `RawTrigger`에 키워드 인자 `currentAction` 추가 
+- `RawTrigger`에 키워드 인자 `currentAction` 추가
 - eudplib 0.67.3 업데이트
 
 ## [0.9.5.1] - 2022.03.29

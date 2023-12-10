@@ -650,9 +650,7 @@ def Respawn():
             GiveUnits(1, QCUnit, max(humans), QCLoc + 1, QCPlayer),
             SetMemoryEPD(epd + 0x10 // 4, SetTo, 64 * 65537),  # reset waypoint
             SetMemoryEPD(epd + 0x34 // 4, SetTo, 0),  # immobilize
-            SetMemoryEPD(
-                epd + 0x4C // 4, Add, cp - QCPlayer
-            ),  # modify unit's player
+            SetMemoryEPD(epd + 0x4C // 4, Add, cp - QCPlayer),  # modify unit's player
             SetMemoryEPD(epd + 0xDC // 4, Add, 0xA00000),  # stackable
             SetMemoryXEPD(epd + 0xA5 // 4, SetTo, 0, 0xFF00),  # uniqueIdentifier
         )
@@ -971,7 +969,7 @@ def SendQC():
             )
             RawTrigger(
                 conditions=Memory(RC + 4, Exactly, 64 * 65537),
-                actions=SetMemory(RC + 4, SetTo, 65 * 65537)
+                actions=SetMemory(RC + 4, SetTo, 65 * 65537),
             )
         elif ret[0] == "val":
             DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
@@ -1110,7 +1108,7 @@ def ReceiveQC():
             if type(ret) == str:
                 try:
                     array = eval(parseArray(ret))
-                except (NameError):
+                except NameError:
                     continue
                 if isUnproxyInstance(array, EUDArray):
                     vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, -1))

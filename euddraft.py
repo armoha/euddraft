@@ -36,7 +36,7 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
-version = "0.9.9.9"
+version = "0.9.10.0"
 
 
 def applylib():
@@ -67,6 +67,15 @@ def applyEUDDraft(fname, queue=None):
             queue.put(True)
         return ret
     except ImportError as e:
+        if queue:
+            if str(e).startswith("DLL load failed:"):
+                queue.put(False)
+            else:
+                queue.put(True)
+                raise
+        else:
+            raise
+    except Exception as e:
         if queue:
             if str(e).startswith("DLL load failed:"):
                 queue.put(False)
@@ -157,7 +166,9 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
                 # Wait for changes
                 while lasttime and not isModifiedFiles():
                     if msgbox.isWindows:
-                        if msgbox.IsThisForeground() and msgbox.GetAsyncKeyState(ord("R")):
+                        if msgbox.IsThisForeground() and msgbox.GetAsyncKeyState(
+                            ord("R")
+                        ):
                             print("[Forced recompile issued]")
                             break
                     time.sleep(1)
@@ -198,8 +209,6 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
     # Freeze protection
     elif sfname[-4:].lower() == ".scx":
         print(" - Freeze protector mode.")
-        import subprocess
-
         import applyeuddraft
         import freezeMpq
         import pluginLoader

@@ -1,5 +1,72 @@
 # Changelog
 
+## [0.9.10.0] - 2023.12.10
+### Changed
+- Updated Python from 3.10.10 to 3.11.6
+- [epScript] Removed `class` and `subobject` syntax. Merge them into `object` (+`extends`)
+- `GetMapStringAddr(string)` is now constant function
+  * `GetMapStringAddr(string_constant)` returns string address as constant expression (ConstExpr)
+- `ExprProxy` forbids inplace operators by default
+- Integrate `_Unique` with const types (`TrgPlayer`, `TrgUnit` etc.)
+- Change `StringBuffer` to `EUDStruct`
+
+### Bugfix
+- [freeze] Fixed bug with non-compressed encrypted OGG file (Contributed by Trgk)
+- [epScript] Fixed StopIteration error following any compile error in Python 3.11
+- Fixed typos in Sprite, Image, Iscript etc. (Reported by @Dr-zzt)
+- Fixed the number of members of inherited epScript object/EUDStruct could exceed objFieldN (Reported by Astro)
+  * Fixed to check object member validity when defining class (was checked on instantiation)
+- Fixed `UnitGroup.cploop` to restore CurrentPlayer at the end
+- Fixed `EUDLoopNewCUnit` to restore CurrentPlayer at the end
+- Fixed compile error in `CUnit.reset_buildq()`
+- Fixed cycle loop when copy.copy(x) on Condition and Action
+- Fixed `Disabled(Condition or Action)` to return input Condition/Action instead of None
+
+### Added
+- [dataDumper] Autodetect stat_txt.tbl encoding
+  * TBL functions like `f_settbl` will use detected encoding by default
+- Added condition `CUnit.are_buildq_empty()`
+- Added condition `CUnit.check_buildq(unit)`
+- Added compile-time value range check for `CUnit` members
+- [epScript] string literal is allowed in comparison expression and assignment statement
+- Added `LocalLocale`
+  * Detect user's StarCraft language settings on game start
+
+    ```py
+    "enUS",  # [1] English
+    "frFR",  # [2] Français
+    "itIT",  # [3] Italiano
+    "deDE",  # [4] Deutsch
+    "esES",  # [5] Español - España
+    "esMX",  # [6] Español - Latino
+    "ptBR",  # [7] Português
+    "zhCN",  # [8] 简体中文
+    "zhTW",  # [9] 繁體中文
+    "jaJP",  # [10] 日本語
+    "koUS",  # [11] 한국어 (음역)
+    "koKR",  # [12] 한국어 (완역)
+    "plPL",  # [13] Polski
+    "ruRU",  # [14] Русский
+    ```
+  * 0 = (unknown), 1~14 = locale values
+  * How to use
+    - LocalLocale == "koUS" : Compare if local user uses 한국어 (음역)
+    - LocalLocale != "enUS" : Compare if local user does not use English
+    - LocalLocale << "zhCN" : Assign 简体中文 value (8) to the variable which stores language value (Does not modify user's language setting with EUD)
+  * Limitations
+    - Can't detect language setting for free-to-play users
+    - Can't disambiguage 한국어 음역(koUS) and 완역(koKR). Currently both are detected as 음역(koUS).
+- Added `QueueGameCommand_AddSelect(unitCount, ptrArray)` function
+- Added `QueueGameCommand_RemoveSelect(unitCount, ptrArray)` function
+
+### Improved
+- Fixed freeze vulnerability (Reported by Trgk)
+- Optimize `CUnit.cgive(player)` and `CUnit.set_color(player)`
+- Optimize EUD function return : remove intermediate variable and use return assign trigger
+- Optimize `f_getcurpl()` to not pass through variable trigger
+- Removed `StringBuffer` initialization trigger, which no longer needed due to `GetMapStringAddr` update
+- Optimize `QueueGameCommand_Select(unitCount, ptrArray)` by removing intermediate buffer
+
 ## [0.9.9.9] - 2023.06.13
 ### Changed
 - Changed `atan2_256(y, x)` and `lengthdir_256(length, angle256)` to obey coordinate system that StarCraft uses
@@ -29,7 +96,7 @@
 - Added 3 signed division functions
   * return constants for constant arguments
   * `const quotient, remainder = div_towards_zero(a, b);`
-    
+
     Calculates the quotient and remainder of (a ÷ b), rounding the quotient towards zero.
 
     Calculate signed division, unlike unsigned division `div(a, b)`.
@@ -411,33 +478,33 @@
   * `.appendleft(x)` : Add x to the left side of the deque.
   * `.popleft()` : Remove and return an element from the left side of the deque
   * `.empty()` : Condition evaluated to True when deque is empty
-  * Also supports `foreach` iteration. Iterating over `EUDDeque` goes left to right. 
+  * Also supports `foreach` iteration. Iterating over `EUDDeque` goes left to right.
     ```js
     // dq3 is deque with length 3
     const dq3 = EUDDeque(3)();
     const ret = EUDCreateVariables(6);
-  
+
     // Nothing happen if you loop empty deque
     foreach(v : dq3) { ret[0] += v; }
-  
+
     // Add 1 and 2 to the right
     dq3.append(1);  // dq3 : (1)
     dq3.append(2);  // dq3 : (1, 2)
     foreach(v : dq3) { ret[1] += v; }  // 3 = 1 + 2
-  
+
     // Add 3 and 4 to the right
     dq3.append(3);  // dq3 : (1, 2, 3)
     dq3.append(4);  // dq3 : (2, 3, 4)
     foreach(v : dq3) { ret[2] += v; }  // 9 = 2 + 3 + 4
-    
+
     // Add 5 to the right
     dq3.append(5);  // dq3 : (3, 4, 5)
     foreach(v : dq3) { ret[3] += v; }  // 12 = 3 + 4 + 5
-  
+
     // Remove and return 3 from the left
     const three = dq3.popleft();  // dq3 : (4, 5)
     foreach(v : dq3) { ret[4] += v; }  // 9 = 4 + 5
-  
+
     // Add 6 and 7 to the right
     dq3.append(6);  // dq3 : (4, 5, 6)
     dq3.append(7);  // dq3 : (5, 6, 7)
@@ -507,7 +574,7 @@
   Runs 5 triggers -> 3 triggers per each alive unit
   (was equal to `UnitGroup` iteration but now faster)
 - `switch` statement binary search performance optimization
-- fixed bug on `EPDCUnitMap`: `unit.is_dying` 
+- fixed bug on `EPDCUnitMap`: `unit.is_dying`
 - Encode functions like `EncodeLocation` fixed to try both UTF-8과 CP949
 - eudplib 0.69.9 update
 
@@ -730,7 +797,7 @@
 ![better config error message](https://user-images.githubusercontent.com/36349353/163330102-91b83907-4d6d-4484-a787-22231d1d62ca.png)
 - (armoha/eudplib#5) Speed up compile time: better EUDVariable trigger-generating (about -20% for `test_unittest`)
 - Added keyword argument `nextptr` for `EUDVArray`, `EUDVariable`, `EUDXVariable`
-- (armoha/euddraft#37) Fixed bug in `[main] objFieldN : x` (solved 
+- (armoha/euddraft#37) Fixed bug in `[main] objFieldN : x` (solved
 - Added keyword argument `currentAction` for `RawTrigger`
 - Updated eudplib 0.69.2
 

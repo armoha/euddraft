@@ -255,7 +255,9 @@ def AddLoop(title, goto=1):
         title (str): 사운드 파일 이름.
         goto (int): 마지막까지 재생한 뒤에 돌아갈 사운드 번호 (기본값: 1).
     """
-    ep_assert(SoundLooper._bars is None, f"{title} 삽입 실패, AddLoop를 함수 밖으로 옮기세요.")
+    ep_assert(
+        SoundLooper._bars is None, f"{title} 삽입 실패, AddLoop를 함수 밖으로 옮기세요."
+    )
 
     def get_filepath(x):
         fp = _PATH + "/{0}/{0}".format(title)
@@ -316,7 +318,7 @@ def _u2i4(s):
 def _T2i(title):
     try:
         return _Loop.loop_dict[title].index
-    except (KeyError):
+    except KeyError:
         return title
 
 
