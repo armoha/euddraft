@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.9.10.0] - 2023.12.10
+## [0.9.10.1] - 2023.12.11
 ### Changed
 - Updated Python from 3.10.10 to 3.11.6
 - [epScript] Removed `class` and `subobject` syntax. Merge them into `object` (+`extends`)
@@ -11,8 +11,10 @@
 - Change `StringBuffer` to `EUDStruct`
 
 ### Bugfix
-- [freeze] Fixed bug with non-compressed encrypted OGG file (Contributed by Trgk)
+- [freeze] Fixed bug with non-compressed encrypted OGG file (Contributed by @phu54321)
 - [epScript] Fixed StopIteration error following any compile error in Python 3.11
+- soundlooper.py : Fixed array access out of bound
+- [MSQC] Fixed mouse location to work close to right/lower border (Reported by Staminize)
 - Fixed typos in Sprite, Image, Iscript etc. (Reported by @Dr-zzt)
 - Fixed the number of members of inherited epScript object/EUDStruct could exceed objFieldN (Reported by Astro)
   * Fixed to check object member validity when defining class (was checked on instantiation)
@@ -60,7 +62,7 @@
 - Added `QueueGameCommand_RemoveSelect(unitCount, ptrArray)` function
 
 ### Improved
-- Fixed freeze vulnerability (Reported by Trgk)
+- Fixed freeze vulnerability (Reported by @phu54321)
 - Optimize `CUnit.cgive(player)` and `CUnit.set_color(player)`
 - Optimize EUD function return : remove intermediate variable and use return assign trigger
 - Optimize `f_getcurpl()` to not pass through variable trigger

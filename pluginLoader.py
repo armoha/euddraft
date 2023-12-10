@@ -120,6 +120,7 @@ def loadPluginsFromConfig(ep, config):
                     _AddStatText(open(dataPath, "rb").read())
                     del dataDumperConfig[dataPath]
                     continue
+                outOffsets = map(str, outOffsets)
                 dataDumperConfig[dataPath] = ", ".join(
                     itertools.chain(flags, outOffsets, unknownArg)
                 )
