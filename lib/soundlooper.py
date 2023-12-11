@@ -426,15 +426,11 @@ class SoundLooper:
     def initialize(self):
         """사운드 플레이어 초기화. onPluginStart에서 1번 실행해주세요."""
         VProc(
-            _sb.epd,
-            [_sb.epd.AddNumber(1), _sb.epd.QueueAssignTo(EPD(self._set_loop[1]) + 4)],
-        )
-        VProc(_sb.epd, _sb.epd.SetDest(EPD(self._set_bar) + 4))
-        VProc(
-            [_sb.epd, localcp],
+            localcp,
             [
-                _sb.epd.AddNumber(-1),
-                _sb.epd.SetDest(EPD(self._set_loop[0]) + 4),
+                SetMemory(self._set_loop[1] + 16, SetTo, _sb.epd + 1),
+                SetMemory(self._set_bar + 16, SetTo, _sb.epd + 1),
+                SetMemory(self._set_loop[0] + 16, SetTo, _sb.epd),
                 localcp.QueueAssignTo(EPD(self._set_localcp) + 5),
             ],
         )
