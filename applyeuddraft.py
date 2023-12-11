@@ -217,7 +217,7 @@ def applyEUDDraft(sfname):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
             plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib\\"
-            exc = exc.replace(plibPath, 'eudplib\\"')
+            exc = exc.replace(plibPath, "eudplib\\")
             exc = exc.replace("C:\dev\euddraftPrivate\\", "euddraft\\")
             formatted_excs.append(exc)
 
