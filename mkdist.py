@@ -4,12 +4,13 @@ import os
 import runpy
 import shutil
 import sys
+from sysconfig import get_platform
 
-from edpkgutil.cleanDir import cleanDirectory
+from edpkgutil.cleanDir import cleanDirectory, cleanOutput
 from edpkgutil.packageZip import packageZip
 from euddraft import version
 
-buildDir = "build/exe.win-amd64-%u.%u" % sys.version_info[0:2]
+buildDir = f"build/exe.{get_platform()}-{sys.version_info[0]}.{sys.version_info[1]}"
 outputZipList = [
     "latest/euddraft%s.zip" % version,
     # 'latest/euddraft_latest.zip'
@@ -23,8 +24,10 @@ else:
     os.system("wine python setup.py")
     shutil.copy("python311.dll", os.path.join(buildDir, "python311.dll"))
 
+cleanOutput(buildDir)
+
 for outputZipPath in outputZipList:
-    print("Packaging to %s" % outputZipPath)
+    print(f"Packaging to {outputZipPath}")
     packageZip(buildDir, outputZipPath, version)
 
 open("latest/VERSION", "w").write(version)
