@@ -26,8 +26,8 @@ THE SOFTWARE.
 import random
 
 from eudplib import *
+from eudplib.core.eudfunc.eudf import _EUDPredefineReturn
 from eudplib.eudlib.s import MoveCP, SetMemoryC, SetMemoryS, srand
-
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
 
 from .pdefault import default_ptex, default_pupx
@@ -266,12 +266,10 @@ def RestorePUPx():
     DoActions(t)
 
 
+@_EUDPredefineReturn(1)
 @EUDFunc
 def fread():
-    fread._frets = [SetDeaths(0, SetTo, 0, 0)]
-    fread._retn = 1
-    ret = EUDLightVariable(_from=fread._frets[0])
-
+    ret = fread._frets[0]
     ret << randonset
     r = list(range(32))
     random.shuffle(r)
