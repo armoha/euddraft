@@ -15,7 +15,7 @@ from urllib.request import urlopen
 import msgbox
 
 VERSION_URL = "https://raw.githubusercontent.com/armoha/euddraft/master/latest/VERSION"
-RELEASE_URL = "https://github.com/armoha/euddraft/releases/download/v%s/euddraft%s.zip"
+RELEASE_URL = "https://github.com/armoha/euddraft/releases/download/v{}/euddraft{}.zip"
 
 
 def download(url):
@@ -54,7 +54,7 @@ def writeVersionCheckpoint(version):
     try:
         dataDir = os.path.dirname(sys.executable)
         with open(os.path.join(dataDir, "vcheckpoint.dat"), "w") as vchp:
-            vchp.write("%s %d" % (version, int(time.time())))
+            vchp.write(f"{version} {int(time.time())}")
     except OSError:
         pass
 
@@ -64,7 +64,7 @@ def getLatestVersion():
     if v is None:
         return "0.0.0.0"
     else:
-        return v.decode("utf-8")
+        return (v.decode("utf-8")).strip()
 
 
 def versionLt(version1, version2):
@@ -75,7 +75,7 @@ def versionLt(version1, version2):
 
 
 def getRelease(version):
-    return download(RELEASE_URL % (version, version))
+    return download(RELEASE_URL.format(version, version))
 
 
 def checkUpdate():
@@ -105,7 +105,7 @@ def checkUpdate():
     if (
         msgbox.MessageBox(
             "New version",
-            "A new version %s is found. Would you like to update?" % latestVersion,
+            f"A new version {latestVersion} is found. Would you like to update?",
             MB_YESNO,
         )
         != IDYES
@@ -115,7 +115,7 @@ def checkUpdate():
         return
 
     # Download the needed data
-    print("Downloading euddraft %s" % latestVersion)
+    print(f"Downloading euddraft {latestVersion}")
     release = getRelease(latestVersion)
     if not release:
         return msgbox.MessageBox("Update failed", "No release", textio=sys.stderr)
