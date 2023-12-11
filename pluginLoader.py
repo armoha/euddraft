@@ -118,7 +118,6 @@ def loadPluginsFromConfig(ep, config):
 
                     print((' - Loading stat_txt.tbl file "{}"...').format(dataPath))
                     _AddStatText(open(dataPath, "rb").read())
-                    del dataDumperConfig[dataPath]
                     continue
                 outOffsets = map(str, outOffsets)
                 dataDumperConfig[dataPath] = ", ".join(
