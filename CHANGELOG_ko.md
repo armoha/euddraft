@@ -1,6 +1,6 @@
 # 변경 사항 (한국어)
 
-## [0.9.10.1] - 2023.12.11
+## [0.9.10.2] - 2023.12.11
 ### 기능 변경
 - 파이썬 3.10.10에서 3.11.6 로 업데이트
 - [epScript] `class`와 `subobject` 문법 삭제, `object` (+`extends`) 로 통합
@@ -13,6 +13,8 @@
 ### 버그 수정
 - [freeze] 비압축-암호화 OGG 파일이 첨부된 맵에서 버그 수정 (@phu54321 님 기여)
 - [epScript] Python 3.11에서 컴파일 오류 발생 시 StopIteration 오류 수정
+- soundlooper.py : 배열 경계를 벗어난 접근 수정
+- [MSQC] 마우스 로케이션이 우측 또는 하단 맵 가장자리에 가까워도 작동하도록 수정 (Staminize님 제보)
 - Sprite, Image, Iscript 등 오타 수정 (디펜더님 제보)
 - 상속한 epScript object/EUDStruct의 멤버 개수가 objFieldN보다 넘치는 버그 수정 (Astro님 제보)
   * 객체 멤버 유효성을 인스턴스가 아니라 클래스 정의할 때 체크하도록 수정
@@ -61,8 +63,6 @@
 
 ### 기능 개선
 - freeze 취약점 개선 (@phu54321 님 제보)
-- soundlooper.py : 배열 경계를 벗어난 접근 수정
-- [MSQC] 마우스 로케이션이 우측 또는 하단 맵 가장자리에 가까워도 작동하도록 수정 (Staminize님 제보)
 - `CUnit.cgive(플레이어)`, `CUnit.set_color(플레이어)` 성능 개선
 - EUD 함수 리턴 성능 개선: 중간 변수 안 거치고 대입 트리거 사용
 - `f_getcurpl()` 변수 트리거 안 거치게 성능 개선

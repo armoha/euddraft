@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.9.10.1] - 2023.12.11
+## [0.9.10.2] - 2023.12.11
 ### Changed
 - Updated Python from 3.10.10 to 3.11.6
 - [epScript] Removed `class` and `subobject` syntax. Merge them into `object` (+`extends`)
