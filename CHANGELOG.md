@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.9.10.4] - 2023.12.13
+### Added
+- [epScript] py_module won't prepend f_ on function name
+
+```js
+// epScript drawing circle example
+import py_math;
+
+function circle() {
+    foreach (k : py_range(10)) {
+        MoveLocation("effect", "Terran Ghost", P1, "Anywhere");
+        // no need to use py_eval anymore!
+        const x = py_int(math.cos(k * math.pi / 5) * 30);
+        const y = py_int(math.sin(k * math.pi / 5) * 30);
+        addloc("effect", x, y);
+        CreateUnit(1, "Scanner Sweep", "effect", P1);
+    }
+    RemoveUnit("Scanner Sweep", P1);
+}
+```
+
 ## [0.9.10.3] - 2023.12.13
 ### Bugfix
 - SoundLooper.py : Fixed build error in `SoundLooper.initialize()`
