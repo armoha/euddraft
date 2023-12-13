@@ -1,5 +1,21 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.3] - 2023.12.13
+### 버그 수정
+- SoundLooper.py : `SoundLooper.initialize()` 컴파일 오류 수정
+- [dataDumper] : 커스텀 TBL 사용맵에서 RuntimeError 수정
+- `copy.copy(조건 또는 액션)` 컴파일 오류 수정
+- `CUnit.setloc(로케이션)` 컴파일 오류 수정
+- `ExprProxy.getValue()` 이름 변경 롤백
+- `_AddStatText(bytes)`, `_addedFiles` 이름 변경 롤백
+- 0.9.10.2의 EUD 함수 관련 변경점 롤백
+  * `f_getcurpl()` 변수 트리거 안 거치게 성능 개선
+  * `StringBuffer` 초기화 트리거 삭제 (`GetMapStringAddr` 업데이트로 필요 없어짐)
+
+### 기능 개선
+- EUDArray의 초기값으로 지원되지 않는 타입이 입력됐을 때 오류 메시지 개선
+- `unProxy(object)`가 순환 참조를 감지하여 순환 루프 대신에 오류나게 수정
+
 ## [0.9.10.2] - 2023.12.11
 ### 기능 변경
 - 파이썬 3.10.10에서 3.11.6 로 업데이트

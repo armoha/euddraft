@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.10.3] - 2023.12.13
+### Bugfix
+- SoundLooper.py : Fixed build error in `SoundLooper.initialize()`
+- [dataDumper] : Fixed build error in custom stat_txt.tbl map
+- Fixed build error in `copy.copy(Condition or Action)`
+- Fixed build error in `CUnit.setloc(location)`
+- Revert name change of `ExprProxy.getValue()`
+- Revert name change of `_AddStatText(bytes)`, `_addedFiles`
+- Revert EUDFunc and EUDFuncPtr related changes of 0.9.10.2
+  * Optimize EUD function return : remove intermediate variable and use return assign trigger
+  * Optimize `f_getcurpl()` to not pass through variable trigger
+
+### Improved
+- Better error message for invalid type of EUDArray initial values
+- Fixed `unProxy(object)` to raise error for cycle reference to prevent cycle loop
+
 ## [0.9.10.2] - 2023.12.11
 ### Changed
 - Updated Python from 3.10.10 to 3.11.6
