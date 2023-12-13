@@ -1,5 +1,27 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.4] - 2023.12.13
+### 기능 추가
+- [epScript] `py_모듈`이 함수 이름 앞에 f_ 를 안 붙이게 수정
+
+```js
+// epScript 원 그리기 예제
+import py_math;
+
+function circle() {
+    foreach (k : py_range(10)) {
+        MoveLocation("effect", "Terran Ghost", P1, "Anywhere");
+        CreateUnit(1, "Scanner Sweep", "effect", P1);
+        // 이제 py_eval 안 써도 됩니다!
+        const x = py_int(math.cos(k * math.pi / 5) * 30);
+        const y = py_int(math.sin(k * math.pi / 5) * 30);
+        addloc("effect", x, y);
+        CreateUnit(1, "Scanner Sweep", "effect", P1);
+    }
+    RemoveUnit("Scanner Sweep", P1);
+}
+```
+
 ## [0.9.10.3] - 2023.12.13
 ### 버그 수정
 - SoundLooper.py : `SoundLooper.initialize()` 컴파일 오류 수정
@@ -9,8 +31,8 @@
 - `ExprProxy.getValue()` 이름 변경 롤백
 - `_AddStatText(bytes)`, `_addedFiles` 이름 변경 롤백
 - 0.9.10.2의 EUD 함수 관련 변경점 롤백
-  * EUD 함수 리턴 성능 개선: 중간 변수 안 거치고 대입 트리거 사용
   * `f_getcurpl()` 변수 트리거 안 거치게 성능 개선
+  * `StringBuffer` 초기화 트리거 삭제 (`GetMapStringAddr` 업데이트로 필요 없어짐)
 
 ### 기능 개선
 - EUDArray의 초기값으로 지원되지 않는 타입이 입력됐을 때 오류 메시지 개선
