@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.10.5] - 2023.12.15
+### Bugfix
+- Fix bugs in bitwise left/right shift operations (<<, >>) when right-handed-side value >= 32
+  * Fix freeze on game start in maps using EUD Editor 2 TriggerEditor (reported by @iDoodler-DS)
+  * Fix bug in `f_bitlshift(a, b)` executing too many triggers when rhs is var >= 32
+  * Fix bug in `f_bitrshift(a, b)` returning incorrect value when rhs is var >= 32
+
 ## [0.9.10.4] - 2023.12.13
 ### Added
 - [epScript] py_module won't prepend f_ on function name
