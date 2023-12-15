@@ -1,5 +1,12 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.6] - 2023.12.15
+### 기능 추가
+- [epScript] 인덱싱 문법에 "문자열 리터럴" 허용
+
+### 버그 수정
+- f_setcurpl2cpcache에서 TypeError: Value after * must be an iterable, not EUDVariable 오류 수정 (WestICE님 제보)
+
 ## [0.9.10.5] - 2023.12.15
 ### 버그 수정
 - 비트 시프트 연산(<<, >>)의 우항이 32 이상일 때 생기는 버그 수정

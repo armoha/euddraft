@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.10.6] - 2023.12.15
+### Added
+- [epScript] Allow "string literal" in index/subscript syntax
+
+### Bugfix
+- Fixed 'TypeError: Value after * must be an iterable, not EUDVariable' in f_setcurpl2cpcache (reported by WestICE)
+
 ## [0.9.10.5] - 2023.12.15
 ### Bugfix
 - Fix bugs in bitwise left/right shift operations (<<, >>) when right-handed-side value >= 32
