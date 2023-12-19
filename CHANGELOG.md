@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.10.7] - 2023.12.19
+### Changed
+- The offset and rlocmode of ConstExpr and RlocInt_C are changed from unsigned to signed
+- ConstExpr operations are changed to only return ConstExpr (not int)
+  * Try write `int(ConstExpr)` for type conversion
+
+### Added
+- Add `CUnit.remove()` (Thanks to DarkenedFantasies)
+
+  Remove unit without death effect.
+
+### Improved
+- Improved build time by about 40% (armoha/eudplib#21)
+  * Massively improved Allocating Phase: Rewrote StackObjects and AllocObject in Rust
+  * Improved Writing Phase: Rewrote ConstructPayload in Rust
+  * Exclude slow Condition/Action parameter validity checks
+- Update Korean localization
+
 ## [0.9.10.6] - 2023.12.15
 ### Added
 - [epScript] Allow "string literal" in index/subscript syntax
