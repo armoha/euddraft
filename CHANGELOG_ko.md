@@ -1,5 +1,23 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.7] - 2023.12.18
+### 기능 변경
+- ConstExpr와 RlocInt_C의 offset과 rlocmode를 부호 없는 정수에서 부호 있는 정수로 변경
+- ConstExpr의 연산 결과가 항상 ConstExpr를 리턴하도록 변경 (더 이상 int를 리턴하지 않습니다)
+  * 타입 변환이 필요하면 int(ConstExpr) 를 사용하세요
+
+### 기능 추가
+- `CUnit.remove()` 추가 (DarkenedFantasies님 기여)
+
+  구조오프셋에 해당되는 유닛을 삭제합니다. RemoveUnit처럼 사망 이펙트가 발생하지 않습니다.
+
+### 기능 개선
+- 컴파일 시간 약 40% 개선
+  * Allocating Phase 속도 대폭 개선: Rust로 StackObject와 AllocObject 재작성
+  * Writing Phase 속도 개선: Rust로 ConstructPayload 재작성
+  * 시간 오래 걸리는 Action/Condition 인자 체크 부분 삭제
+- 한국어 번역 파일 갱신
+
 ## [0.9.10.6] - 2023.12.15
 ### 기능 추가
 - [epScript] 인덱싱 문법에 "문자열 리터럴" 허용
