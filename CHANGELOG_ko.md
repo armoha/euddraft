@@ -1,5 +1,9 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.8] - 2023.12.23
+### 버그 수정
+- EUD Editor 3에서 ChangeStarText가 제대로 작동하지 않는 버그 수정 (neonoew님 제보)
+
 ## [0.9.10.7] - 2023.12.19
 ### 기능 변경
 - ConstExpr와 RlocInt_C의 offset과 rlocmode를 부호 없는 정수에서 부호 있는 정수로 변경

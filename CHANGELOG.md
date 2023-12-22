@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.10.8] - 2023.12.23
+### Bugfix
+- Fixed ChangeStarText not working in EE3 (reported by neonoew)
+
 ## [0.9.10.7] - 2023.12.19
 ### Changed
 - The offset and rlocmode of ConstExpr and RlocInt_C are changed from unsigned to signed
