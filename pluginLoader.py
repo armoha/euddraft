@@ -109,15 +109,16 @@ def loadPluginsFromConfig(ep, config):
                     else:
                         outOffsets.append(outOffset)
 
+                # ..\temp\custom_txt.tbl : 0x6D5A30, copy
                 tblOffset = 0x6D5A30
                 if tblOffset in outOffsets:
-                    outOffsets = list(filter(lambda x: x != tblOffset, outOffsets))
-
-                if not outOffsets and not unknownArg:
                     from eudplib.eudlib.stringf.tblprint import _AddStatText
 
+                    outOffsets = list(filter(lambda x: x != tblOffset, outOffsets))
                     print((' - Loading stat_txt.tbl file "{}"...').format(dataPath))
                     _AddStatText(open(dataPath, "rb").read())
+                if not outOffsets and not unknownArg:
+                    dataDumperConfig[dataPath] = None
                     continue
                 outOffsets = map(str, outOffsets)
                 dataDumperConfig[dataPath] = ", ".join(

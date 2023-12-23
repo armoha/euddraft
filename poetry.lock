@@ -115,12 +115,12 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.76.13a9"
+version = "0.76.13a10"
 description = "EUD Trigger generator"
 optional = false
 python-versions = ">=3.10, <3.12"
 files = [
-    {file = "eudplib-0.76.13a9-py3-cp311-win_amd64.whl", hash = "sha256:dcb3611171c490edaad3c170122f52b40d439f6da42867b9cd76c353d7d8d99d"},
+    {file = "eudplib-0.76.13a10-cp311-abi3-win_amd64.whl", hash = "sha256:4acd1e660815e95f63a8a02c26a8b7da22f781448fe64e3d121c80532f7c06bc"},
 ]
 
 [[package]]
@@ -221,4 +221,4 @@ test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.10, < 3.12"
-content-hash = "ca05062827242366e7c49e7674e86124ff512fe8a873af00f172789a690f3cb9"
+content-hash = "4b3b045cc5f3499ec2d7484fd60df86cebd3c5d14414dd73b7ad24b9185bde20"

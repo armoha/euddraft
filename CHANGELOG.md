@@ -1,8 +1,8 @@
 # Changelog
 
-## [0.9.10.8] - 2023.12.23
+## [0.9.10.9] - 2023.12.23
 ### Bugfix
-- Fixed ChangeStarText not working in EE3 (reported by neonoew)
+- Fixed settbl2 didn't work with custom stat_txt.tbl (reported by neonoew)
 
 ## [0.9.10.7] - 2023.12.19
 ### Changed

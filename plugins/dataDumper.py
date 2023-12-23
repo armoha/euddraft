@@ -31,11 +31,15 @@ def onPluginStart():
                 f_repmovsd_epd(addrEPD, EPD(inputData_db), inputDwordN)
 
         else:
-            DoActions([SetMemory(outOffset, SetTo, Db(inputData)) for outOffset in outOffsets])
+            DoActions(
+                [SetMemory(outOffset, SetTo, Db(inputData)) for outOffset in outOffsets]
+            )
 
 
 def onInit():
     for dataPath, outOffsetStr in settings.items():
+        if outOffsetStr is None:
+            continue
         print(' - Loading file "%s"...' % dataPath)
         inputData = open(dataPath, "rb").read()
         flags = set()
