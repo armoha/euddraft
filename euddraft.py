@@ -36,7 +36,7 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
-version = "0.9.10.9"
+version = "0.9.10.10"
 
 
 def applylib():
@@ -199,7 +199,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
                 if count == 5:
                     print("Unexpected error!\n\n", file=sys.stderr)
                 else:
-                    print("Done!\n\n")
+                    print(f"Finished in {time.time() - lasttime:.2f}s\n\n")
                 lasttime = time.time()
                 time.sleep(1)
 

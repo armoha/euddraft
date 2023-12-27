@@ -1,5 +1,23 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.10] - 2023.12.27
+### 기능 변경
+- `ConstExpr`과 `EUDObject`이 `__init__` 대신에 `__new__`를 사용합니다
+  * `ConstExpr`과 `EUDObject`의 서브클래싱하는 코드는 `__new__`를 추가로 오버라이드해야 합니다
+  * 참고: https://stackoverflow.com/questions/28236516/python-subclassing-a-class-with-custom-new
+- `RawTrigger`의 `currentAction` 키워드 인자 삭제
+
+### 기능 추가
+- `CUnit.set_collision()` 추가
+
+  상태플래그에서 `NoCollide`와 `IsGathering`을 지웁니다. 유닛 충돌을 없애는 `CUnit.remove_collision()`과 반대로 유닛 충돌을 다시 적용합니다
+- `.edd`로 빌드할 때 빌드 소요 시간을 출력합니다
+
+### 기능 개선
+- eudplib to 0.76.13 업데이트
+- Rust로 재작성: `RlocInt`, `ConstExpr`, `EUDObject`, `RawTrigger.WritePayload` (https://github.com/armoha/eudplib/pull/22)
+- 빌드 시간 30% 감소 (euddraft 0.9.10.6나 이전 버전과 비교하면 총 60% 감소)
+
 ## [0.9.10.9] - 2023.12.23
 ### 버그 수정
 - 커스텀 TBL 사용맵에서 settbl2가 작동하지 않는 버그 수정 (neonoew님 제보)

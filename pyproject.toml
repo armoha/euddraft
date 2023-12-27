@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "euddraft"
-version = "0.9.10.9"
+version = "0.9.10.10"
 description = "Framework for creating & applying various plugins to StarCraft map."
 authors = ["armoha <kein0011@naver.com>", "Park Hyun Woo <phu54321@naver.com>"]
 license = "MIT"

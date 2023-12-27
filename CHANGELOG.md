@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.10.10] - 2023.12.27
+### Changed
+- `ConstExpr` and `EUDObject` use `__new__` instead of `__init__`
+  * For migration of subclasses, see https://stackoverflow.com/questions/28236516/python-subclassing-a-class-with-custom-new
+- Removed `currentAction` keyword argument for `RawTrigger`
+
+### Added
+- Add `CUnit.set_collision()`
+
+  Clear `NoCollide` and `IsGathering` status flags. Reverse of `CUnit.remove_collision()`.
+- Prints elapsed build time for `.edd`
+
+### Improved
+- Update eudplib to 0.76.13
+- Rewrote `RlocInt`, `ConstExpr`, `EUDObject` and `RawTrigger.WritePayload` in Rust (https://github.com/armoha/eudplib/pull/22)
+- Reduced build time by 30% (Total 60% compared to euddraft 0.9.10.6 or older)
+
 ## [0.9.10.9] - 2023.12.23
 ### Bugfix
 - Fixed settbl2 didn't work with custom stat_txt.tbl (reported by neonoew)
