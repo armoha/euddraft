@@ -60,8 +60,11 @@ class OJumperBuffer(EUDObject):
 
 
 class CallerProxy(ConstExpr):
+    def __new__(cls, *args, **kwargs) -> "CallerProxy":
+        return super().__new__(cls, None)
+
     def __init__(self, ptr, jumper):
-        super().__init__(self)
+        super().__init__()
         self.ptr = ptr
         self.jumper = jumper
 
@@ -79,7 +82,7 @@ class CallerProxy(ConstExpr):
             self.modv = tKeys[keyIndex]
 
         ptrV = Evaluate(self.ptr)
-        ep_assert(ptrV.rlocmode == 4, "Invalid ptrV.rlocmode")
+        ep_assert(ptrV._is_ptr(), "Invalid ptrV.rlocmode")
         return RlocInt(ptrV.offset - self.modv, 0)
 
 
