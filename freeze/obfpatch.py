@@ -1,4 +1,4 @@
-from eudplib import EUDFuncN
+from eudplib.core.eudfunc import EUDFuncN
 from eudplib import trigger
 from eudplib import ctrlstru
 from .obfjump import ObfuscatedJump
@@ -14,6 +14,7 @@ def issuePatcher(parent, attrname, ratio):
         if random.random() < ratio:
             ObfuscatedJump()
         return oldcall(*args, **kwargs)
+
     patchList.append((parent, attrname, oldcall, newcall))
 
 
