@@ -1,5 +1,15 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.11] - 2023.12.29
+### 버그 수정
+- debug : 1 옵션을 킬 때 컴파일 오류 수정 (스타맵돌이님 제보)
+
+### 기능 개선
+- eudplib to 0.76.14 업데이트
+- eudplib 프론트엔드 속도 17% 가량 개선 (@phu54321 님 기여: https://github.com/armoha/eudplib/pull/24)
+- Writing phase에서 GetObjectAddr 개선
+- 빌드 시간 10% 가량 감소
+
 ## [0.9.10.10] - 2023.12.27
 ### 기능 변경
 - `ConstExpr`과 `EUDObject`이 `__init__` 대신에 `__new__`를 사용합니다
@@ -16,7 +26,7 @@
 ### 기능 개선
 - eudplib to 0.76.13 업데이트
 - Rust로 재작성: `RlocInt`, `ConstExpr`, `EUDObject`, `RawTrigger.WritePayload` (https://github.com/armoha/eudplib/pull/22)
-- 빌드 시간 30% 감소 (euddraft 0.9.10.6나 이전 버전과 비교하면 총 60% 감소)
+- 빌드 시간 30% 감소 (euddraft 0.9.10.6 및 이전 버전과 비교하면 총 60% 감소)
 
 ## [0.9.10.9] - 2023.12.23
 ### 버그 수정
