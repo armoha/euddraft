@@ -127,6 +127,7 @@ def isEpExc(s):
 def applyEUDDraft(sfname):
     from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
     from eudplib.eudlib.objpool import SetGlobalPoolFieldN
+    from eudplib.epscript.epsimp import IsSCDBMap
 
     try:
         config, excs = readconfig(sfname)
@@ -178,7 +179,7 @@ def applyEUDDraft(sfname):
         payloadMain = createPayloadMain(pluginList, pluginFuncDict)
         ep.CompressPayload(True)
 
-        if ep.IsSCDBMap():
+        if IsSCDBMap():
             if isFreezeIssued():
                 raise RuntimeError(
                     "Can't use freeze protection on SCDB map!\nDisable freeze by following plugin settings:\n\n[freeze]\nfreeze : 0\n"

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.10.11] - 2023.12.29
+### Bugfix
+- Fixed build error with [main] debug option (reported by 스타맵돌이)
+
+### Improved
+- Update eudplib to 0.76.14
+- Reduced compile times in eudplib frontend by 20% (contributed by @phu54321 : https://github.com/armoha/eudplib/pull/24)
+- Improved `GetObjectAddr` in Writing phase
+- Reduced compile times by about 10%
+
 ## [0.9.10.10] - 2023.12.27
 ### Changed
 - `ConstExpr` and `EUDObject` use `__new__` instead of `__init__`
