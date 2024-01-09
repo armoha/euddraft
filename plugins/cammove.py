@@ -16,6 +16,14 @@ inertia = int(settings.get("inertia", 5))
 maxspeed = int(settings.get("maxspeed", 48))
 target = GetLocationIndex(settings["targetloc"])
 
+supported_keys = ("inertia", "maxspeed", "targetloc")
+unsupported_keys = []
+for key in settings:
+    if key not in supported_keys:
+        unsupported_keys.append(key)
+if unsupported_keys:
+    ep_warn(f"Unused manifest keys in [cammove] plugin: {', '.join(unsupported_keys)}")
+
 
 def onPluginStart():
     f_setloc(cammoveLoc, 0, 0, 640, 384)
@@ -40,7 +48,7 @@ def afterTriggerExec():
         EUDReturn()
     EUDEndIf()
 
-    if EUDIf()([Switch("cammove", Set)]):
+    if EUDIf()(Switch("cammove", Set)):
         currentTick = f_getgametick()
         if EUDIf()(lastTick == -1):  # Just started following
             lastTick << currentTick

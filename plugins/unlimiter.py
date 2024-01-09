@@ -1,8 +1,11 @@
-'''
+"""
 unlimiter v1
-'''
+"""
 
 from eudplib import *
+
+if settings:
+    ep_warn(f"Unused manifest keys in [unlimiter] plugin: {', '.join(settings)}")
 
 
 def connectDList(el_start, el_end, itemSize, itemN, isSprite):
@@ -10,30 +13,30 @@ def connectDList(el_start, el_end, itemSize, itemN, isSprite):
 
     a1, a2, a3 = Forward(), Forward(), Forward()
     if EUDLoopN()(itemN):
-        DoActions([
+        DoActions(
             a1 << SetMemory(dataDb, SetTo, dataDb - itemSize),
             a2 << SetMemory(dataDb + 4, SetTo, dataDb + itemSize),
             SetMemory(a1 + 16, Add, itemSize // 4),
             SetMemory(a1 + 20, Add, itemSize),
             SetMemory(a2 + 16, Add, itemSize // 4),
             SetMemory(a2 + 20, Add, itemSize),
-        ])
+        )
         Trigger(
             isSprite >= 1,
             [
                 a3 << SetMemory(dataDb + 0x10, SetTo, 10000),
                 SetMemory(a3 + 16, Add, itemSize // 4),
                 SetMemory(a3 + 20, Add, 1),
-            ]
+            ],
         )
     EUDEndLoopN()
 
-    DoActions([
+    DoActions(
         SetMemory(el_start, SetTo, dataDb),
         SetMemory(dataDb, SetTo, 0),
         SetMemory(el_end, SetTo, dataDb + itemSize * (itemN - 1)),
-        SetMemory(dataDb + itemSize * (itemN - 1) + 4, SetTo, 0)
-    ])
+        SetMemory(dataDb + itemSize * (itemN - 1) + 4, SetTo, 0),
+    )
 
 
 def onPluginStart():

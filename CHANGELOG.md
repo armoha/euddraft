@@ -16,7 +16,7 @@
   * Reduced compile time by 4.2%
 - [epScript] Rewrite linetable calculating code in Rust (https://github.com/armoha/eudplib/pull/25)
   * Reduced compile time by 5.7%
-  * Total 9.96% faster compile time
+  * Total 9.66% faster compile time
 
 ## [0.9.10.11] - 2023.12.29
 ### Bugfix

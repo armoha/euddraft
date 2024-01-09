@@ -7,6 +7,15 @@ from eudplib import *
 bgmPath = settings["path"]
 bgmLength = float(settings["length"])
 
+supported_keys = ("path", "length")
+unsupported_keys = []
+for key in settings:
+    if key not in supported_keys:
+        unsupported_keys.append(key)
+if unsupported_keys:
+    ep_warn(
+        f"Unused manifest keys in [bgmplayer] plugin: {', '.join(unsupported_keys)}"
+    )
 
 ###############################################################################
 # Timing functions
@@ -50,11 +59,9 @@ def beforeTriggerExec():
         oldcp = f_getcurpl()
         localcp = f_getuserplayerid()
         DoActions(
-            [
-                SetMemory(0x6509B0, SetTo, localcp),
-                PlayWAV("bgm"),
-                SetMemory(0x6509B0, SetTo, oldcp),
-            ]
+            SetMemory(0x6509B0, SetTo, localcp),
+            PlayWAV("bgm"),
+            SetMemory(0x6509B0, SetTo, oldcp),
         )
         f_starttimer(int(1000 * bgmLength))
     EUDEndIf()

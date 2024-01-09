@@ -1,5 +1,8 @@
 from eudplib import *
 
+if settings:
+    ep_warn(f"Unused manifest keys in [noAirCollision] plugin: {', '.join(settings)}")
+
 t = [Forward() for _ in range(115)]
 
 
@@ -13,13 +16,13 @@ def onPluginStart():
         k = EUDVariable()
         EUDWhile()(k <= 63 * 8)
         EUDBreakIf([i == 114, k >= 15 * 8])
-        DoActions([
+        DoActions(
             SetMemoryEPD(s[i] + k, SetTo, reph_epd),
             reph_epd.AddNumber(1),
             k.AddNumber(8),
-        ])
+        )
         EUDEndWhile()
-        DoActions([i.AddNumber(1), k.SetNumber(0)])
+        DoActions(i.AddNumber(1), k.SetNumber(0))
     EUDEndWhile()
 
 
