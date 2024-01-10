@@ -111,15 +111,23 @@ def afterTriggerExec():
         dstTileX = dstx // 32
         dstTileY = dsty // 32
 
-        DoActions(
-            SetCurrentPlayer(f_getuserplayerid()),
-            SetMemory(0x58DC4C + 20 * cammoveLoc + 0x0, SetTo, dstx),
-            SetMemory(0x58DC4C + 20 * cammoveLoc + 0x4, SetTo, dsty),
-            SetMemory(0x58DC4C + 20 * cammoveLoc + 0x8, SetTo, dstx + screenX),
-            SetMemory(0x58DC4C + 20 * cammoveLoc + 0xC, SetTo, dsty + 384),
-            CenterView(cammoveLoc),
-            SetMemory(0x628498, SetTo, dstTileX),
-            SetMemory(0x6284AC, SetTo, dstTileY),
+        locepd = EPD(0x58DC4C) + 5 * cammoveLoc
+        SeqCompute(
+            [
+                (EPD(0x6509B0), SetTo, f_getuserplayerid()),
+                (locepd, SetTo, dstx),
+                (locepd + 1, SetTo, dsty),
+                (locepd + 2, SetTo, dstx + screenX),
+                (locepd + 3, SetTo, dsty + 384),
+            ]
+        )
+        f_setcurpl2cpcache(
+            [dstTileX, dstTileY],
+            [
+                CenterView(cammoveLoc),
+                dstTileX.SetDest(EPD(0x628498)),
+                dstTileY.SetDest(EPD(0x6284AC)),
+            ],
         )
 
         postCamX = f_dwread(0x62848C)  # 화면 X 좌표
