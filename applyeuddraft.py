@@ -128,6 +128,7 @@ def applyEUDDraft(sfname):
     from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
     from eudplib.eudlib.objpool import SetGlobalPoolFieldN
     from eudplib.epscript.epsimp import IsSCDBMap
+    from eudplib.utils.eperror import ep_warn
 
     try:
         config, excs = readconfig(sfname)
@@ -148,9 +149,12 @@ def applyEUDDraft(sfname):
             "objFieldN",
             "sectorSize",
         )
+        invalidMainOptions = []
         for mainOption in mainSection:
             if mainOption not in mainOptions:
-                raise RuntimeError(f"Invalid option in [main]: {mainOption}")
+                invalidMainOptions.append(mainOption)
+        if invalidMainOptions:
+            ep_warn(f"Unused manifest keys in [main]: {', '.join(invalidMainOptions)}")
 
         if "shufflePayload" in mainSection:
             ep.ShufflePayload(eval(mainSection["shufflePayload"]))
