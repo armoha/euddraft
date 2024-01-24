@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.10.12] - 2024.01.25
+### Changed
+- `CUnit.cgive(player)` will change sprite color
+
+### Bugfix
+- [epScript] Fixed to not prepend `f_` for non-ascii named function definition
+- Forbid using `unit.remove()` inside of `unit.dying` block of `UnitGroup.cploop`
+- Fixed `CUnit.cgive(player)` to properly unlink unit
+- Fixed `CUnit.cgive(player)` to change minimap color of subunit
+
+### Improved
+- Updated eudplib 0.76.15, cx_Freeze 6.15.13
+- Faster `EUDVarBuffer.WritePayload` (contributed by @phu54321 : https://github.com/armoha/eudplib/commit/29ed0ef5a50bc78d375b9d09aba27598c83268c9)
+  * Reduced compile time by 4.2%
+- [epScript] Rewrite linetable calculating code in Rust (https://github.com/armoha/eudplib/pull/25)
+  * Reduced compile time by 5.7%
+  * Total 9.96% faster compile time
+
 ## [0.9.10.11] - 2023.12.29
 ### Bugfix
 - Fixed build error with [main] debug option (reported by 스타맵돌이)
@@ -234,7 +252,7 @@ function circle() {
 - Added support on `UnitOrder` for order names EUD Editor uses
 - Better error for non-existing unit name and consttypes
 - Fixed some error messages to print `repr` representation
-- Updated eudplib 0.75.0, cx-freeze 6.15.1, pybind 2.10.4
+- Updated eudplib 0.75.0, cx_Freeze 6.15.1, pybind 2.10.4
 
 ## [0.9.9.7] - 2023.01.29
 ### Bugfix
@@ -249,7 +267,7 @@ function circle() {
 - `SetVariables(rvalue_variable, value)`now raises compile error
 - Updated Korean localization
 - Forcing stdin, stdout, stderr of euddraft to always use UTF-8
-- Updated eudplib 0.74.9, cx-freeze 6.14.2
+- Updated eudplib 0.74.9, cx_Freeze 6.14.2
 
 ## [0.9.9.5] - 2023.01.24
 ### Bugfix
@@ -306,7 +324,7 @@ function circle() {
 - Removed dependencies: Cython, numpy, matplotlib, pywin32, cffi, idna
   * Cython's typing support is not mature yet, causing various errors so it's removed. The slow compilation will be solved by introducing mypyc.
   * While removing Cython, numpy is also removed since it is closely linked to Cython.
-  * Unlike Python-based game engines such as Ren'Py, euddraft is a compiler that creates EUD maps with plug-ins written in eps/py, and Starcraft acts as a game engine. What Starcraft executes is only a trigger. numpy and matplotlib can help create trigger, but they can't be used directly in Starcraft, which is confusing for beginners who aren't awared of this details. When cx_freeze is updated in the future and Python 3.11 is introduced, numpy's compilation time savings are also expected to be minimal. Using numpy and matplotlib to generate eps/py code can also be achived by external code generation like how EUD Editor does, so they're removed.
+  * Unlike Python-based game engines such as Ren'Py, euddraft is a compiler that creates EUD maps with plug-ins written in eps/py, and Starcraft acts as a game engine. What Starcraft executes is only a trigger. numpy and matplotlib can help create trigger, but they can't be used directly in Starcraft, which is confusing for beginners who aren't awared of this details. When cx_Freeze is updated in the future and Python 3.11 is introduced, numpy's compilation time savings are also expected to be minimal. Using numpy and matplotlib to generate eps/py code can also be achived by external code generation like how EUD Editor does, so they're removed.
   * pywin32, cffi, idna have been unused in euddraft for a long time, so they're removed.
 
 ### Bugfix
@@ -538,7 +556,7 @@ function circle() {
   * Available type: bool, 1, 2, 4, "CUnit", "CSprite", "Position", "PositionX", "PositionY", `Flingy`, `TrgPlayer`, `TrgUnit`, `UnitOrder`, `Upgrade`, `Tech`
 
 ### Improved
-- Updated eudplib 0.71.7, cx-freeze 6.13.1, pybind11
+- Updated eudplib 0.71.7, cx_Freeze 6.13.1, pybind11
 - Optimize epScript object (EUDStruct) in-place operations and comparisons
 - Optimize EPDCUnitMap edit/comparison
 - `f_bitlshift(a, b)` calculates `a << b` on compile time when both are constants
@@ -1243,7 +1261,7 @@ decodeUnitName : utf-8
 - Fixed compile error when last string does not have null terminator.
 
 ## [0.9.0.6] - 2020.11.21
-- Updated`cx_Freeze`
+- Updated `cx_Freeze`
 - Fix `IsPName(player, nickname)`
 - (`Set`)`Memory`(`X`) now raises error for unaligned memory address.
 - *[chatEvent]* fixed bug using unaligned address to bypass duplicate address checking.

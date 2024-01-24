@@ -1,5 +1,23 @@
 # 변경 사항 (한국어)
 
+## [0.9.10.12] - 2024.01.25
+### 기능 변경
+- `CUnit.cgive(player)`이 스프라이트의 색상도 변경합니다
+
+### 버그 수정
+- [epScript] 함수 정의에서 영어 소문자로 시작할 때만 `f_`가 앞에 붙어야 하는데 비ASCII 문자로 시작할 때도 붙이는 버그 수정
+- `UnitGroup.cploop`의 `unit.dying` 블럭에서 `unit.remove()`를 사용하면 컴파일 오류나게 수정
+- `CUnit.cgive(player)`가 이전 플레이어의 유닛 리스트 연결을 제대로 해제하도록 수정
+- `CUnit.cgive(player)`가 부가 유닛의 미니맵 색을 바꾸지 않는 버그 수정
+
+### 기능 개선
+- eudplib 0.76.15, cx_Freeze 6.15.13 업데이트
+- `EUDVarBuffer.WritePayload` 성능 개선 (@phu54321 님 기여: https://github.com/armoha/eudplib/commit/29ed0ef5a50bc78d375b9d09aba27598c83268c9)
+  * 컴파일 시간 4.2% 감소
+- [epScript] linetable 생성 코드 Rust로 재작성 (https://github.com/armoha/eudplib/pull/25)
+  * 컴파일 시간 5.7% 감소
+  * 총 9.96% 만큼 컴파일 시간 감소
+
 ## [0.9.10.11] - 2023.12.29
 ### 버그 수정
 - debug : 1 옵션을 킬 때 컴파일 오류 수정 (스타맵돌이님 제보)
