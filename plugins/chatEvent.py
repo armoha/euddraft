@@ -6,7 +6,6 @@ message : value
 """
 from functools import reduce
 from itertools import combinations
-from operator import itemgetter
 from random import randint
 
 from eudplib import *
@@ -209,7 +208,16 @@ def xorDb(s):
 
 
 def onInit():
-    global Addr, lenAddr, ptrAddr, patternAddr, minlen, maxlen, chatDict, regexDict, rList
+    global \
+        Addr, \
+        lenAddr, \
+        ptrAddr, \
+        patternAddr, \
+        minlen, \
+        maxlen, \
+        chatDict, \
+        regexDict, \
+        rList
     chatDict, regexDict, rList = {}, {}, [[] for _ in range(6)]
     h = Hash()
     empty_db = Db(b"\0")
@@ -231,11 +239,15 @@ def onInit():
             Addr = addr_rhs(v)  # 주소를 정수로 가져온다.
             continue
         if k.upper() == "__LENADDR__":
-            ep_assert(lenAddr is None, f"multiple lenAddr error: {lenAddr} and {k} : {v}")
+            ep_assert(
+                lenAddr is None, f"multiple lenAddr error: {lenAddr} and {k} : {v}"
+            )
             lenAddr = addr_rhs(v)
             continue
         if k.upper() == "__PTRADDR__":
-            ep_assert(ptrAddr is None, f"multiple ptrAddr error: {ptrAddr} and {k} : {v}")
+            ep_assert(
+                ptrAddr is None, f"multiple ptrAddr error: {ptrAddr} and {k} : {v}"
+            )
             ptrAddr = addr_rhs(v)
             continue
         if k.upper() == "__PATTERNADDR__":
@@ -272,7 +284,9 @@ def onInit():
 
         ep_assert(v > 1, f"Value should be greater than 1. {k} : {v}")
         t = u2utf8(k)
-        ep_assert(len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)')
+        ep_assert(
+            len(t) <= 78, f'chat message "{k}" is too long to type (up to 78 bytes)'
+        )
         if len(t) > maxlen:
             maxlen = len(t)
         if len(t) < minlen:
@@ -316,17 +330,19 @@ def onInit():
     for r, v in regexDict.items():
         print("^{0}.*{1}.*{2}$ : {3}".format(*r, v))
     if regexDict and not patternAddr:
-        raise EPError("patternAddr not defined for regex patterns (^start.*middle.*end$).")
+        raise EPError(
+            "patternAddr not defined for regex patterns (^start.*middle.*end$)."
+        )
     elif regexDict and patternAddr:
         print(
             f"Memory({hex_or_str(patternAddr)}, Exactly, right-sided value); <- Use this condition for patterned chat-detect (desync)"
         )
     for kv in chatDict.values():
         if isinstance(kv, tuple):
-            print('{} : {}'.format(*kv))
+            print("{} : {}".format(*kv))
         elif isinstance(kv, list):
             for k, v in kv:
-                print('{} : {}'.format(k, v))
+                print("{} : {}".format(k, v))
         else:
             raise EPError(f"Unknown type {kv}")
     print("(not belong to any pattern) : 1")
@@ -355,7 +371,7 @@ def f_init():
     idptr = 0x57EEEB + 36 * pNumber
     idlen = f_strlen(idptr)
     idDb, myChat = Db(28), Db(b":\x07 ")
-    DoActions([SetMemory(idDb + i, SetTo, 0) for i in range(0, 28, 4)])
+    DoActions(*[SetMemory(idDb + i, SetTo, 0) for i in range(0, 28, 4)])
     f_memcpy(idDb, idptr, idlen)
     f_dbstr_addstr(idDb + idlen, myChat)
 
@@ -363,29 +379,27 @@ def f_init():
     set_mask = [Forward() for _ in range(4)]
 
     DoActions(
-        [
-            SetMemory(event_init + 348, SetTo, 0x640B63 + idlen),
-            odd.SetNumber(0),
-            even.SetNumber(16),
-            SetMemory(set_mask[0] + 16, SetTo, EPD(detect_oddline + 8)),
-            SetMemory(set_mask[1] + 16, SetTo, EPD(detect_oddline + 8 + 8)),
-            SetMemory(set_mask[2] + 16, SetTo, EPD(detect_evenline + 8)),
-            SetMemory(set_mask[3] + 16, SetTo, EPD(detect_evenline + 8 + 8)),
-        ]
-        + [
+        SetMemory(event_init + 348, SetTo, 0x640B63 + idlen),
+        odd.SetNumber(0),
+        even.SetNumber(16),
+        SetMemory(set_mask[0] + 16, SetTo, EPD(detect_oddline + 8)),
+        SetMemory(set_mask[1] + 16, SetTo, EPD(detect_oddline + 8 + 8)),
+        SetMemory(set_mask[2] + 16, SetTo, EPD(detect_evenline + 8)),
+        SetMemory(set_mask[3] + 16, SetTo, EPD(detect_evenline + 8 + 8)),
+        *[
             [
                 SetMemory(detect_oddline + 8 + 20 * c, SetTo, 0),  # 비트 마스크
                 SetMemory(detect_oddline + 8 + 8 + 20 * c, SetTo, 0),  # 값
             ]
             for c in range(7)
-        ]
-        + [
+        ],
+        *[
             [
                 SetMemory(detect_evenline + 8 + 20 * c, SetTo, 0),  # 비트 마스크
                 SetMemory(detect_evenline + 8 + 8 + 20 * c, SetTo, 0),  # 값
             ]
             for c in range(8)
-        ]
+        ],
     )
     br = EUDByteReader()
     br.seekepd(EPD(idDb))
@@ -393,14 +407,12 @@ def f_init():
         b = br.readbyte()
         EUDBreakIf(b == 0)
         DoActions(
-            [
-                set_mask[0] << SetMemory(0, Add, f_bitlshift(0xFF, odd)),
-                set_mask[1] << SetMemory(0, Add, f_bitlshift(b, odd)),
-                set_mask[2] << SetMemory(0, Add, f_bitlshift(0xFF, even)),
-                set_mask[3] << SetMemory(0, Add, f_bitlshift(b, even)),
-                odd.AddNumber(8),
-                even.AddNumber(8),
-            ]
+            set_mask[0] << SetMemory(0, Add, f_bitlshift(0xFF, odd)),
+            set_mask[1] << SetMemory(0, Add, f_bitlshift(b, odd)),
+            set_mask[2] << SetMemory(0, Add, f_bitlshift(0xFF, even)),
+            set_mask[3] << SetMemory(0, Add, f_bitlshift(b, even)),
+            odd.AddNumber(8),
+            even.AddNumber(8),
         )
         RawTrigger(
             conditions=odd.AtLeast(32),
@@ -489,13 +501,16 @@ def f_chatcmp():
             elif isinstance(kv, list):  # Hash collision case
                 disambiguate_start = Forward()
                 trig << RawTrigger(
-                    conditions=o.Exactly(c), actions=SetNextPtr(trig, disambiguate_start)
+                    conditions=o.Exactly(c),
+                    actions=SetNextPtr(trig, disambiguate_start),
                 )
                 PushTriggerScope()
                 disambiguate_start << RawTrigger(actions=SetNextPtr(trig, nptr))
                 for k, v in kv:
                     if EUDIf()(memcmp(chatptr, xorDb(k), len(k)) == 0):
-                        RawTrigger(nextptr=exit, actions=SetMemory(globalAddr(Addr), SetTo, v))
+                        RawTrigger(
+                            nextptr=exit, actions=SetMemory(globalAddr(Addr), SetTo, v)
+                        )
                     EUDEndIf()
                 SetNextTrigger(check_pattern)
                 PopTriggerScope()
@@ -530,9 +545,17 @@ temp = EUDVariable()
 
 def chatEvent():
     event_init << RawTrigger(  # 조건의 EPD 초기화
-        actions=[chatptr.SetNumber(0x640B63)]
-        + [SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c) for c in range(7)]
-        + [SetMemory(detect_evenline + 8 + 4 + 20 * c, SetTo, EPD(0x640C3A) + c) for c in range(8)]
+        actions=[
+            chatptr.SetNumber(0x640B63),
+            * [
+                SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c)
+                for c in range(7)
+            ],
+            *[
+                SetMemory(detect_evenline + 8 + 4 + 20 * c, SetTo, EPD(0x640C3A) + c)
+                for c in range(8)
+            ],
+        ]
     )
 
     if EUDWhile()(chatptr <= 0x640B60 + 436 * 6 - 1):
@@ -563,9 +586,9 @@ def chatEvent():
 
         EUDSetContinuePoint()
         DoActions(
-            [chatptr.AddNumber(436)]
-            + [SetMemory(detect_oddline + 12 + 20 * c, Add, 109) for c in range(7)]
-            + [SetMemory(detect_evenline + 12 + 20 * c, Add, 109) for c in range(8)]
+            chatptr.AddNumber(436),
+            *[SetMemory(detect_oddline + 12 + 20 * c, Add, 109) for c in range(7)],
+            *[SetMemory(detect_evenline + 12 + 20 * c, Add, 109) for c in range(8)],
         )
     EUDEndWhile()
     chatptr << 0
@@ -577,10 +600,11 @@ def beforeTriggerExec():
     EUDEndIf()
 
     DoActions(
-        [SetMemory(globalAddr(Addr), SetTo, 0), chatptr.SetNumber(0)]  # 초기화
-        + [SetMemory(globalAddr(lenAddr), SetTo, 0) if lenAddr else []]
-        + [SetMemory(globalAddr(ptrAddr), SetTo, 0) if ptrAddr else []]
-        + [SetMemory(globalAddr(patternAddr), SetTo, 0) if rListlen else []]
+        SetMemory(globalAddr(Addr), SetTo, 0),
+        chatptr.SetNumber(0),  # 초기화
+        *[SetMemory(globalAddr(lenAddr), SetTo, 0) if lenAddr else []],
+        *[SetMemory(globalAddr(ptrAddr), SetTo, 0) if ptrAddr else []],
+        *[SetMemory(globalAddr(patternAddr), SetTo, 0) if rListlen else []],
     )
 
     oldcp = f_getcurpl()
