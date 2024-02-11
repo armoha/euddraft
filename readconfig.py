@@ -45,18 +45,7 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
         config = OrderedDict()
         header_lineno = {}
         config_lineno = {}
-        exceptions = []
-
-        def encode_error(kind, dup, fname, line1, line2, str1="", str2=""):
-            where = f"{dup!r}"
-            if kind == "key" and currentSectionName:
-                where = f"{where} in [{currentSectionName}]"
-            line_digits = len(str(line2))
-            return f"""Duplicated {kind} {where}
-{Fore.LIGHTBLACK_EX}{fname}:{line2}{Fore.RESET}
-
-{Fore.RED}>{Fore.RESET} {line1:>{line_digits}} | {Back.RED}{dup}{Back.RESET}{str1}
-{Fore.RED}>{Fore.RESET} {line2} | {Back.RED}{dup}{Back.RESET}{str2}"""
+        exception_dict = OrderedDict()
 
         for lineno, line in enumerate(text):
             lineno += 1
@@ -69,14 +58,10 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
             if header_match:
                 currentSectionName = header_match.group(1)
                 if currentSectionName in config:
-                    errormsg = encode_error(
-                        "header",
-                        currentSectionName,
-                        fname,
-                        header_lineno[currentSectionName],
-                        lineno,
-                    )
-                    exceptions.append(RuntimeError(errormsg))
+                    exception_dict.setdefault(
+                        ("header", currentSectionName, "", fname),
+                        [(header_lineno[currentSectionName], "")],
+                    ).append((lineno, ""))
                     while currentSectionName in config:
                         currentSectionName += "_dup"
                 currentSection = {}
@@ -94,19 +79,13 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
                 value = keyvalue_match.group(3)
                 if currentSection is None:
                     errormsg = f"'key : value' pair ({line}) should be below [header]"
-                    exceptions.append(RuntimeError(errormsg))
+                    exception_dict[lineno] = RuntimeError(errormsg)
                     continue
                 if key in currentSection:
-                    errormsg = encode_error(
-                        "key",
-                        key,
-                        fname,
-                        config_lineno[key],
-                        lineno,
-                        f" : {currentSection[key]}",
-                        f" : {value}",
-                    )
-                    exceptions.append(RuntimeError(errormsg))
+                    exception_dict.setdefault(
+                        ("key", key, currentSectionName, fname),
+                        [(config_lineno[key], f"{currentSection[key]}")],
+                    ).append((lineno, f"{value}"))
                     continue
                 currentSection[key] = value
                 config_lineno[key] = lineno
@@ -122,18 +101,13 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
                 key = key.strip()
                 if currentSection is None:
                     errormsg = f"plugin option ({line}) should be below [header]"
-                    exceptions.append(RuntimeError(errormsg))
+                    exception_dict[lineno] = RuntimeError(errormsg)
                     continue
                 if key in currentSection:
-                    errormsg = encode_error(
-                        "key",
-                        key,
-                        fname,
-                        config_lineno[key],
-                        lineno,
-                        f" : {currentSection[key]}",
-                    )
-                    exceptions.append(RuntimeError(errormsg))
+                    exception_dict.setdefault(
+                        ("key", key, currentSectionName, fname),
+                        [(config_lineno[key], f"{currentSection[key]}")],
+                    ).append((lineno, ""))
                     continue
                 currentSection[key] = ""
                 config_lineno[key] = lineno
@@ -144,8 +118,35 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
             if comment_match:
                 continue
 
-            exceptions.append(RuntimeError(f"Invalid config {line}"))
+            exception_dict[lineno] = RuntimeError(f"Invalid config {line}")
             continue
+
+        def encode_error(kind, dup, section, fname, *line_entry_pairs):
+            where = f"{dup!r}"
+            if section:
+                where = f"{where} in [{section}]"
+            line_digits = len(str(line_entry_pairs[-1][0]))
+            other_lines = ",".join(str(line) for line, _entry in line_entry_pairs[1:])
+            error_messages = [
+                f"""Duplicated {kind} {where}
+{Fore.LIGHTBLACK_EX}{fname}:{other_lines}{Fore.RESET}
+"""
+            ]
+            for line, entry in line_entry_pairs:
+                if entry != "":
+                    entry = f" : {entry}"
+                error_messages.append(
+                    f"{Fore.RED}>{Fore.RESET} {line:>{line_digits}} | {Back.RED}{dup}{Back.RESET}{entry}"
+                )
+            return "\n".join(error_messages)
+
+        exceptions = []
+        for k, v in exception_dict.items():
+            if isinstance(k, tuple):
+                exceptions.append(RuntimeError(encode_error(*k, *v)))
+            else:
+                exceptions.append(v)
+
         return config, exceptions
 
     try:
