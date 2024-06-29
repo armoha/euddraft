@@ -133,7 +133,15 @@ def applyEUDDraft(sfname):
     try:
         config, excs = readconfig(sfname)
         if excs:
-            raise ExceptionGroup("Invalid config", excs)
+            # See armoha/euddraft#128 : https://github.com/armoha/euddraft/issues/128
+            # raise ExceptionGroup("Invalid config", excs)
+            from rich import print as rprint
+
+            for exc in excs:
+                # https://stackoverflow.com/a/76743290
+                rprint(str(exc))
+            raise RuntimeError("error(s) on eds/edd configuration")
+
         mainSection = config["main"]
         ifname = mainSection["input"]
         ofname = mainSection["output"]

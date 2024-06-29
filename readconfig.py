@@ -27,10 +27,6 @@ import re
 from collections import OrderedDict
 from typing import Dict
 
-from colorama import Back, Fore, init
-
-init()  # Colorama auto style reset
-
 
 def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
     header_regex = re.compile(r"\[(.+)\]$")
@@ -129,14 +125,14 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
             other_lines = ",".join(str(line) for line, _entry in line_entry_pairs[1:])
             error_messages = [
                 f"""Duplicated {kind} {where}
-{Fore.LIGHTBLACK_EX}{fname}:{other_lines}{Fore.RESET}
+[bright_black]{fname}:{other_lines}[/]
 """
             ]
             for line, entry in line_entry_pairs:
                 if entry != "":
                     entry = f" : {entry}"
                 error_messages.append(
-                    f"{Fore.RED}>{Fore.RESET} {line:>{line_digits}} | {Back.RED}{dup}{Back.RESET}{entry}"
+                    f"[red]>[/] {line:>{line_digits}} | [on red]{dup}[/]{entry}"
                 )
             return "\n".join(error_messages)
 

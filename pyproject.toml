@@ -10,7 +10,7 @@ readme = "README.md"
 python = ">= 3.10, < 3.12"
 cx-Freeze = "^6.15.11"
 eudplib = "^0.76.13a10"
-colorama = "^0.4.6"
+rich = "^13.7.1 "
 openpyxl = "^3.1.2"
 
 [build-system]
