@@ -27,7 +27,7 @@ import random
 
 from eudplib import *
 from eudplib.core.eudfunc.eudf import _EUDPredefineReturn
-from eudplib.eudlib.s import MoveCP, SetMemoryC, SetMemoryS, srand
+from eudplib.memio.s import MoveCP, SetMemoryC, SetMemoryS, srand
 from eudplib.maprw.inlinecode.ilcprocesstrig import GetInlineCodePlayerList
 
 from .pdefault import default_ptex, default_pupx
