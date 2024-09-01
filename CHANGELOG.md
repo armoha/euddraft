@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.9.11.0] - 2024.09.01
+### Changed
+- Fixed `EUDJump` not using trigger if trigger address to jump to is constant
+- Added unreachable `EUDJump` compilation error
+- Added warnings to unreachable `break`, `continue`
+- epScript: Change `"string"` to be usable as an expression
+- Change `CUnit.cast(other)` and `CSprite.cast(other)` to use variable as reference instead of copying it when target is a variable
+
+### Added
+- Added easy StarCraft data modification (scdata) to existing types (contributed by @dr-zzt)
+```js
+// Example of scdata function
+function example(unit: TrgUnit) {
+    unit.armor += 1;  // Increase unit armor by 1
+    unit.groundWeapon.damage += 1;  // increase the damage of the unit's ground weapon by 1
+    
+    unit.groundWeapon = Weapon("Gauss Rifle");  // change the unit's ground weapon to a Gauss Rifle
+    
+    P1.ore += 1;  // increase P1 mineral by 1
+    if (P1.ore >= 100) {
+        printAll("Red has collected at least 100 minerals");
+    }
+}
+```
+  * Detailed explanation to be written by @dr-zzt
+- epScript: Add forward declaration syntax for object (suggested by 하늘바라군 and 0xFF)
+```js
+object Food;
+object Animal {
+    function eat_food(food: Food) {} // possible
+};
+object Meat extends Food {}; // This is not possible
+```
+- `CUnit.from_next()`
+- Add keyword argument `ignore_subunit` to `CUnit.cgive(player)` (default = `false`)
+- epScript: Change encoding syntax (`$U`, `$L`, etc) to allow all expressions in addition to strings.
+
+### Bugfix
+- Bugfix: `Array[i] = i;` bug fixed (reported by HeukSulTang, Xenon)
+- Fixed a bug where `CUnit.cgive(player)` was not working properly.
+- Bugfix: `CUnit.set_hallucination()` and `CUnit.clear_hallucination()` modify the status flag `IsNormal`, causing units to move around ignoring terrain
+- Fix 'int' object has no attribute 'Evaluate' error in ExprProxy wrapping int
+- epScript: Fix `object` `extends` to accept expressions including `a.b` in place of superclass (report by 0xFF)
+- epScript: Fixed bug where writing return type in function forward declaration syntax would result in an error (reported by 0xFF)
+- Fixed an error when putting variables in functions that run for all players, such as `DisplayTextAll` and `PlayWAVAll` (reported by furina)
+- Fixed typos in some `Portrait` entries (reported by @dr-zzt)
+- Fixed bug where rvalue variable optimizations were not applied
+- Fix `TriggerScopeError` exception to be thrown early when triggers are declared in invalid positions.
+  * Fixed bug resulting in invalid triggers regardless of exception handling
+- Fixed `Forward not initialized` compile error when declaring `EUDByteReader`, `EUDByteWriter` and not using `.readbyte` or `.writebyte` method
+
+### Improved
+- Enum/flag members such as `CUnit.movementFlags` and `CUnit.statusFlags` can now be used as values.
+- Typos in access to members of `CUnit`, `CSprite`, flag members, etc. now raise errors (use `__slots__`)
+- Improved location functions `f_setloc`, `f_addloc`, and `f_dilateloc`; no longer generate actions for coordinate arguments with 0 (suggested by 콤)
+- Built-in read functions share overlapping triggers to save the number of triggers
+- Replaced terminal color library `colorama` with `rich`
+- Improved EDS/EDD duplicate settings error message
+- Improved performance to minimize trigger usage when using variables as arguments in conditions/actions
+- Improved `EUDByteReader`, `EUDByteWriter` performance
+- Optimized `EUDJump` to create 2 triggers -> 1 trigger when trigger address to jump to is a variable
+- Add `__divmod__` to `ExprProxy`
+
 ## [0.9.10.12] - 2024.01.25
 ### Changed
 - `CUnit.cgive(player)` will change sprite color

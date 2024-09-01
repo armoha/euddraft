@@ -1,5 +1,68 @@
 # 변경 사항 (한국어)
 
+## [0.9.11.0] - 2024.09.01
+### 기능 변경
+- `EUDJump`가 점프할 트리거 주소가 상수면 트리거를 사용하지 않도록 수정
+- 도달할 수 없는 `EUDJump` 컴파일 오류 추가
+- 도달할 수 없는 `break`, `continue` 에 경고 추가
+- epScript: `"문자열"`을 표현식으로 사용 가능하게 변경
+- `CUnit.cast(other)`와 `CSprite.cast(other)`의 대상이 변수일 때 변수를 복사하지 않고 그대로 사용하게 변경
+
+### 기능 추가
+- 기존 타입에 간편한 스타크래프트 데이터 수정 기능(scdata) 추가 (@dr-zzt님 기여)
+```js
+// scdata 기능 예제
+function example(unit: TrgUnit) {
+    unit.armor += 1;  // 유닛 방어력 1 증가
+    unit.groundWeapon.damage += 1;  // 유닛이 쓰는 지상무기의 공격력 1 증가
+    
+    unit.groundWeapon = Weapon("Gauss Rifle");  // 유닛의 지상무기를 가우스 라이플로 변경
+    
+    P1.ore += 1;  // P1 미네랄 1 증가
+    if (P1.ore >= 100) {
+        printAll("빨강님이 100 미네랄 이상 모았습니다");
+    }
+}
+```
+  * 자세한 설명글 @dr-zzt님이 작성 예정
+- epScript: object 전방 선언 문법 추가 (하늘바라군님, 0xFF님 건의)
+```js
+object Food;
+object Animal {
+    function eat_food(food: Food) {}  // 가능
+};
+object Meat extends Food {};  // 이건 안 됨
+```
+- `CUnit.from_next()`
+- `CUnit.cgive(player)` 에 키워드 인자 `ignore_subunit` 추가 (기본값 = `false`)
+- epScript: `$U`, `$L` 등 인코딩 문법에 문자열 외에 모든 표현식 입력 가능하게 변경
+
+### 버그 수정
+- `배열[i] = i;` 버그 수정 (HeukSulTang님, Xenon님 제보)
+- `CUnit.cgive(player)` 제대로 안 되는 버그 수정
+- `CUnit.set_hallucination()` 과 `CUnit.clear_hallucination()` 이 상태플래그 `IsNormal` 을 같이 수정해서 유닛들이 지형을 무시하고 이동하는 버그 수정
+- int를 감싸는 ExprProxy에서 'int' object has no attribute 'Evaluate' 오류 수정
+- epScript: `object` `extends` 의 superclass 자리에 `a.b` 를 비롯한 표현식도 사용 가능하게 수정 (0xFF님 제보)
+- epScript: 함수 전방 선언 문법에서 리턴 타입을 작성하면 오류나는 버그 수정
+- `DisplayTextAll`, `PlayWAVAll` 등 모든 플레이어 대상으로 실행되는 함수에 변수 입력 시 오류 수정 (furina님 제보)
+- 일부 `Portrait` 항목 오타 수정 (@dr-zzt님 제보)
+- rvalue 변수 최적화가 적용 안 되는 버그 수정
+- 트리거를 선언할 수 없는 위치에 선언했을 때 `TriggerScopeError` 예외가 일찍 발생하게 수정
+  * 예외 처리해도 유효하지 않은 트리거가 생기는 버그 수정
+- `EUDByteReader`, `EUDByteWriter`를 선언하고 `.readbyte` 나 `.writebyte` 메소드를 사용하지 않으면 `Forward not initialized` 컴파일 오류 생기는 거 수정
+
+### 기능 개선
+- `CUnit.movementFlags`, `CUnit.statusFlags` 등 열거형/플래그 멤버도 값으로 사용 가능하게 수정
+- `CUnit`, `CSprite`, 플래그 멤버 등 멤버 접근 오타나면 오류나게 수정 (`__slots__` 사용)
+- 로케이션 함수 `f_setloc`, `f_addloc`, `f_dilateloc`에 0을 입력한 좌표 인자는 액션 안 만들게 수정 (콤님 건의)
+- 내장 읽기 함수들이 서로 겹치는 트리거를 공유해 트리거 개수 절약
+- 터미널 색상 라이브러리 `colorama`에서 `rich`로 교체
+- eds/edd 중복 설정 오류 메시지 개선
+- 조건/액션의 인자에 변수를 사용할 때 트리거를 최소한으로 사용하게 성능 개선
+- `EUDByteReader`, `EUDByteWriter` 성능 개선
+- `EUDJump`가 점프할 트리거 주소가 변수일 때 만드는 트리거 2개 -> 1개로 최적화
+- `ExprProxy`에 `__divmod__` 추가
+
 ## [0.9.10.12] - 2024.01.25
 ### 기능 변경
 - `CUnit.cgive(player)`이 스프라이트의 색상도 변경합니다

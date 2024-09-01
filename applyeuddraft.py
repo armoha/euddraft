@@ -126,7 +126,7 @@ def isEpExc(s):
 
 def applyEUDDraft(sfname):
     from eudplib.core.mapdata.tblformat import DecodeUnitNameAs
-    from eudplib.eudlib.objpool import SetGlobalPoolFieldN
+    from eudplib.collections.objpool import SetGlobalPoolFieldN
     from eudplib.epscript.epsimp import IsSCDBMap
     from eudplib.utils.eperror import ep_warn
 

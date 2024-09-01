@@ -97,7 +97,7 @@ def EncPlayer(s):  # str to int (Player)
 def RegisterKeyOffset(k):
     try:
         offset = KeyCodeDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         KeyOffset.add(offset)
@@ -106,7 +106,7 @@ def RegisterKeyOffset(k):
 def RegisterMouseOffset(k):
     try:
         v = MouseButtonDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s is NOT a MouseButton. Use 'L', 'R' or 'M'." % (k))
     else:
         MouseOffset.add(v)
@@ -136,7 +136,7 @@ def KeyUpdate():
 def KeyDown(k):
     try:
         offset = KeyCodeDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         KeyOffset.add(offset)
@@ -152,7 +152,7 @@ def KeyDown(k):
 def KeyUp(k):
     try:
         offset = KeyCodeDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         KeyOffset.add(offset)
@@ -168,7 +168,7 @@ def KeyUp(k):
 def KeyPress(k):
     try:
         offset = KeyCodeDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s doesn't exist in VirtualKeyCode." % (k))
     else:
         r = offset % 4
@@ -197,7 +197,7 @@ def MouseUpdate():
 def MouseDown(k):
     try:
         v = MouseButtonDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s is NOT a MouseButton. Use 'L', 'R' or 'M'." % (k))
     else:
         MouseOffset.add(v)
@@ -210,7 +210,7 @@ def MouseDown(k):
 def MouseUp(k):
     try:
         v = MouseButtonDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s is NOT a MouseButton. Use 'L', 'R' or 'M'." % (k))
     else:
         MouseOffset.add(v)
@@ -223,7 +223,7 @@ def MouseUp(k):
 def MousePress(k):
     try:
         v = MouseButtonDict[k.upper()]
-    except (KeyError):
+    except KeyError:
         raise EPError("%s is NOT a MouseButton. Use 'L', 'R' or 'M'." % (k))
     else:
         return MemoryX(0x6CDDC0, Exactly, v, v)
@@ -312,7 +312,6 @@ def onInit():
         con_final, ret_final = [], None
 
         # parse conditions
-        con_count = 0
         conds = [c.strip() for c in k.split(";")]
         for cond in conds:
             if cond == "마우스" or cond.lower() == "mouse":

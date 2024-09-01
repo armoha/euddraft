@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "euddraft"
-version = "0.9.10.12"
+version = "0.9.11.0"
 description = "Framework for creating & applying various plugins to StarCraft map."
 authors = ["armoha <kein0011@naver.com>", "Park Hyun Woo <phu54321@naver.com>"]
 license = "MIT"
@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">= 3.10, < 3.12"
 cx-Freeze = "^6.15.11"
-eudplib = "^0.76.13a10"
+eudplib = "^0.77.2"
 rich = "^13.7.1 "
 openpyxl = "^3.1.2"
 

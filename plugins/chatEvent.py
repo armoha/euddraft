@@ -367,6 +367,8 @@ detect_oddline, detect_evenline = Forward(), Forward()
 
 @EUDFunc
 def f_init():
+    from eudplib.string.eudprint import f_dbstr_addstr
+
     pNumber = f_getuserplayerid()  # 플레이어 번호 (비공유)
     idptr = 0x57EEEB + 36 * pNumber
     idlen = f_strlen(idptr)
@@ -450,7 +452,7 @@ def globalAddr(s):
 
 @EUDFunc
 def memcmp(buf1, buf2, count):
-    from eudplib.eudlib.stringf.rwcommon import br1, br2
+    from eudplib.memio.rwcommon import br1, br2
 
     br1.seekoffset(buf1)
     br2.seekoffset(buf2)
@@ -547,7 +549,7 @@ def chatEvent():
     event_init << RawTrigger(  # 조건의 EPD 초기화
         actions=[
             chatptr.SetNumber(0x640B63),
-            * [
+            *[
                 SetMemory(detect_oddline + 8 + 4 + 20 * c, SetTo, EPD(0x640B60) + c)
                 for c in range(7)
             ],
