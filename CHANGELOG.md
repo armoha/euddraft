@@ -1,5 +1,175 @@
 # Changelog
 
+## [0.9.11.1] - 2024.09.04
+### Changed
+- Update known features in scdata (contributed by DarkenedFantasies)
+  * CSprite.flags.Flag4 (0x10) -> `CSprite.flags.IsSubunit`: sorts sprite elevation higher, so that subunits always appear above base unit
+  * CSprite.unknown0x12 -> `CSprite.grpWidth`
+  * CSprite.unknown0x13 -> `CSprite.grpHeight`
+  * CUnit/TrgUnit.movementFlags.Unknown -> `CUnit/TrgUnit.movementFlags.BrakeOnPathStep`: unit decelerates when reaching the end of current path segment
+  * CUnit.ghostNukeMissile -> `CUnit.ghostNukeDot`: [points to CThingy of nuclear dot](https://github.com/BoomerangAide/GPTP/blob/ce321f0fa83174aee741b91f1b2eaec30300773e/GPTP/hooks/orders/spells/nuke_orders.cpp#L204-L222)
+  * TrgUnit.AIFlags -> `TrgUnit.dontBecomeGuard`
+  * Tech.requirementOffset -> `Tech.researchRequirementOffset`, `Tech.techUseRequirementOffset`
+
+### Added
+- Added multi-dimensional object array, added bound check for object array (suggested by 고래밥은맛있어)
+```js
+// epScript example)
+object Point { var x, y; };
+
+function onPluginStart() {
+const point2x3 = (Point * 3 * 2)();
+    // static allocation of objects
+    foreach(i : py_range(2)) {
+        point2x3[i] = (Point * 3)();
+        foreach(j : py_range(3)) {
+            point2x3[i][j] = Point()
+        }
+    }
+
+    point2x3[2];  // index out of bound error
+    point2x3[0][3];  // index out of bound error
+}
+```
+- Added scdata members
+  * `TrgPlayer.unitColor`
+  * `TrgPlayer.minimapColor`
+  * `TrgPlayer.remainingGamePause`
+  * `TrgPlayer.missionObjectives`
+  * `TrgPlayer.unitScore`
+  * `TrgPlayer.buildingScore`
+  * `TrgPlayer.killScore`
+  * `TrgPlayer.razingScore`
+  * `TrgPlayer.customScore`
+- Added scdata flag members
+  * `CUnit.pathingFlags`
+    - `CUnit.pathingFlags.HasCollision` (0x01)
+    - `CUnit.pathingFlags.IsStacked` (0x02)
+    - `CUnit.pathingFlags.Decollide` (0x04)
+  * `TrgUnit.groupFlags`
+    - `TrgUnit.groupFlags.Zerg` (0x01)
+    - `TrgUnit.groupFlags.Terran` (0x02)
+    - `TrgUnit.groupFlags.Protoss` (0x04)
+    - `TrgUnit.groupFlags.Men` (0x08)
+    - `TrgUnit.groupFlags.Building` (0x10)
+    - `TrgUnit.groupFlags.Factory` (0x20)
+    - `TrgUnit.groupFlags.Independent` (0x40)
+    - `TrgUnit.groupFlags.Neutral` (0x80)
+  * `TrgUnit.movementFlags`: Same as `CUnit.movementFlags`.
+    - `TrgUnit.movementFlags.OrderedAtLeastOnce` (0x01)
+    - `TrgUnit.movementFlags.Accelerating` (0x02)
+    - `TrgUnit.movementFlags.Braking` (0x04)
+    - `TrgUnit.movementFlags.StartingAttack` (0x08)
+    - `TrgUnit.movementFlags.Moving` (0x10)
+    - `TrgUnit.movementFlags.Lifted` (0x20)
+    - `TrgUnit.movementFlags.Unknown` (0x40)
+    - `TrgUnit.movementFlags.AlwaysZero` (0x80)
+    - `TrgUnit.movementFlags.HoverUnit` (0xC1)
+  * `TrgUnit.baseProperty`
+    - `TrgUnit.baseProperty.Building` (0x00000001)
+    - `TrgUnit.baseProperty.Addon` (0x00000002)
+    - `TrgUnit.baseProperty.Flyer` (0x00000004)
+    - `TrgUnit.baseProperty.Worker` (0x00000008)
+    - `TrgUnit.baseProperty.Subunit` (0x00000010)
+    - `TrgUnit.baseProperty.FlyingBuilding` (0x00000020)
+    - `TrgUnit.baseProperty.Hero` (0x00000040)
+    - `TrgUnit.baseProperty.RegeneratesHp` (0x00000080)
+    - `TrgUnit.baseProperty.AnimatedIdle` (0x00000100)
+    - `TrgUnit.baseProperty.Cloakable` (0x00000200)
+    - `TrgUnit.baseProperty.TwoUnitsInOneEgg` (0x00000400)
+    - `TrgUnit.baseProperty.SingleEntity` (0x00000800): prevent multiple selections, checked for all Powerups units.
+    - `TrgUnit.baseProperty.ResourceDepot` (0x00001000): Where to return resources
+    - `TrgUnit.baseProperty.ResourceContainer` (0x00002000)
+    - `TrgUnit.baseProperty.Robotic` (0x00004000)
+    - `TrgUnit.baseProperty.Detector` (0x00008000)
+    - `TrgUnit.baseProperty.Organic` (0x00010000)
+    - `TrgUnit.baseProperty.RequiresCreep` (0x00020000)
+    - `TrgUnit.baseProperty.Unused` (0x00040000)
+    - `TrgUnit.baseProperty.RequiresPsi` (0x00080000)
+    - `TrgUnit.baseProperty.Burrowable` (0x00100000)
+    - `TrgUnit.baseProperty.Spellcaster` (0x00200000)
+    - `TrgUnit.baseProperty.PermanentCloak` (0x00400000)
+    - `TrgUnit.baseProperty.PickupItem` (0x00800000): Checked for units that can be held like powerups
+    - `TrgUnit.baseProperty.IgnoresSupplyCheck` (0x01000000)
+    - `TrgUnit.baseProperty.MediumOverlay` (0x02000000): related to spell effect overlay size
+    - `TrgUnit.baseProperty.LargeOverlay` (0x04000000)
+    - `TrgUnit.baseProperty.AutoAttackAndMove` (0x08000000)
+    - `TrgUnit.baseProperty.CanAttack` (0x10000000)
+    - `TrgUnit.baseProperty.Invincible` (0x20000000)
+    - `TrgUnit.baseProperty.Mechanical` (0x40000000)
+    - `TrgUnit.baseProperty.ProducesUnits` (0x80000000)
+  * `TrgUnit.availabilityFlags`
+    - `TrgUnit.availabilityFlags.NonNeutral` (0x001)
+    - `TrgUnit.availabilityFlags.UnitListing` (0x002): be able to be created with CreateUnit action
+    - `TrgUnit.availabilityFlags.MissionBriefing` (0x004)
+    - `TrgUnit.availabilityFlags.PlayerSettings` (0x008)
+    - `TrgUnit.availabilityFlags.AllRaces` (0x010)
+    - `TrgUnit.availabilityFlags.SetDoodadState` (0x020)
+    - `TrgUnit.availabilityFlags.NonLocationTriggers` (0x040)
+    - `TrgUnit.availabilityFlags.UnitHeroSettings` (0x080)
+    - `TrgUnit.availabilityFlags.LocationTriggers` (0x100)
+    - `TrgUnit.availabilityFlags.BroodWarOnly` (0x200)
+  * `Weapon.targetFlags`
+    - `Weapon.targetFlags.Air` (0x001)
+    - `Weapon.targetFlags.Ground` (0x002)
+    - `Weapon.targetFlags.Mechanical` (0x004)
+    - `Weapon.targetFlags.Organic` (0x008)
+    - `Weapon.targetFlags.NonBuilding` (0x010)
+    - `Weapon.targetFlags.NonRobotic` (0x020)
+    - `Weapon.targetFlags.Terrain` (0x040)
+    - `Weapon.targetFlags.OrganicOrMechanical` (0x080)
+    - `Weapon.targetFlags.PlayerOwned` (0x100): Can target only your own units, like a defiler's consume
+- Added scdata enum members
+  * `CUnit.resourceType` = "None", "Gas", "Ore", "GasOrOre", "PowerUp"
+    What the worker is carrying
+  * `TrgUnit.nameString` = "string"
+  * `TrgUnit.rank` = "Rank name" [see link for a list of ranks](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
+  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = sfxdata.dat StarCraft sound effects file path (case insensitive, both '/' and '\' are allowed as separators)
+  * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
+  * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
+  * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
+  * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
+  * `Weapon.explosionType` = "None", "NormalHit", "SplashRadial", "SplashEnemy", "Lockdown", "NuclearMissile", "Parasite", "Broodlings", "EmpShockwave", "Irradiate", "Ensnare", "Plague", "StasisField", "DarkSwarm", "Consume", "YamatoGun", "Restoration", "DisruptionWeb", "CorrosiveAcid", "MindControl", "Feedback", "OpticalFlare", "Maelstrom", "Unknown_Crash", "SplashAir"
+  * `weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
+  * `Tech/Upgrade.race` = "Zerg", "Terran", "Protoss", "All"
+  * `Image.drawingFunction` = "Normal", "NormalNoHallucination", "NonVisionCloaking", "NonVisionCloaked", "NonVisionDecloaking", "VisionCloaking", "VisionCloaked", "VisionDecloaking", "EMPShockwave", "UseRemapping", "Shadow", "HpBar", "WarpTexture", "SelectionCircle", "PlayerColorOverride", "HideGFX_ShowSizeRect", "Hallucination", "WarpFlash"
+  * `UnitOrder.animation` = "Init", "Death", "GndAttkInit", "AirAttkInit", "Unused1", "GndAttkRpt", "AirAttkRpt", "CastSpell", "GndAttkToIdle", "AirAttkToIdle", "Unused2", "Walking", "WalkingToIdle", "SpecialState1", "SpecialState2", "AlmostBuilt", "Built", "Landing", "LiftOff", "IsWorking", "WorkingToIdle", "WarpIn", "Unused3", "StarEditInit", "Disable", "Burrow", "UnBurrow", "Enable", "NoAnimation"
+- offsetmap: add an optional `stride` argument to the constructor of `ArrayMember`
+  * Example 1) Define `TrgUnit.constructionGraphic` as `constructionGraphic = ArrayMember(0x6610B0, MemberKind.IMAGE, stride=4)` because it is of type `Image` but the stride is 4 bytes.
+  * Example 2) `TrgPlayer.unitColor` is 1 byte in size, but the gap is 8 bytes, so we define it as `unitColor = ArrayMember(0x581D76, MemberKind.BYTE, stride=8)`.
+- offsetmap: add `ArrayEnumMember`
+
+### Bugfix
+- Fix `{:c}`, `{:n}` (`PColor`, `PName`) compilation error (reported by spin137)
+- Fix compilation error in `DisplayTextAll`, `DisplayTextAllAt` functions (reported by @dr-zzt)
+- Fix size, offset errors in scdata (reported by DarkenedFantasies)
+  * `CUnit.gatherQueueCount`: size -> bool
+  * `CUnit.isUnderStorm`: size -> bool
+  * `CUnit.resourceBelongsToAI`: size -> bool
+  * `TrgUnit.constructionGraphic`: size -> dword
+  * `Weapon.targetFlags`: size -> word
+  * `Weapon.maxRange`: offset -> 0x657470
+  * `Weapon.cooldown`: offset -> 0x656FB8
+  * `Upgrade.mineralCostBase`: offset -> 0x655740
+- scdata uses more specific types (reported by DarkenedFantasies)
+  * `TrgUnit.constructionGraphic`: Image
+  * `TrgUnit.armorUpgrade`: Upgrade
+  * `TrgUnit.portrait`: Portrait
+  * `TrgUnit.nameString`: TrgString
+  * `Weapon.label`: StatText
+  * `Weapon.icon`: icon
+  * `Weapon.upgrade`: Upgrade
+  * `Weapon.targetErrorMessage`: StatText
+  * `Upgrade.label`: StatText
+  * `Upgrade.icon`: icon
+  * `UnitOrder.icon`: Icon
+  * `UnitOrder.weapon`: Weapon
+  * `UnitOrder.techUsed`: Tech
+  * `UnitOrder.obscuredOrder`: UnitOrder
+
+### Improved
+- Improved error message for invalid input when creating `CUnit`, `CSprite`
+
 ## [0.9.11.0] - 2024.09.01
 ### Changed
 - Fixed `EUDJump` not using trigger if trigger address to jump to is constant
@@ -15,9 +185,9 @@
 function example(unit: TrgUnit) {
     unit.armor += 1;  // Increase unit armor by 1
     unit.groundWeapon.damage += 1;  // increase the damage of the unit's ground weapon by 1
-    
+
     unit.groundWeapon = Weapon("Gauss Rifle");  // change the unit's ground weapon to a Gauss Rifle
-    
+
     P1.ore += 1;  // increase P1 mineral by 1
     if (P1.ore >= 100) {
         printAll("Red has collected at least 100 minerals");

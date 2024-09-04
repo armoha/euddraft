@@ -1,5 +1,175 @@
 # 변경 사항 (한국어)
 
+## [0.9.11.1] - 2024.09.04
+### 기능 변경
+- scdata에서 알려진 기능 업데이트 (DarkenedFantasies님 기여)
+  * CSprite.flags.Flag4 (0x10) -> `CSprite.flags.IsSubunit`: 스프라이트의 높이를 올려서 부가유닛이 본체보다 위에 그려지게 합니다.
+  * CSprite.unknown0x12 -> `CSprite.grpWidth`
+  * CSprite.unknown0x13 -> `CSprite.grpHeight`
+  * CUnit/TrgUnit.movementFlags.Unknown -> `CUnit/TrgUnit.movementFlags.BrakeOnPathStep`: 경로의 끝에 도착하면 유닛이 감속합니다
+  * CUnit.ghostNukeMissile -> `CUnit.ghostNukeDot`: [뉴클리어 닷의 CThingy를 가리킵니다.](https://github.com/BoomerangAide/GPTP/blob/ce321f0fa83174aee741b91f1b2eaec30300773e/GPTP/hooks/orders/spells/nuke_orders.cpp#L204-L222)
+  * TrgUnit.AIFlags -> `TrgUnit.dontBecomeGuard`
+  * Tech.requirementOffset -> `Tech.researchRequirementOffset`, `Tech.techUseRequirementOffset`
+
+### 기능 추가
+- 다차원 구조체 배열 기능, 구조체 배열에 상수 인덱스 범위 체크 추가 (고래밥은맛있어님 제보)
+```js
+// epScript 예시
+object Point { var x, y; };
+
+function onPluginStart() {
+const point2x3 = (Point * 3 * 2)();
+    // 객체 정적 할당
+    foreach(i : py_range(2)) {
+        point2x3[i] = (Point * 3)();
+        foreach(j : py_range(3)) {
+            point2x3[i][j] = Point()
+        }
+    }
+
+    point2x3[2];  // 인덱스 범위 오류
+    point2x3[0][3];  // 인덱스 범위 오류
+}
+```
+- scdata 멤버 추가
+  * `TrgPlayer.unitColor`
+  * `TrgPlayer.minimapColor`
+  * `TrgPlayer.remainingGamePause`
+  * `TrgPlayer.missionObjectives`
+  * `TrgPlayer.unitScore`
+  * `TrgPlayer.buildingScore`
+  * `TrgPlayer.killScore`
+  * `TrgPlayer.razingScore`
+  * `TrgPlayer.customScore`
+- scdata 플래그 기능 추가
+  * `CUnit.pathingFlags`
+    - `CUnit.pathingFlags.HasCollision` (0x01)
+    - `CUnit.pathingFlags.IsStacked` (0x02)
+    - `CUnit.pathingFlags.Decollide` (0x04)
+  * `TrgUnit.groupFlags`
+    - `TrgUnit.groupFlags.Zerg` (0x01)
+    - `TrgUnit.groupFlags.Terran` (0x02)
+    - `TrgUnit.groupFlags.Protoss` (0x04)
+    - `TrgUnit.groupFlags.Men` (0x08)
+    - `TrgUnit.groupFlags.Building` (0x10)
+    - `TrgUnit.groupFlags.Factory` (0x20)
+    - `TrgUnit.groupFlags.Independent` (0x40)
+    - `TrgUnit.groupFlags.Neutral` (0x80)
+  * `TrgUnit.movementFlags`: `CUnit.movementFlags`와 동일함
+    - `TrgUnit.movementFlags.OrderedAtLeastOnce` (0x01)
+    - `TrgUnit.movementFlags.Accelerating` (0x02)
+    - `TrgUnit.movementFlags.Braking` (0x04)
+    - `TrgUnit.movementFlags.StartingAttack` (0x08)
+    - `TrgUnit.movementFlags.Moving` (0x10)
+    - `TrgUnit.movementFlags.Lifted` (0x20)
+    - `TrgUnit.movementFlags.Unknown` (0x40)
+    - `TrgUnit.movementFlags.AlwaysZero` (0x80)
+    - `TrgUnit.movementFlags.HoverUnit` (0xC1)
+  * `TrgUnit.baseProperty`
+    - `TrgUnit.baseProperty.Building` (0x00000001)
+    - `TrgUnit.baseProperty.Addon` (0x00000002)
+    - `TrgUnit.baseProperty.Flyer` (0x00000004)
+    - `TrgUnit.baseProperty.Worker` (0x00000008)
+    - `TrgUnit.baseProperty.Subunit` (0x00000010)
+    - `TrgUnit.baseProperty.FlyingBuilding` (0x00000020)
+    - `TrgUnit.baseProperty.Hero` (0x00000040)
+    - `TrgUnit.baseProperty.RegeneratesHp` (0x00000080)
+    - `TrgUnit.baseProperty.AnimatedIdle` (0x00000100)
+    - `TrgUnit.baseProperty.Cloakable` (0x00000200)
+    - `TrgUnit.baseProperty.TwoUnitsInOneEgg` (0x00000400)
+    - `TrgUnit.baseProperty.SingleEntity` (0x00000800): 다중 선택을 막는 단일 개체 기능, 모든 파워업스 유닛에 체크됨.
+    - `TrgUnit.baseProperty.ResourceDepot` (0x00001000): 자원을 반납하는 장소
+    - `TrgUnit.baseProperty.ResourceContainer` (0x00002000): 자원 유닛
+    - `TrgUnit.baseProperty.Robotic` (0x00004000)
+    - `TrgUnit.baseProperty.Detector` (0x00008000)
+    - `TrgUnit.baseProperty.Organic` (0x00010000)
+    - `TrgUnit.baseProperty.RequiresCreep` (0x00020000)
+    - `TrgUnit.baseProperty.Unused` (0x00040000)
+    - `TrgUnit.baseProperty.RequiresPsi` (0x00080000)
+    - `TrgUnit.baseProperty.Burrowable` (0x00100000)
+    - `TrgUnit.baseProperty.Spellcaster` (0x00200000)
+    - `TrgUnit.baseProperty.PermanentCloak` (0x00400000)
+    - `TrgUnit.baseProperty.PickupItem` (0x00800000): 파워업스처럼 들 수 있는 유닛에 체크됨
+    - `TrgUnit.baseProperty.IgnoresSupplyCheck` (0x01000000)
+    - `TrgUnit.baseProperty.MediumOverlay` (0x02000000): 스킬 이펙트 오버레이 관련
+    - `TrgUnit.baseProperty.LargeOverlay` (0x04000000)
+    - `TrgUnit.baseProperty.AutoAttackAndMove` (0x08000000)
+    - `TrgUnit.baseProperty.CanAttack` (0x10000000)
+    - `TrgUnit.baseProperty.Invincible` (0x20000000)
+    - `TrgUnit.baseProperty.Mechanical` (0x40000000)
+    - `TrgUnit.baseProperty.ProducesUnits` (0x80000000)
+  * `TrgUnit.availabilityFlags`
+    - `TrgUnit.availabilityFlags.NonNeutral` (0x001)
+    - `TrgUnit.availabilityFlags.UnitListing` (0x002): CreateUnit 액션으로 생성 가능
+    - `TrgUnit.availabilityFlags.MissionBriefing` (0x004)
+    - `TrgUnit.availabilityFlags.PlayerSettings` (0x008)
+    - `TrgUnit.availabilityFlags.AllRaces` (0x010)
+    - `TrgUnit.availabilityFlags.SetDoodadState` (0x020)
+    - `TrgUnit.availabilityFlags.NonLocationTriggers` (0x040)
+    - `TrgUnit.availabilityFlags.UnitHeroSettings` (0x080)
+    - `TrgUnit.availabilityFlags.LocationTriggers` (0x100)
+    - `TrgUnit.availabilityFlags.BroodWarOnly` (0x200)
+  * `Weapon.targetFlags`
+    - `Weapon.targetFlags.Air` (0x001)
+    - `Weapon.targetFlags.Ground` (0x002)
+    - `Weapon.targetFlags.Mechanical` (0x004)
+    - `Weapon.targetFlags.Organic` (0x008)
+    - `Weapon.targetFlags.NonBuilding` (0x010)
+    - `Weapon.targetFlags.NonRobotic` (0x020)
+    - `Weapon.targetFlags.Terrain` (0x040)
+    - `Weapon.targetFlags.OrganicOrMechanical` (0x080)
+    - `Weapon.targetFlags.PlayerOwned` (0x100): 디파일러의 컨슘처럼 자신의 유닛만 대상으로 할 수 있음
+- scdata 열거형(enum) 멤버 추가
+  * `CUnit.resourceType` = "None", "Gas", "Ore", "GasOrOre", "PowerUp"
+    일꾼이 운반 중인 종류
+  * `TrgUnit.nameString` = "스트링"
+  * `TrgUnit.rank` = "계급 이름" [계급 목록은 링크 참조](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
+  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = sfxdata.dat 스타크래프트 효과음 파일 경로 (대소문자 구별 안 함, 구분자로 '/'와 '\' 둘 다 허용)
+  * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
+  * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
+  * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
+  * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
+  * `Weapon.explosionType` = "None", "NormalHit", "SplashRadial", "SplashEnemy", "Lockdown", "NuclearMissile", "Parasite", "Broodlings", "EmpShockwave", "Irradiate", "Ensnare", "Plague", "StasisField", "DarkSwarm", "Consume", "YamatoGun", "Restoration", "DisruptionWeb", "CorrosiveAcid", "MindControl", "Feedback", "OpticalFlare", "Maelstrom", "Unknown_Crash", "SplashAir"
+  * `weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
+  * `Tech/Upgrade.race` = "Zerg", "Terran", "Protoss", "All"
+  * `Image.drawingFunction` = "Normal", "NormalNoHallucination", "NonVisionCloaking", "NonVisionCloaked", "NonVisionDecloaking", "VisionCloaking", "VisionCloaked", "VisionDecloaking", "EMPShockwave", "UseRemapping", "Shadow", "HpBar", "WarpTexture", "SelectionCircle", "PlayerColorOverride", "HideGFX_ShowSizeRect", "Hallucination", "WarpFlash"
+  * `UnitOrder.animation` = "Init", "Death", "GndAttkInit", "AirAttkInit", "Unused1", "GndAttkRpt", "AirAttkRpt", "CastSpell", "GndAttkToIdle", "AirAttkToIdle", "Unused2", "Walking", "WalkingToIdle", "SpecialState1", "SpecialState2", "AlmostBuilt", "Built", "Landing", "LiftOff", "IsWorking", "WorkingToIdle", "WarpIn", "Unused3", "StarEditInit", "Disable", "Burrow", "UnBurrow", "Enable", "NoAnimation"
+- offsetmap: `ArrayMember`의 생성자에 선택적 stride 인자 추가
+  * 예시 1) `TrgUnit.constructionGraphic`은 `Image` 타입이지만 간격은 4바이트이므로 `constructionGraphic = ArrayMember(0x6610B0, MemberKind.IMAGE, stride=4)` 로 정의합니다.
+  * 예시 2) `TrgPlayer.unitColor`는 1바이트 크기지만, 간격은 8바이트이므로 `unitColor = ArrayMember(0x581D76, MemberKind.BYTE, stride=8)` 로 정의합니다.
+- offsetmap: `ArrayEnumMember` 추가
+
+### 버그 수정
+- `{:c}`, `{:n}` (`PColor`, `PName`) 컴파일 오류 수정 (spin137님 제보)
+- `DisplayTextAll`, `DisplayTextAllAt` 함수 컴파일 오류 수정 (디펜더님 제보)
+- scdata의 크기, 오프셋 오류 수정 (DarkenedFantasies님 제보)
+  * CUnit.gatherQueueCount: 크기 -> bool
+  * CUnit.isUnderStorm: 크기 -> bool
+  * CUnit.resourceBelongsToAI: 크기 -> bool
+  * TrgUnit.constructionGraphic: 크기 -> dword
+  * Weapon.targetFlags: 크기 -> word
+  * Weapon.maxRange: 오프셋 -> 0x657470
+  * Weapon.cooldown: 오프셋 -> 0x656FB8
+  * Upgrade.mineralCostBase: 오프셋 -> 0x655740
+- scdata 기능이 더 구체적인 타입을 사용 (DarkenedFantasies님 제보)
+  * TrgUnit.constructionGraphic: Image
+  * TrgUnit.armorUpgrade: Upgrade
+  * TrgUnit.portrait: Portrait
+  * TrgUnit.nameString: TrgString
+  * Weapon.label: StatText
+  * Weapon.icon: icon
+  * Weapon.upgrade: Upgrade
+  * Weapon.targetErrorMessage: StatText
+  * Upgrade.label: StatText
+  * Upgrade.icon: icon
+  * UnitOrder.icon: Icon
+  * UnitOrder.weapon: Weapon
+  * UnitOrder.techUsed: Tech
+  * UnitOrder.obscuredOrder: UnitOrder
+
+### 기능 개선
+- `CUnit`, `CSprite` 생성 시 잘못된 입력에 대한 오류 메시지 개선
+
 ## [0.9.11.0] - 2024.09.01
 ### 기능 변경
 - `EUDJump`가 점프할 트리거 주소가 상수면 트리거를 사용하지 않도록 수정
@@ -15,9 +185,9 @@
 function example(unit: TrgUnit) {
     unit.armor += 1;  // 유닛 방어력 1 증가
     unit.groundWeapon.damage += 1;  // 유닛이 쓰는 지상무기의 공격력 1 증가
-    
+
     unit.groundWeapon = Weapon("Gauss Rifle");  // 유닛의 지상무기를 가우스 라이플로 변경
-    
+
     P1.ore += 1;  // P1 미네랄 1 증가
     if (P1.ore >= 100) {
         printAll("빨강님이 100 미네랄 이상 모았습니다");
