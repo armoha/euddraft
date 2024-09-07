@@ -1,5 +1,16 @@
 # 변경 사항 (한국어)
 
+## [0.9.11.2] - 2024.09.07
+### 버그 수정
+- ptr이 0일 때 `CUnit/CSprite.from_ptr(ptr)`이 이전의 값을 그대로 리턴하는 버그 수정 (@dr-zzt님 제보)
+- CUnit/CSprite의 ptr/epd 캐싱이 안 되는 버그 수정
+
+### 기능 개선
+- `f_getuserplayerid`와 `EUDLoopPlayer`가 `TrgPlayer`를 리턴하게 수정
+  * 차후에 `f_getuserplayerid`가 TrgPlayer의 서브클래스를 리턴하고 비공유 오프셋들을 멤버로 제공하는 것도 고려 중
+- eudplib 0.77.9 업데이트
+- 한국어 번역 파일 업데이트
+
 ## [0.9.11.1] - 2024.09.04
 ### 기능 변경
 - scdata에서 알려진 기능 업데이트 (DarkenedFantasies님 기여)
@@ -18,8 +29,8 @@
 object Point { var x, y; };
 
 function onPluginStart() {
-const point2x3 = (Point * 3 * 2)();
     // 객체 정적 할당
+    const point2x3 = (Point * 3 * 2)();
     foreach(i : py_range(2)) {
         point2x3[i] = (Point * 3)();
         foreach(j : py_range(3)) {
@@ -32,15 +43,15 @@ const point2x3 = (Point * 3 * 2)();
 }
 ```
 - scdata 멤버 추가
-  * `TrgPlayer.unitColor`
-  * `TrgPlayer.minimapColor`
-  * `TrgPlayer.remainingGamePause`
-  * `TrgPlayer.missionObjectives`
-  * `TrgPlayer.unitScore`
-  * `TrgPlayer.buildingScore`
-  * `TrgPlayer.killScore`
-  * `TrgPlayer.razingScore`
-  * `TrgPlayer.customScore`
+  * `TrgPlayer.unitColor`: byte
+  * `TrgPlayer.minimapColor`: byte
+  * `TrgPlayer.remainingGamePause`: byte
+  * `TrgPlayer.missionObjectives`: TrgString
+  * `TrgPlayer.unitScore`: dword
+  * `TrgPlayer.buildingScore`: dword
+  * `TrgPlayer.killScore`: dword
+  * `TrgPlayer.razingScore`: dword
+  * `TrgPlayer.customScore`: dword
 - scdata 플래그 기능 추가
   * `CUnit.pathingFlags`
     - `CUnit.pathingFlags.HasCollision` (0x01)
@@ -124,20 +135,20 @@ const point2x3 = (Point * 3 * 2)();
     일꾼이 운반 중인 종류
   * `TrgUnit.nameString` = "스트링"
   * `TrgUnit.rank` = "계급 이름" [계급 목록은 링크 참조](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
-  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = sfxdata.dat 스타크래프트 효과음 파일 경로 (대소문자 구별 안 함, 구분자로 '/'와 '\' 둘 다 허용)
+  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = [sfxdata.dat 스타크래프트 효과음 파일 경로](https://github.com/armoha/eudplib/blob/966b1649868d87f7c887a390ab4efa8bd4c22ba6/eudplib/core/rawtrigger/strdict/sfxdata.py#L3-L1145) (대소문자 구별 안 함, 구분자로 '/'와 '\\' 둘 다 허용)
   * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
   * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
   * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
   * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
   * `Weapon.explosionType` = "None", "NormalHit", "SplashRadial", "SplashEnemy", "Lockdown", "NuclearMissile", "Parasite", "Broodlings", "EmpShockwave", "Irradiate", "Ensnare", "Plague", "StasisField", "DarkSwarm", "Consume", "YamatoGun", "Restoration", "DisruptionWeb", "CorrosiveAcid", "MindControl", "Feedback", "OpticalFlare", "Maelstrom", "Unknown_Crash", "SplashAir"
-  * `weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
+  * `Weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
   * `Tech/Upgrade.race` = "Zerg", "Terran", "Protoss", "All"
   * `Image.drawingFunction` = "Normal", "NormalNoHallucination", "NonVisionCloaking", "NonVisionCloaked", "NonVisionDecloaking", "VisionCloaking", "VisionCloaked", "VisionDecloaking", "EMPShockwave", "UseRemapping", "Shadow", "HpBar", "WarpTexture", "SelectionCircle", "PlayerColorOverride", "HideGFX_ShowSizeRect", "Hallucination", "WarpFlash"
   * `UnitOrder.animation` = "Init", "Death", "GndAttkInit", "AirAttkInit", "Unused1", "GndAttkRpt", "AirAttkRpt", "CastSpell", "GndAttkToIdle", "AirAttkToIdle", "Unused2", "Walking", "WalkingToIdle", "SpecialState1", "SpecialState2", "AlmostBuilt", "Built", "Landing", "LiftOff", "IsWorking", "WorkingToIdle", "WarpIn", "Unused3", "StarEditInit", "Disable", "Burrow", "UnBurrow", "Enable", "NoAnimation"
+- offsetmap: `ArrayEnumMember` 추가
 - offsetmap: `ArrayMember`의 생성자에 선택적 stride 인자 추가
   * 예시 1) `TrgUnit.constructionGraphic`은 `Image` 타입이지만 간격은 4바이트이므로 `constructionGraphic = ArrayMember(0x6610B0, MemberKind.IMAGE, stride=4)` 로 정의합니다.
   * 예시 2) `TrgPlayer.unitColor`는 1바이트 크기지만, 간격은 8바이트이므로 `unitColor = ArrayMember(0x581D76, MemberKind.BYTE, stride=8)` 로 정의합니다.
-- offsetmap: `ArrayEnumMember` 추가
 
 ### 버그 수정
 - `{:c}`, `{:n}` (`PColor`, `PName`) 컴파일 오류 수정 (spin137님 제보)
@@ -151,6 +162,9 @@ const point2x3 = (Point * 3 * 2)();
   * Weapon.maxRange: 오프셋 -> 0x657470
   * Weapon.cooldown: 오프셋 -> 0x656FB8
   * Upgrade.mineralCostBase: 오프셋 -> 0x655740
+
+### 기능 개선
+- `CUnit`, `CSprite` 생성 시 잘못된 입력에 대한 오류 메시지 개선
 - scdata 기능이 더 구체적인 타입을 사용 (DarkenedFantasies님 제보)
   * TrgUnit.constructionGraphic: Image
   * TrgUnit.armorUpgrade: Upgrade
@@ -166,9 +180,6 @@ const point2x3 = (Point * 3 * 2)();
   * UnitOrder.weapon: Weapon
   * UnitOrder.techUsed: Tech
   * UnitOrder.obscuredOrder: UnitOrder
-
-### 기능 개선
-- `CUnit`, `CSprite` 생성 시 잘못된 입력에 대한 오류 메시지 개선
 
 ## [0.9.11.0] - 2024.09.01
 ### 기능 변경

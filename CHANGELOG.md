@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.11.2] - 2024.09.07
+### Bugfix
+- Bugfix: `CUnit/CSprite.from_ptr(ptr)' returns old value when ptr is 0 (reported by @dr-zzt)
+- Fixed bug with CUnit/CSprite not caching ptr/epd
+
+### Improved
+- Change `f_getuserplayerid` and `EUDLoopPlayer` to return `TrgPlayer`.
+  * Considering that in the future `f_getuserplayerid` will return a subclass of `TrgPlayer` and provide local/desync offsets as members
+- eudplib 0.77.9 update
+- Updated Korean translation files
+
 ## [0.9.11.1] - 2024.09.04
 ### Changed
 - Update known features in scdata (contributed by DarkenedFantasies)
@@ -18,8 +29,8 @@
 object Point { var x, y; };
 
 function onPluginStart() {
-const point2x3 = (Point * 3 * 2)();
     // static allocation of objects
+    const point2x3 = (Point * 3 * 2)();
     foreach(i : py_range(2)) {
         point2x3[i] = (Point * 3)();
         foreach(j : py_range(3)) {
@@ -32,15 +43,15 @@ const point2x3 = (Point * 3 * 2)();
 }
 ```
 - Added scdata members
-  * `TrgPlayer.unitColor`
-  * `TrgPlayer.minimapColor`
-  * `TrgPlayer.remainingGamePause`
-  * `TrgPlayer.missionObjectives`
-  * `TrgPlayer.unitScore`
-  * `TrgPlayer.buildingScore`
-  * `TrgPlayer.killScore`
-  * `TrgPlayer.razingScore`
-  * `TrgPlayer.customScore`
+  * `TrgPlayer.unitColor`: byte
+  * `TrgPlayer.minimapColor`: byte
+  * `TrgPlayer.remainingGamePause`: byte
+  * `TrgPlayer.missionObjectives`: TrgString
+  * `TrgPlayer.unitScore`: dword
+  * `TrgPlayer.buildingScore`: dword
+  * `TrgPlayer.killScore`: dword
+  * `TrgPlayer.razingScore`: dword
+  * `TrgPlayer.customScore`: dword
 - Added scdata flag members
   * `CUnit.pathingFlags`
     - `CUnit.pathingFlags.HasCollision` (0x01)
@@ -124,20 +135,20 @@ const point2x3 = (Point * 3 * 2)();
     What the worker is carrying
   * `TrgUnit.nameString` = "string"
   * `TrgUnit.rank` = "Rank name" [see link for a list of ranks](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
-  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = sfxdata.dat StarCraft sound effects file path (case insensitive, both '/' and '\' are allowed as separators)
+  * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = [sfxdata.dat StarCraft sound effects file path](https://github.com/armoha/eudplib/blob/966b1649868d87f7c887a390ab4efa8bd4c22ba6/eudplib/core/rawtrigger/strdict/sfxdata.py#L3-L1145) (case insensitive, both '/' and '\\' are allowed as separators)
   * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
   * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
   * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
   * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
   * `Weapon.explosionType` = "None", "NormalHit", "SplashRadial", "SplashEnemy", "Lockdown", "NuclearMissile", "Parasite", "Broodlings", "EmpShockwave", "Irradiate", "Ensnare", "Plague", "StasisField", "DarkSwarm", "Consume", "YamatoGun", "Restoration", "DisruptionWeb", "CorrosiveAcid", "MindControl", "Feedback", "OpticalFlare", "Maelstrom", "Unknown_Crash", "SplashAir"
-  * `weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
+  * `Weapon.behavior` = "Fly_DoNotFollowTarget", "Fly_FollowTarget", "AppearOnTargetUnit", "PersistOnTargetSite", "AppearOnTargetSite", "AppearOnAttacker", "AttackAndSelfDestruct", "Bounce", "AttackNearbyArea", "GoToMaxRange"
   * `Tech/Upgrade.race` = "Zerg", "Terran", "Protoss", "All"
   * `Image.drawingFunction` = "Normal", "NormalNoHallucination", "NonVisionCloaking", "NonVisionCloaked", "NonVisionDecloaking", "VisionCloaking", "VisionCloaked", "VisionDecloaking", "EMPShockwave", "UseRemapping", "Shadow", "HpBar", "WarpTexture", "SelectionCircle", "PlayerColorOverride", "HideGFX_ShowSizeRect", "Hallucination", "WarpFlash"
   * `UnitOrder.animation` = "Init", "Death", "GndAttkInit", "AirAttkInit", "Unused1", "GndAttkRpt", "AirAttkRpt", "CastSpell", "GndAttkToIdle", "AirAttkToIdle", "Unused2", "Walking", "WalkingToIdle", "SpecialState1", "SpecialState2", "AlmostBuilt", "Built", "Landing", "LiftOff", "IsWorking", "WorkingToIdle", "WarpIn", "Unused3", "StarEditInit", "Disable", "Burrow", "UnBurrow", "Enable", "NoAnimation"
+- offsetmap: add `ArrayEnumMember`
 - offsetmap: add an optional `stride` argument to the constructor of `ArrayMember`
   * Example 1) Define `TrgUnit.constructionGraphic` as `constructionGraphic = ArrayMember(0x6610B0, MemberKind.IMAGE, stride=4)` because it is of type `Image` but the stride is 4 bytes.
   * Example 2) `TrgPlayer.unitColor` is 1 byte in size, but the gap is 8 bytes, so we define it as `unitColor = ArrayMember(0x581D76, MemberKind.BYTE, stride=8)`.
-- offsetmap: add `ArrayEnumMember`
 
 ### Bugfix
 - Fix `{:c}`, `{:n}` (`PColor`, `PName`) compilation error (reported by spin137)
@@ -151,6 +162,9 @@ const point2x3 = (Point * 3 * 2)();
   * `Weapon.maxRange`: offset -> 0x657470
   * `Weapon.cooldown`: offset -> 0x656FB8
   * `Upgrade.mineralCostBase`: offset -> 0x655740
+
+### Improved
+- Improved error message for invalid input when creating `CUnit`, `CSprite`
 - scdata uses more specific types (reported by DarkenedFantasies)
   * `TrgUnit.constructionGraphic`: Image
   * `TrgUnit.armorUpgrade`: Upgrade
@@ -166,9 +180,6 @@ const point2x3 = (Point * 3 * 2)();
   * `UnitOrder.weapon`: Weapon
   * `UnitOrder.techUsed`: Tech
   * `UnitOrder.obscuredOrder`: UnitOrder
-
-### Improved
-- Improved error message for invalid input when creating `CUnit`, `CSprite`
 
 ## [0.9.11.0] - 2024.09.01
 ### Changed

@@ -104,13 +104,16 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.77.8"
-description = "eudplib is a package which provides scripting for StarCraft Use Map Setting(UMS) to UMS map and tool developers."
+version = "0.77.9"
+description = "EUD Trigger generator"
 optional = false
 python-versions = "<3.12,>=3.10"
 files = [
-    {file = "eudplib-0.77.8-cp311-cp311-win_amd64.whl", hash = "sha256:7ead35a69377b71677dc096ccb153d82703ae14d0f53d1cf2da4d0232b651893"},
+    {file = "eudplib-0.77.9-cp311-cp311-win_amd64.whl", hash = "sha256:8177887a0f75e83056c49c19cad2cb3cdf0d1a473e7d7fbac36ea0b348b02938"},
 ]
+
+[package.dependencies]
+typing-extensions = "*"
 
 [[package]]
 name = "lief"
