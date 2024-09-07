@@ -1,6 +1,9 @@
 # 변경 사항 (한국어)
 
 ## [0.9.11.2] - 2024.09.07
+### 기능 변경
+- [MSQC] 비공유 조건에서 `EUDVariable`, `EUDXVariable`, `EUDLightVariable`, `EUDLightBool` 외에도 `EUDRegisterObjectToNamespace`로 등록한 모든 오브젝트를 사용 가능하게 수정 (고래밥은맛있어님 건의)
+
 ### 버그 수정
 - ptr이 0일 때 `CUnit/CSprite.from_ptr(ptr)`이 이전의 값을 그대로 리턴하는 버그 수정 (@dr-zzt님 제보)
 - CUnit/CSprite의 ptr/epd 캐싱이 안 되는 버그 수정

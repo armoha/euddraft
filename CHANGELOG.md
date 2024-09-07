@@ -1,6 +1,9 @@
 # Changelog
 
 ## [0.9.11.2] - 2024.09.07
+### Changed
+- [MSQC] local condition allows not only `EUDVariable`, `EUDXVariable`, ``EUDLightVariable`, EUDLightBool` but *any object* registered by `EUDRegisterObjectToNamespace` (suggested by 고래밥은맛있어)
+
 ### Bugfix
 - Bugfix: `CUnit/CSprite.from_ptr(ptr)' returns old value when ptr is 0 (reported by @dr-zzt)
 - Fixed bug with CUnit/CSprite not caching ptr/epd

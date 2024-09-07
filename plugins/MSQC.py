@@ -875,12 +875,7 @@ def SendQC():
     def parseCond(s):
         _ns = GetEUDNamespace()
         for k, v in _ns.items():
-            if (
-                IsEUDVariable(v)
-                or isUnproxyInstance(v, EUDLightBool)
-                or isUnproxyInstance(v, EUDLightVariable)
-                or isUnproxyInstance(v, EUDXVariable)
-            ) and k in s:
+            if k in s:
                 s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
 
