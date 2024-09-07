@@ -879,6 +879,24 @@ def SendQC():
                 s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
 
+    def parseSource(src, always=False):
+        if isinstance(src, int):
+            return src
+        try:
+            ret = int(src, 0)
+        except ValueError:
+            _ns = GetEUDNamespace()
+            ret = eval(parseCond(src))
+            if isinstance(ret, EUDLightVariable) or always:
+                try:
+                    ret = EPD(ret.getValueAddr())
+                except AttributeError:
+                    ret = EPD(ret)
+        else:
+            ret = EPD(ret)
+
+        return ret
+
     RC = Db(b"...\x15XXYY\0\0\xE4\0\x06\x00")
     SEL = Db(b"..\x09\x0112..")
     f_setcurpl(f_getuserplayerid())
@@ -968,20 +986,6 @@ def SendQC():
         elif ret[0] == "val":
             DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
 
-            def parseSource(src, always=False):
-                if isinstance(src, int):
-                    return src
-                try:
-                    src = int(ret[1], 0)
-                except ValueError:
-                    _ns = GetEUDNamespace()
-                    src = eval(parseCond(ret[1]))
-                    if isinstance(src, EUDLightVariable) or always:
-                        src = EPD(src.getValueAddr())
-                else:
-                    src = EPD(src)
-                return src
-
             src = parseSource(ret[1], always=True)
             src = f_v2posread_epd(src)
             VProc(
@@ -994,20 +998,6 @@ def SendQC():
             )
         elif ret[0] == "xy":
             DoActions(SetMemory(RC + 4, SetTo, 64 * 65537 + 1))
-
-            def parseSource(src, always=False):
-                if isinstance(src, int):
-                    return src
-                try:
-                    src = int(src, 0)
-                except ValueError:
-                    _ns = GetEUDNamespace()
-                    src = eval(parseCond(src))
-                    if isinstance(src, EUDLightVariable) or always:
-                        src = EPD(src.getValueAddr())
-                else:
-                    src = EPD(src)
-                return src
 
             if len(ret) == 3:
                 src = parseSource(ret[1])
