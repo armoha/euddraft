@@ -156,6 +156,8 @@ def applyEUDDraft(sfname):
             "decodeUnitName",
             "objFieldN",
             "sectorSize",
+            "ptrEUDArray",
+            "errorReapplyEPD",
         )
         invalidMainOptions = []
         for mainOption in mainSection:
@@ -166,6 +168,17 @@ def applyEUDDraft(sfname):
 
         if "shufflePayload" in mainSection:
             ep.ShufflePayload(eval(mainSection["shufflePayload"]))
+
+        if "ptrEUDArray" in mainSection:
+            from eudplib.collections.eudarray import _use_ptr_array
+
+            if eval(mainSection["ptrEUDArray"]):
+                _use_ptr_array()
+
+        if "errorReapplyEPD" in mainSection:
+            from eudplib.utils.etc import _allow_epd_on_epd
+
+            _allow_epd_on_epd(eval(mainSection["errorReapplyEPD"]))
 
         if "debug" in mainSection:
             ep.EPS_SetDebug(True)
