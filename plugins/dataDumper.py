@@ -41,18 +41,19 @@ def onInit():
         if outOffsetStr is None:
             continue
         print(' - Loading file "%s"...' % dataPath)
-        inputData = open(dataPath, "rb").read()
-        flags = set()
-        outOffsets = []
+        with open(dataPath, "rb") as file:
+            inputData = file.read()
+            flags = set()
+            outOffsets = []
 
-        for outOffset in outOffsetStr.split(","):
-            outOffset = eval(outOffset)
-            if isinstance(outOffset, _Flag):
-                flags.add(outOffset)
-            else:
-                outOffsets.append(outOffset)
+            for outOffset in outOffsetStr.split(","):
+                outOffset = eval(outOffset)
+                if isinstance(outOffset, _Flag):
+                    flags.add(outOffset)
+                else:
+                    outOffsets.append(outOffset)
 
-        inputDatas.append((inputData, outOffsets, flags))
+            inputDatas.append((inputData, outOffsets, flags))
 
 
 onInit()

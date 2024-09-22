@@ -11,7 +11,11 @@ QCDebug, UseVal = True, False
 qc_cons, qc_rets, xy_cons, xy_rets, deathsUnits = [], [], [], [], set()
 
 KeyArray, KeyOffset = EUDArray(8), set()
+if KeyArray._is_epd():
+    KeyArray = 4 * KeyArray + 0x58A364
 MouseArray, MouseOffset = EUDArray(1), set()
+if MouseArray._is_epd():
+    MouseArray = 4 * KeyArray + 0x58A364
 cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY = [Forward() for i in range(4)]
 isMouseMoved, useMouseLocation = EUDVariable(), False
 
@@ -563,6 +567,7 @@ def Respawn():
     w4, r4 = divmod(QCUnit, 4)
     w2, r2 = divmod(QCUnit, 2)
     LOC_TEMP, LocEPD = EUDArray(5), EPD(0x58DC60) + QCLoc * 5
+    LOCPTR = LOC_TEMP * 4 + 0x58A364 if LOC_TEMP._is_epd() else LOC_TEMP
     global cp
     q4, q2 = 4 * w4, 4 * w2
     m4, m2 = 1 << (8 * r4), 1 << (16 * r2)
@@ -588,11 +593,11 @@ def Respawn():
         SetMemoryX(0x660FC8 + q4, SetTo, 0xC5 * m4, 0xFF * m4),
         SetMemoryX(0x663150 + q4, SetTo, 0x13 * m4, 0xFF * m4),
         # Temporary save previous data of QCLocation
-        SetMemory(LOC_TEMP, SetTo, f_dwread_epd(LocEPD)),
-        SetMemory(LOC_TEMP + 4, SetTo, f_dwread_epd(LocEPD + 1)),
-        SetMemory(LOC_TEMP + 8, SetTo, f_dwread_epd(LocEPD + 2)),
-        SetMemory(LOC_TEMP + 12, SetTo, f_dwread_epd(LocEPD + 3)),
-        SetMemory(LOC_TEMP + 16, SetTo, f_dwread_epd(LocEPD + 4)),
+        SetMemory(LOCPTR, SetTo, f_dwread_epd(LocEPD)),
+        SetMemory(LOCPTR + 4, SetTo, f_dwread_epd(LocEPD + 1)),
+        SetMemory(LOCPTR + 8, SetTo, f_dwread_epd(LocEPD + 2)),
+        SetMemory(LOCPTR + 12, SetTo, f_dwread_epd(LocEPD + 3)),
+        SetMemory(LOCPTR + 16, SetTo, f_dwread_epd(LocEPD + 4)),
         SetMemoryXEPD(LocEPD + 4, SetTo, 0, 0xFFFF0000),
         cp.SetNumber(min(humans)),
     )
@@ -1041,8 +1046,7 @@ def ReceiveQC():
         _ns = GetEUDNamespace()
         for k, v in _ns.items():
             if (
-                isUnproxyInstance(v, EUDArray)
-                or isUnproxyInstance(v, VArrayType)
+                isUnproxyInstance(v, EUDArray) or isUnproxyInstance(v, VArrayType)
             ) and k in s:
                 s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
@@ -1053,7 +1057,8 @@ def ReceiveQC():
         if ret[0] == "array":
             array = eval(parseArray(ret[1]))
             if isUnproxyInstance(array, EUDArray):
-                init_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
+                epd = array if array._is_epd() else EPD(array)
+                init_array.append(SetMemoryEPD(epd + cp, SetTo, 0))
             elif isUnproxyInstance(array, VArrayType):
                 init_array.append(
                     SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, 0)
@@ -1076,7 +1081,8 @@ def ReceiveQC():
             elif ret[0] == "array":
                 array = eval(parseArray(ret[1]))
                 if isUnproxyInstance(array, EUDArray):
-                    f_dwadd_epd(EPD(array) + cp, ret[2])
+                    epd = array if array._is_epd() else EPD(array)
+                    f_dwadd_epd(epd + cp, ret[2])
                 elif isUnproxyInstance(array, VArrayType):
                     f_dwadd_epd((EPD(array) + 328 // 4 + 5) + vi, ret[2])
                 else:
@@ -1095,7 +1101,8 @@ def ReceiveQC():
                 except NameError:
                     continue
                 if isUnproxyInstance(array, EUDArray):
-                    vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, -1))
+                    epd = array if array._is_epd() else EPD(array)
+                    vinit_array.append(SetMemoryEPD(epd + cp, SetTo, -1))
                 elif isUnproxyInstance(array, VArrayType):
                     vinit_array.append(
                         SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, -1)
@@ -1123,7 +1130,8 @@ def ReceiveQC():
             else:
                 array = eval(parseArray(ret[2]))
                 if isUnproxyInstance(array, EUDArray):
-                    f_dwwrite_epd(EPD(array) + cp, xy)
+                    epd = array if array._is_epd() else EPD(array)
+                    f_dwwrite_epd(epd + cp, xy)
                 elif isUnproxyInstance(array, VArrayType):
                     f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
                 else:
@@ -1137,7 +1145,8 @@ def ReceiveQC():
                 else:
                     array = eval(parseArray(ret[2]))
                     if isUnproxyInstance(array, EUDArray):
-                        f_dwwrite_epd(EPD(array) + cp, xy)
+                        epd = array if array._is_epd() else EPD(array)
+                        f_dwwrite_epd(epd + cp, xy)
                     elif isUnproxyInstance(array, VArrayType):
                         f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
                     else:
@@ -1162,7 +1171,8 @@ def ReceiveQC():
                         continue
                     array = eval(parseArray(s))
                     if isUnproxyInstance(array, EUDArray):
-                        f_dwwrite_epd(EPD(array) + cp, v)
+                        epd = array if array._is_epd() else EPD(array)
+                        f_dwwrite_epd(epd + cp, v)
                     elif isUnproxyInstance(array, VArrayType):
                         f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, v)
                     else:
