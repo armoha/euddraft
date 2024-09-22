@@ -27,6 +27,7 @@ import itertools
 import os
 import sys
 import types
+import warnings
 from importlib.machinery import SourceFileLoader
 
 # Get absolute path of current executable
@@ -129,6 +130,7 @@ def loadPluginsFromConfig(ep, config):
 
     initialDirectory = os.getcwd()
     initialPath = sys.path[:]
+    initial_warnfilters = warnings.filters.copy()
 
     for pluginName in pluginList:
         if pluginName.casefold() == "freeze":
@@ -176,6 +178,7 @@ def loadPluginsFromConfig(ep, config):
         pluginPath = getPluginPath(pluginName)
 
         try:
+            warnings.simplefilter("always")
             pluginDir = os.path.dirname(pluginPath)
             if pluginDir and pluginDir not in sys.path:
                 sys.path.insert(1, os.path.abspath(pluginDir))
@@ -216,6 +219,7 @@ def loadPluginsFromConfig(ep, config):
         finally:
             os.chdir(initialDirectory)
             sys.path[:] = initialPath[:]
+            warnings.fliters = initial_warnfilters
 
     if isFreezeIssued():
         print(
