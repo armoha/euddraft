@@ -41,7 +41,6 @@ function onPluginStart() {
 - epScript: Relative Path Import Bug Fixes and Behavior Changes
   * Fixed a bug that caused modules to be duplicated every time a relative path import was made.
   * If a path can be imported with an absolute path, it will be replaced with an absolute path import.
-  * Only modules can be imported with relative path imports, not individual items inside the module.
   * Consider making the path accessible with `sys.path.insert(1, path)` when a parent folder prevents importing, or consider adding `__init__.py` when importing between files inside a folder to be recognized as a Python package.
 - Changed behavior of epScript `object` (=`EUDMethod` of `EUDStruct`) to not duplicate triggers for each static instance they call
 - Change cast behavior: don't copy the value, just use it as is and apply the type.

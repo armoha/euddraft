@@ -178,7 +178,7 @@ def applyEUDDraft(sfname):
         if "errorReapplyEPD" in mainSection:
             from eudplib.utils.etc import _allow_epd_on_epd
 
-            _allow_epd_on_epd(eval(mainSection["errorReapplyEPD"]))
+            _allow_epd_on_epd(not eval(mainSection["errorReapplyEPD"]))
 
         if "debug" in mainSection:
             ep.EPS_SetDebug(True)
