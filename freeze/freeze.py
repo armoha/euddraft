@@ -141,8 +141,12 @@ def unFreeze():
                     tInternalCount += 1
                 EUDEndIf()
             ObfuscatedJump()
-            dst = EPD(desiredTriggerCount) + player
-            cons = [MemoryEPD(dst, Exactly, tCount), tInternalCount == 217]
+            dst = (
+                desiredTriggerCount
+                if desiredTriggerCount._is_epd()
+                else EPD(desiredTriggerCount)
+            )
+            cons = [MemoryEPD(dst + player, Exactly, tCount), tInternalCount == 217]
             random.shuffle(cons)
             Trigger(cons, cryptKey.AddNumber(1))
             cryptKey += decryptedCount - encryptedTriggerCount[player]
