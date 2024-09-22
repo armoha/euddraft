@@ -1,11 +1,162 @@
 # 변경 사항 (한국어)
 
+## [0.10.0.0] - 2024.09.22
+### 기능 변경
+- `EUDArray`가 EPD를 기본으로 사용합니다
+  * 기존 코드 호환을 위해 `EPD(상수표현식의 EPD)`는 EPD를 그대로 반환합니다 (경고 메시지 출력)
+  * `[main]`에 `ptrEUDArray` 와 `errorReapplyEPD` 플래그가 추가됐습니다
+  ```ini
+  [main]
+  ptrEUDArray : True
+  errorReapplyEPD : True
+  :: ptrEUDArray 플래그를 켜면 이전 버전처럼 EUDArray가 ptr 주소를 사용합니다
+  :: errorReapplyEPD 플래그를 켜면 상수 EPD값에 EPD함수를 적용하면 오류가 발생합니다
+  ```
+  * `ptrEUDArray` 플래그가 켜져있는 경우, 배열을 주고 받는 경우에는 EPD를 계산하지 않고, 원소 접근할 때만 EPD를 계산하도록 개선되었습니다.
+- epScript: 타입 변수 기능 추가
+  * 레퍼런스 타입(`EUDArray`, `EUDVArray`, epScript `object` (=`EUDStruct`), `EUDStructArray`, `CUnit`, `CSprite`)은 동일한 타입의 대입만 가능합니다. `+=,` `-=,` `*=,` `/=` 등의 연산은 잘못된 주소로 변경할 수 있어서 지원하지 않습니다.
+  * 값 타입(`LocalLocale`, `TrgUnit`, `Weapon`, `UnitOrder`, `Flingy`, `Sprite`, `Image`, `TrgPlayer`, `Upgrade`, `Tech` 등)은 대입 외에도 `+=,`, `-=` 등 다른 연산도 가능합니다.
+```js
+// 문법
+var 이름: 타입 = 초기값;
+static var 이름: 타입 = 초기값;
+var 이름1: 타입1, 이름2: 타입2, 이름3: 타입3 = 초기값1, 초기값2, 초기값3;
+
+// 예시
+function onPluginStart() {
+    // 해처리에 라바 연결하기
+    var hatchery: CUnit = 0;
+    foreach(unit : EUDLoopPlayerCUnit()) {
+        if (unit.unitType == "Zerg Hatchery") {
+            hatchery = unit;
+        }
+    }
+    foreach(unit : EUDLoopPlayerCUnit()) {
+        if (unit.unitType == "Zerg Larva") {
+            larva.connectedUnit = hatchery;
+        }
+    }
+}
+```
+- epScript: 상대 경로 임포트 버그 수정 및 동작 변경
+  * 상대 경로 임포트할 때마다 모듈이 복제되는 버그 수정
+  * 절대 경로로 불러올 수 있는 위치인 경우 절대 경로 임포트로 바뀝니다.
+  * 상대 경로 임포트로는 모듈만 불러올 수 있고 모듈 내부 개별 개체는 불러올 수 없습니다.
+  * 상위 폴더로 인해 임포트가 안 될 때는 `sys.path.insert(1, 경로)`로 경로를 접근 가능하도록 추가하거나, 폴더 내부 파일끼리 임포트하는 경우에는 `__init__.py`를 추가하여 파이썬 패키지로 인식되게 하는 걸 고려해보세요.
+- epScript `object`의 메소드(=`EUDStruct`의 `EUDMethod`)가 호출한 정적 인스턴스마다 트리거를 복제하지 않도록 동작 변경
+- cast 동작 변경: 값을 복사하지 않고 그대로 사용하고 타입만 적용합니다.
+- `EUDVariable` 생성자 단순화: `EUDVariable`은 이제 초기값만 생성자로 입력받습니다.
+  * 고급 초기화 옵션은 `EUDXVariable(epd, modifier, 초기값, (생략 가능)비트마스크=기본값 0xFFFFFFFF)`를 사용하세요.
+- `f_getuserplayerid()`와 `EUDLoopPlayer`가 `TrgPlayer` 타입을 리턴하도록 수정
+- `DBString` 메모리 레이아웃 변경
+- `Db`를 `"문자열"`로 생성하는 경우 중간에 \0 널 바이트가 있으면 오류나게 수정
+- `DBString`의 중간에 \0 널 바이트가 있으면 오류나게 수정
+- `objFieldN` 플래그로 동적 할당 용 객체의 필드 개수를 변경해도 최대 객체 개수는 32768개로 고정됩니다
+
+### 기능 추가
+- `EUDVArray`가 epScript `foreach` 반복문을 지원합니다
+```js
+const varr = EUDVArray(10)(py_range(10));
+foreach(x : varr) {
+    printAll("{}", x);
+    if (x >= 5) break;
+}
+// 출력: 0, 1, 2, 3, 4, 5
+```
+- scdata: 현재 업그레이드/테크 읽기/쓰기 기능 추가
+  * 업그레이드와 플레이어의 epd, subp를 캐싱하도록 최적화되어 있어서 값이 그대로거나 += 로만 변경하는 경우 epd, subp를 다시 계산하지 않고 이전에 계산한 결과를 다시 사용하도록 최적화되어 있습니다. (기능 개선 항목 참고)
+```js
+// Upgrade[TrgPlayer] = 새_업그레이드_레벨;
+const 바이오닉_공업 = Upgrade("Terran Infantry Weapon");
+foreach(player : EUDLoopPlayer()) {
+   바이오닉_공업[player] = 1;
+}
+// const 업그레이드_레벨 = Upgrade[TrgPlayer];
+printAll("P1의 바이오닉 공업: {}", 바이오닉_공업[player]);
+
+// Tech[TrgPlayer] = 새 테크 단계;
+var 스파이더마인: Tech = "Spider Mines";
+스파이더마인[P1] = 1;
+
+// const 기술_연구했는지 = Tech[TrgPlayer];  // 테크가 0이 아닌 경우 1을 리턴
+once (Tech("Stim Pack")[P1]) {
+    printAll("빨강이 스팀팩을 연구했습니다.");
+}
+```
+- `UnitGroup`에 `유닛그룹.length` 추가 (쥬뱅님 건의)
+- `EUDLightBool`이 True를 초기값으로 가질 수 있도록 수정 (@Chromowolf 님 건의)
+- 출력용 상수 스트링에 간단한 난독화 기능 추가
+
+### 버그 수정
+- EUD변수 <, > 버그 수정 (고래밥은맛있어님 제보)
+- epScript: 오류 줄이 잘못 표시되는 버그 수정 (@Chromowolf 님 제보)
+- (https://github.com/armoha/eudplib/pull/28) `EUDLoopRange(시작, 끝)`에서 시작, 끝에 같은 값이 입력되면 무한 루프가 생기는 버그 수정 (고래밥은맛있어님 기여)
+- `CUnit(EPD(0x59CCA8))`처럼 CUnit을 상수로 초기화했을 때 오류 수정
+- `EUDStruct.cast`가 `__init__`을 오버라이딩하는 서브클래스에서 `None`을 리턴할 수 있는 버그 수정
+- 파이썬 경고 메시지가 출력되지 않는 버그 수정
+- `CUnit(상수)`, `CSprite.from_ptr(상수)` 버그 수정
+
+### 기능 개선
+- epd와 cp 읽기 함수가 트리거를 공유하도록 수정
+- `EUDVArray`, `PVariable`, `f_repmovsd_epd` 등 성능 개선
+- `$L`과 `setloc_epd`에서도 로케이션 이름 오타나면 알려주도록 수정
+- 스트링 개수가 65535개를 초과하면 컴파일 오류 추가
+- `ConstExpr` 나눗셈 컴파일 오류 메시지 개선
+- scdata: `UnsupportedMember`의 오류 메시지 개선
+- scdata: ArrayMember 캐싱으로 성능 개선
+  * 4바이트가 아닌 멤버를 접근할 때, 변수의 값이 그대로면 epd, subp 계산을 다시 하지 않고 이전에 계산한 결과를 재사용합니다.
+  * `scdata 인스턴스 += 1;`는 모든 캐시값을 갱신하도록 특수화되어 있기 때문에 캐시 무효화와 재계산이 일어나지 않습니다.
+```js
+var unit: TrgUnit = dwrand() % 228;
+// (1)
+unit.maxShield = 10000;
+unit.elevation = 1;
+
+unit = dwrand() % 228;
+// (2)
+unit.maxHp = 10000 * 256;
+// (3)
+unit.hasShield = false;
+
+/*
+EUD변수를 감싸는 scdata 클래스는 ArrayMember 중에서 간격이 4바이트가 아닌 멤버를 위한 값을 캐싱해둡니다.
+변수를 감싼 scdata 인스턴스로 간격이 4바이트가 아닌 멤버를 접근할 때마다, 변수가 캐시값에서 달라졌는지 체크하고, 변수가 변했으면 모든 파생된 값들을 갱신합니다.
+
+위 예시 코드에서 unit은 1바이트(elevation, hasShield)와 2바이트(maxShield) 배열멤버를 사용하므로, unit.maxShield를 접근할 때 변수가 캐시값과 다르므로 모든 파생된 값 { unit ÷ 4, unit % 4, unit ÷ 2, 2*(unit%2) } 을 갱신합니다.
+(멤버를 사용하면 모든 멤버 접근 코드에 전역적으로 영향을 주며 이전 시점에 실행되는 코드에도 소급 적용됩니다.)
+
+변수 unit은 unit.maxShield와 unit.elevation 접근 사이에서 값이 변하지 않았으므로, unit.elevation에서는 파생값 갱신이 일어나지 않습니다.
+
+변수 unit의 값이 변하더라도 (2) unit.maxHp는 4바이트 간격 멤버이기 때문에 캐시 체크 조건을 실행하지 않으며, 따라서 파생값 갱신도 일어나지 않습니다. 
+따라서 (3) unit.hasShield 접근은 캐시 체크 조건을 실행하며 파생값 갱신도 같이 일어날 겁니다.
+*/
+
+// 캐싱값은 scdata 인스턴스가 아니라 감싸진 변수에 연결되어있습니다.
+// cast로 동일한 변수를 여러 타입으로 해석할 경우, 가장 큰 타입만큼 비트마스크 범위가 확장될 수 있습니다.
+var v = 23;  // 0x17
+const p = TrgPlayer.cast(v);
+P12.cummulativeMineral = 9999;
+// TrgPlayer의 비트마스크는 0xF라서
+// 작성한 코드가 여기까지라면 P8의 누적 가스가 출력됩니다
+printAll("{}", p.cumulativeGas);  
+
+// 변수 v를 TrgUnit으로 cast하고, 4바이트가 아닌 멤버를 접근하면
+// 변수 v의 비트마스크가 TrgPlayer의 0xF에서 TrgUnit의 0xFF로 확장됩니다:
+const u = TrgUnit.cast(v);  
+printAll(u.gasCost, 200);
+
+// 이는 전역적으로 작용하므로,
+// 위의 printAll("{}", p.cumulativeGas); 는
+// P24의 누적 가스 = P12의 누적 미네랄인 9999가 출력됩니다.
+```
+- 그 외 잡다한 버그 수정 및 개선
+
 ## [0.9.11.2] - 2024.09.07
 ### 기능 변경
 - [MSQC] 비공유 조건에서 `EUDVariable`, `EUDXVariable`, `EUDLightVariable`, `EUDLightBool` 외에도 `EUDRegisterObjectToNamespace`로 등록한 모든 오브젝트를 사용 가능하게 수정 (고래밥은맛있어님 건의)
 
 ### 버그 수정
-- ptr이 0일 때 `CUnit/CSprite.from_ptr(ptr)`이 이전의 값을 그대로 리턴하는 버그 수정 (@dr-zzt님 제보)
+- ptr이 0일 때 `CUnit`/`CSprite.from_ptr(ptr)`이 이전의 값을 그대로 리턴하는 버그 수정 (@dr-zzt 님 제보)
 - CUnit/CSprite의 ptr/epd 캐싱이 안 되는 버그 수정
 
 ### 기능 개선
@@ -46,15 +197,15 @@ function onPluginStart() {
 }
 ```
 - scdata 멤버 추가
-  * `TrgPlayer.unitColor`: byte
-  * `TrgPlayer.minimapColor`: byte
-  * `TrgPlayer.remainingGamePause`: byte
-  * `TrgPlayer.missionObjectives`: TrgString
-  * `TrgPlayer.unitScore`: dword
-  * `TrgPlayer.buildingScore`: dword
-  * `TrgPlayer.killScore`: dword
-  * `TrgPlayer.razingScore`: dword
-  * `TrgPlayer.customScore`: dword
+  * `TrgPlayer.unitColor`: byte, 플레이어의 유닛 색상
+  * `TrgPlayer.minimapColor`: byte, 플레이어의 미니맵, 리더보드 색상
+  * `TrgPlayer.remainingGamePause`: byte, 남아있는 게임 일시정지 개수
+  * `TrgPlayer.missionObjectives`: TrgString, 플레이어가 미션 오브젝트로 사용할 맵 스트링
+  * `TrgPlayer.unitScore`: dword, 플레이어가 생산한 유닛들의 점수
+  * `TrgPlayer.buildingScore`: dword, 플레이어가 건설한 건물들의 점수
+  * `TrgPlayer.killScore`: dword, 플레이어가 처치한 유닛들의 점수
+  * `TrgPlayer.razingScore`: dword, 플레이어가 파괴한 건물들의 점수
+  * `TrgPlayer.customScore`: dword, 플레이어의 커스텀 점수
 - scdata 플래그 기능 추가
   * `CUnit.pathingFlags`
     - `CUnit.pathingFlags.HasCollision` (0x01)
@@ -139,7 +290,7 @@ function onPluginStart() {
   * `TrgUnit.nameString` = "스트링"
   * `TrgUnit.rank` = "계급 이름" [계급 목록은 링크 참조](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
   * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = [sfxdata.dat 스타크래프트 효과음 파일 경로](https://github.com/armoha/eudplib/blob/966b1649868d87f7c887a390ab4efa8bd4c22ba6/eudplib/core/rawtrigger/strdict/sfxdata.py#L3-L1145) (대소문자 구별 안 함, 구분자로 '/'와 '\\' 둘 다 허용)
-  * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
+  * `TrgUnit.sizeType` = "Independent", "Small", "Medium", "Large"
   * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
   * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
   * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
@@ -193,7 +344,7 @@ function onPluginStart() {
 - `CUnit.cast(other)`와 `CSprite.cast(other)`의 대상이 변수일 때 변수를 복사하지 않고 그대로 사용하게 변경
 
 ### 기능 추가
-- 기존 타입에 간편한 스타크래프트 데이터 수정 기능(scdata) 추가 (@dr-zzt님 기여)
+- 기존 타입에 간편한 스타크래프트 데이터 수정 기능(scdata) 추가 (@dr-zzt 님 기여)
 ```js
 // scdata 기능 예제
 function example(unit: TrgUnit) {
@@ -208,7 +359,7 @@ function example(unit: TrgUnit) {
     }
 }
 ```
-  * 자세한 설명글 @dr-zzt님이 작성 예정
+  * @dr-zzt 님이 작성한 scdata 강좌글: [English](https://github.com/armoha/euddraft/wiki/SCData-Explained:-An-Easy-Way-to-Modify-SC-Data-With-Code), [한국어](https://cafe.naver.com/edac/131814)
 - epScript: object 전방 선언 문법 추가 (하늘바라군님, 0xFF님 건의)
 ```js
 object Food;
@@ -229,7 +380,7 @@ object Meat extends Food {};  // 이건 안 됨
 - epScript: `object` `extends` 의 superclass 자리에 `a.b` 를 비롯한 표현식도 사용 가능하게 수정 (0xFF님 제보)
 - epScript: 함수 전방 선언 문법에서 리턴 타입을 작성하면 오류나는 버그 수정
 - `DisplayTextAll`, `PlayWAVAll` 등 모든 플레이어 대상으로 실행되는 함수에 변수 입력 시 오류 수정 (furina님 제보)
-- 일부 `Portrait` 항목 오타 수정 (@dr-zzt님 제보)
+- 일부 `Portrait` 항목 오타 수정 (@dr-zzt 님 제보)
 - rvalue 변수 최적화가 적용 안 되는 버그 수정
 - 트리거를 선언할 수 없는 위치에 선언했을 때 `TriggerScopeError` 예외가 일찍 발생하게 수정
   * 예외 처리해도 유효하지 않은 트리거가 생기는 버그 수정
@@ -259,9 +410,9 @@ object Meat extends Food {};  // 이건 안 됨
 
 ### 기능 개선
 - eudplib 0.76.15, cx_Freeze 6.15.13 업데이트
-- `EUDVarBuffer.WritePayload` 성능 개선 (@phu54321 님 기여: https://github.com/armoha/eudplib/commit/29ed0ef5a50bc78d375b9d09aba27598c83268c9)
+- (https://github.com/armoha/eudplib/commit/29ed0ef5a50bc78d375b9d09aba27598c83268c9) `EUDVarBuffer.WritePayload` 성능 개선 (@phu54321 님 기여)
   * 컴파일 시간 4.2% 감소
-- [epScript] linetable 생성 코드 Rust로 재작성 (https://github.com/armoha/eudplib/pull/25)
+- [epScript] (https://github.com/armoha/eudplib/pull/25) linetable 생성 코드 Rust로 재작성
   * 컴파일 시간 5.7% 감소
   * 총 9.66% 만큼 컴파일 시간 감소
 
@@ -271,7 +422,7 @@ object Meat extends Food {};  // 이건 안 됨
 
 ### 기능 개선
 - eudplib to 0.76.14 업데이트
-- eudplib 프론트엔드 속도 20% 가량 개선 (@phu54321 님 기여: https://github.com/armoha/eudplib/pull/24)
+- (https://github.com/armoha/eudplib/pull/24) eudplib 프론트엔드 속도 20% 가량 개선 (@phu54321 님 기여)
 - Writing phase에서 GetObjectAddr 개선
 - 빌드 시간 약 10% 감소
 
@@ -882,8 +1033,8 @@ function circle() {
     foreach(v : dq3) { ret[5] += v; }  // 18 = 5 + 6 + 7
     ```
   * 파이썬 `collections.deque(maxlen=크기)`와 동일하게 동작합니다.
-- [epScript] armoha/euddraft#86 : 함수 인자 뒤에 쉼표 허용하도록 수정
-- [epScript] armoha/euddraft#87 : 이진법 숫자 표현 추가 (@Chromowolf 님 건의)
+- [epScript] (armoha/euddraft#86) 함수 인자 뒤에 쉼표 허용하도록 수정
+- [epScript] (armoha/euddraft#87) 이진법 숫자 표현 추가 (@Chromowolf 님 건의)
   * `0b1 == 1`, `0b10 == 2`, `0b11 == 3`
 - `EUDQueue.empty()`가 항상 참인 버그 수정
 - `EUDQueue.popleft()` 없이 `EUDQueue.append(x)`만 사용할 때 컴파일 오류 수정 (HeartKlass님 제보)
@@ -908,12 +1059,12 @@ function circle() {
 - [epScript] 아이템 비교/쓰기 버그 수정, epScript에서 최적화하도록 구조 변경 (34464님 제보)
   * 비교 연산자 우선순위 버그 수정
   * `>`, `<`, `&=` 버그 수정
-- armoha/euddraft#82 : 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
+- (armoha/euddraft#82) 연결맵의 `Disabled(PreserveTrigger())` 트리거가 반복 실행되는 버그 수정 (@Chromowolf 님 제보)
 - 연결맵 트리거 일부가 반복 실행되지 않는 버그 수정 (ehwl 님 제보)
 - `var >> 값` 컴파일 오류 수정 (GGrush님 제보)
 - `EUDNot` 버그 수정
 - `*=`, `/=`, `<<=`, `>>=`가 LValue 변수를 RValue로 변경하는 버그 수정
-- armoha/euddraft#65 : `if (액션)` 오류 메시지 개선
+- (armoha/euddraft#65) `if (액션)` 오류 메시지 개선
 
 ## [0.9.7.3] - 2022.10.09
 - `EUDArray`와 `EUDVArray`의 아이템 비교/쓰기 연산 최적화
@@ -1155,7 +1306,7 @@ function circle() {
 `shufflePayload : bool` 옵션 추가.
 
 ## [0.9.5.2] - 2022.04.14
-- (armoha/euddraft#55) 설정 파일 오류 메시지 개선 ([**@zuhanit**](https://github.com/zuhanit) 기여)
+- (armoha/euddraft#55) 설정 파일 오류 메시지 개선 (@zuhanit 님 기여)
 ![better config error message](https://user-images.githubusercontent.com/36349353/163330102-91b83907-4d6d-4484-a787-22231d1d62ca.png)
 - (armoha/eudplib#5) 컴파일 속도 개선: EUD 변수 트리거 생성 개선
 - 키워드 인자 `nextptr` 추가: `EUDVariable`, `EUDXVariable`
