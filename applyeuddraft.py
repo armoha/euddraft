@@ -158,6 +158,7 @@ def applyEUDDraft(sfname):
             "sectorSize",
             "ptrEUDArray",
             "errorReapplyEPD",
+            "suppressWarnings",
         )
         invalidMainOptions = []
         for mainOption in mainSection:
@@ -179,6 +180,14 @@ def applyEUDDraft(sfname):
             from eudplib.utils.etc import _allow_epd_on_epd
 
             _allow_epd_on_epd(not eval(mainSection["errorReapplyEPD"]))
+
+        if "suppressWarnings" in mainSection:
+            from pluginLoader import suppress_warnings
+            import warnings
+
+            suppress_warnings(True)
+            warnings.filterwarnings("ignore")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
 
         if "debug" in mainSection:
             ep.EPS_SetDebug(True)

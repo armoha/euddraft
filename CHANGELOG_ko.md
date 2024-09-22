@@ -82,8 +82,18 @@ once (Tech("Stim Pack")[P1]) {
     printAll("빨강이 스팀팩을 연구했습니다.");
 }
 ```
+- scdata: `TrgUnit` 멤버 추가:
+  * `TrgUnit.unitBoundsLT` : 유닛의 왼쪽, 위쪽 경계
+  * `TrgUnit.unitBoundsRB` : 유닛의 오른쪽, 아래쪽 경계
+  * `TrgUnit.unitBoundsL` : 유닛의 왼쪽 경계
+  * `TrgUnit.unitBoundsT` : 유닛의 위쪽 경계
+  * `TrgUnit.unitBoundsR` : 유닛의 오른쪽 경계
+  * `TrgUnit.unitBoundsB` : 유닛의 아래쪽 경계
 - `UnitGroup`에 `유닛그룹.length` 추가 (쥬뱅님 건의)
 - `EUDLightBool`이 True를 초기값으로 가질 수 있도록 수정 (@Chromowolf 님 건의)
+- `[main]`에 `suppressWarnings` 빌드 플래그 추가 (Ultraviolet 님 제안)
+  * [main] 아래에 suppressWarnings : 1 를 작성하면 파이썬 쪽에서 발생하는 모든 경고 메시지가 꺼집니다.
+  * EUD Editor 2에서는 경고와 오류가 구분하지 않고 빌드 성공했어도 오류라고 알려주는데 해당 옵션을 사용하여 해결할 수 있습니다.
 - 출력용 상수 스트링에 간단한 난독화 기능 추가
 
 ### 버그 수정

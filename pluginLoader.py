@@ -30,6 +30,14 @@ import types
 import warnings
 from importlib.machinery import SourceFileLoader
 
+_suppress_warnings = False
+
+
+def suppress_warnings(flag: bool):
+    global _suppress_warnings
+    _suppress_warnings = flag
+
+
 # Get absolute path of current executable
 if getattr(sys, "frozen", False):
     # frozen
@@ -178,7 +186,11 @@ def loadPluginsFromConfig(ep, config):
         pluginPath = getPluginPath(pluginName)
 
         try:
-            warnings.simplefilter("always")
+            if _suppress_warnings:
+                warnings.filterwarnings("ignore")
+                warnings.filterwarnings("ignore", category=DeprecationWarning)
+            else:
+                warnings.simplefilter("always")
             pluginDir = os.path.dirname(pluginPath)
             if pluginDir and pluginDir not in sys.path:
                 sys.path.insert(1, os.path.abspath(pluginDir))

@@ -83,8 +83,18 @@ once (Tech("Stim Pack")[P1]) {
     printAll("Red researched stim pack.");
 }
 ```
+- scdata: Added `TrgUnit` members:
+  * `TrgUnit.unitBoundsLT`
+  * `TrgUnit.unitBoundsRB`
+  * `TrgUnit.unitBoundsL`
+  * `TrgUnit.unitBoundsT`
+  * `TrgUnit.unitBoundsR`
+  * `TrgUnit.unitBoundsB`
 - Added `UnitGroup.length` (suggested by 쥬뱅)
 - `EUDLightBool` can be initialized with `True` (suggested by @Chromowolf)
+- Added `suppressWarnings` flag on `[main]` (suggested by Ultraviolet)
+  * This suppresses every warnings in Python
+  * EUD Editor 2 has longstanding issue of not distinguishing warning and error. You can workaround this issue with `suppressWarnings` flag.
 - Added simple obfuscation to constant strings for print functions
 
 ### Bugfix
