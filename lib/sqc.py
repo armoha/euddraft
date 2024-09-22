@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Library for synchronizing local user data to every players by QueueGameCommand.
 

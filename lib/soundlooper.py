@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """soundlooper - Manage loop sounds for StarCraft: Remastered."""
 import codecs
 import io
@@ -8,7 +6,7 @@ import random
 import string
 import struct
 from io import BytesIO
-from math import ceil, floor
+from math import ceil
 
 from eudplib import *
 

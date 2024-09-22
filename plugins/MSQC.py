@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import re
 from math import ceil
 
@@ -483,6 +481,7 @@ QC_EPDs = [  # QCUnits = QCCount * humans
     EUDVArray(QCCount)([EPD(0x59CFDE)] * QCCount) if p in humans else 0
     for p in range(8)
 ]  # ptr, epd of QC_EPDs. ArrayPtr is used in nextptr modification
+VArrayType = type(QC_EPDs[0])
 ArrayPTRs = PVariable(QC_EPDs)
 ArrayEPDs = PVariable([EPD(x) for x in QC_EPDs])
 # detect if QCUnit is selected (0x6284B8)
@@ -1042,7 +1041,8 @@ def ReceiveQC():
         _ns = GetEUDNamespace()
         for k, v in _ns.items():
             if (
-                isUnproxyInstance(v, EUDArray) or isUnproxyInstance(v, EUDVArray(8))
+                isUnproxyInstance(v, EUDArray)
+                or isUnproxyInstance(v, VArrayType)
             ) and k in s:
                 s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
         return s
@@ -1054,7 +1054,7 @@ def ReceiveQC():
             array = eval(parseArray(ret[1]))
             if isUnproxyInstance(array, EUDArray):
                 init_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, 0))
-            elif isUnproxyInstance(array, EUDVArray(8)):
+            elif isUnproxyInstance(array, VArrayType):
                 init_array.append(
                     SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, 0)
                 )
@@ -1077,7 +1077,7 @@ def ReceiveQC():
                 array = eval(parseArray(ret[1]))
                 if isUnproxyInstance(array, EUDArray):
                     f_dwadd_epd(EPD(array) + cp, ret[2])
-                elif isUnproxyInstance(array, EUDVArray(8)):
+                elif isUnproxyInstance(array, VArrayType):
                     f_dwadd_epd((EPD(array) + 328 // 4 + 5) + vi, ret[2])
                 else:
                     raise EPError("{} unknown type for return value".format(ret[1]))
@@ -1096,7 +1096,7 @@ def ReceiveQC():
                     continue
                 if isUnproxyInstance(array, EUDArray):
                     vinit_array.append(SetMemoryEPD(EPD(array) + cp, SetTo, -1))
-                elif isUnproxyInstance(array, EUDVArray(8)):
+                elif isUnproxyInstance(array, VArrayType):
                     vinit_array.append(
                         SetMemoryEPD((EPD(array) + 328 // 4 + 5) + vi, SetTo, -1)
                     )
@@ -1124,7 +1124,7 @@ def ReceiveQC():
                 array = eval(parseArray(ret[2]))
                 if isUnproxyInstance(array, EUDArray):
                     f_dwwrite_epd(EPD(array) + cp, xy)
-                elif isUnproxyInstance(array, EUDVArray(8)):
+                elif isUnproxyInstance(array, VArrayType):
                     f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
                 else:
                     raise EPError("{} unknown type for return value".format(ret[2]))
@@ -1138,7 +1138,7 @@ def ReceiveQC():
                     array = eval(parseArray(ret[2]))
                     if isUnproxyInstance(array, EUDArray):
                         f_dwwrite_epd(EPD(array) + cp, xy)
-                    elif isUnproxyInstance(array, EUDVArray(8)):
+                    elif isUnproxyInstance(array, VArrayType):
                         f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, xy)
                     else:
                         raise EPError("{} unknown type for return value".format(ret[2]))
@@ -1163,7 +1163,7 @@ def ReceiveQC():
                     array = eval(parseArray(s))
                     if isUnproxyInstance(array, EUDArray):
                         f_dwwrite_epd(EPD(array) + cp, v)
-                    elif isUnproxyInstance(array, EUDVArray(8)):
+                    elif isUnproxyInstance(array, VArrayType):
                         f_dwwrite_epd((EPD(array) + 328 // 4 + 5) + vi, v)
                     else:
                         raise EPError("%s unknown type for return value" % ret[2])
