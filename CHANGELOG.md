@@ -1,11 +1,162 @@
 # Changelog
 
-## [0.9.11.2] - 2024.09.07
+## [0.10.0.0] - 2024.09.22
 ### Changed
-- [MSQC] local condition allows not only `EUDVariable`, `EUDXVariable`, ``EUDLightVariable`, EUDLightBool` but *any object* registered by `EUDRegisterObjectToNamespace` (suggested by 고래밥은맛있어)
+- `EUDArray` now uses EPD by default
+  * For backward compatibility with existing code, `EPD(EPD of ConstExpr)` returns EPD as is (with warning message)
+  * Added `ptrEUDArray` and `errorReapplyEPD` flags to `[main]`
+  ```ini
+  [main]
+  ptrEUDArray : True
+  errorReapplyEPD : True
+  :: If the `ptrEUDArray` flag is turned on, EUDArray will use the ptr address as before
+  :: If the `errorReapplyEPD` flag is turned on, applying the EPD function to a constant EPD value will result in an error
+  ```
+  * If the `ptrEUDArray` flag is on, EPD is not calculated when array is only used in passing to or from function boundaries. When array element is accessed, EPD calculation trigger is added at array declaration on demand.
+- epScript: Added type variable feature.
+  * Reference types (`EUDArray`, `EUDVArray`, epScript `object` (=`EUDStruct`), `EUDStructArray`, `CUnit`, `CSprite`) can only be assigned to the same type. Operations such as `+=,` `-=,` `*=,` `/=` are not supported because they can change to invalid addresses.
+  * Value types (such as `LocalLocale`, `TrgUnit`, `Weapon`, `UnitOrder`, `Flingy`, `Sprite`, `Image`, `TrgPlayer`, `Upgrade`, `Tech`, etc.) supports assigment and other operations like `+=`, `-=`, ...
+```js
+// Syntax
+var name: Type = initialValue;
+static var name: Type = initialValue;
+var name1: type1, name2: type2, name3: type3 = initial1, initial2, initial3;
+
+// Example
+function onPluginStart() {
+    // Link hatchery to larvae
+    var hatchery: CUnit = 0;
+    foreach(unit : EUDLoopPlayerCUnit()) {
+        if (unit.unitType == "Zerg Hatchery") {
+            hatchery = unit;
+        }
+    }
+    foreach(unit : EUDLoopPlayerCUnit()) {
+        if (unit.unitType == "Zerg Larva") {
+            larva.connectedUnit = hatchery;
+        }
+    }
+}
+```
+- epScript: Relative Path Import Bug Fixes and Behavior Changes
+  * Fixed a bug that caused modules to be duplicated every time a relative path import was made.
+  * If a path can be imported with an absolute path, it will be replaced with an absolute path import.
+  * Only modules can be imported with relative path imports, not individual items inside the module.
+  * Consider making the path accessible with `sys.path.insert(1, path)` when a parent folder prevents importing, or consider adding `__init__.py` when importing between files inside a folder to be recognized as a Python package.
+- Changed behavior of epScript `object` (=`EUDMethod` of `EUDStruct`) to not duplicate triggers for each static instance they call
+- Change cast behavior: don't copy the value, just use it as is and apply the type.
+- Simplified `EUDVariable` constructor: `EUDVariable` now only accepts an initial value as a constructor.
+  * For advanced initialization options, use `EUDXVariable(epd, modifier, initial value, (optional) bitmask 0xFFFFFFFF by default)`.
+- Fix `f_getuserplayerid()` and `EUDLoopPlayer` to return `TrgPlayer` type
+- Change `DBString` memory layout
+- `Db` initialized with `"string"` will raise error if string has a null byte in the middle
+- `DBString` will raise error with a \0 null byte in the middle
+- `objFieldN` flag won't change the maximum number of objects (=32768)
+
+### Added
+- `EUDVArray` supports epScript `foreach` loop
+```js
+const varr = EUDVArray(10)(py_range(10));
+foreach(x : varr) {
+    printAll("{}", x);
+    if (x >= 5) break;
+}
+// prints: 0, 1, 2, 3, 4, 5
+```
+- scdata: Added current upgrade/tech level read/write
+  * Optimized to cache epd and subp for upgrade/tech and player, so that if they are unchanged or only change them with `+= 1`, epd and subp are not recalculated, and instead reuse the previously calculated results. (See Improved section)
+```js
+// Upgrade[TrgPlayer] = New_Upgrade_Level;
+const infantryWeapon = Upgrade("Terran Infantry Weapon");
+foreach(player : EUDLoopPlayer()) {
+   infantryWeapon[player] = 1;
+}
+
+// const upgrade_level = Upgrade[TrgPlayer];
+printAll("current Terran Infantry Weapon level for P1: {}", infantryWeapon[player]);
+
+// Tech[TrgPlayer] = new Tech level;
+var spiderMines: Tech = "Spider Mines";
+spiderMines[P1] = 1;
+
+// const hasResearched = Tech[TrgPlayer]; // return 1 if tech is non-zero
+once (Tech("Stim Pack")[P1]) {
+    printAll("Red researched stim pack.");
+}
+```
+- Added `UnitGroup.length` (suggested by 쥬뱅)
+- `EUDLightBool` can be initialized with `True` (suggested by @Chromowolf)
+- Added simple obfuscation to constant strings for print functions
 
 ### Bugfix
-- Bugfix: `CUnit/CSprite.from_ptr(ptr)' returns old value when ptr is 0 (reported by @dr-zzt)
+- Fixed `<`, `>` for `EUDVariable` (reported by 고래밥은맛있어)
+- epScript: fixed incorrect line number on error (reported by @Chromowolf)
+- (https://github.com/armoha/eudplib/pull/28) fixed infinite loop in `EUDLoopRange(start, end)` when `start == end` (contributed by 고래밥은맛있어)
+- Fixed constant CUnit instance e.g. `CUnit(EPD(0x59CCA8))`
+- Fixed `EUDStruct.cast` could return `None` when subclass overrides `__init__` without `_from` parameter
+- Fixed bug where Python warning messages were not printed
+- Fixed bugs with `CUnit(constant)`, `CSprite.from_ptr (constant)`
+
+### Improved
+- Improved epd and cp read functions to share their triggers
+- Performance improvements for `EUDVArray`, `PVariable`, `f_repmovsd_epd`, etc.
+- Fixed `$L` and `setloc_epd` to also warn of location name misspellings
+- Added compilation error when string count exceeds 65535
+- Improved `ConstExpr` division compile error message
+- scdata: Improved error message for `UnsupportedMember`
+- scdata: added caching to improve performance with ArrayMember
+  * When accessing a non-4-byte member, if the variable is unchanged, it will reuse the previously calculated result instead of recalculating epd, subp.
+  * `scdataInstance += 1;` is specialized to update all cache values, so cache invalidation and recalculation does not occur.
+```js
+var unit: TrgUnit = dwrand() % 228;
+// (1)
+unit.maxShield = 10000;
+unit.elevation = 1;
+
+unit = dwrand() % 228;
+// (2)
+unit.maxHp = 10000 * 256;
+// (3)
+unit.hasShield = false;
+
+/*
+ArrayMember of the scdata instance wrapping EUDVariable will cache derived values for members whose stride is not 4 bytes.
+All non-4-byte-stride member accesses will perform a cache check condition and update derived values if the value has changed.
+
+Because unit uses 1-byte (elevation, hasShield) and 2-byte (maxShield) members, the  cache check condition detects a value change at (1), and every derived values are updated; unit / 4, unit % 4, unit / 2 and 2*(unit % 2).
+(member usages affect globally to every usages, even retroactively)
+`var unit` is unchanged between unit.maxShield and unit.elevation, so unit.elevation does not run update for derived values.
+
+`unit`'s value has changed at (2) ,but unit.maxHp is a 4-byte member, so it does not run perform a cache check condition.
+unit.hasShield access at (3) will perform a cache check condition and may update derived values.
+*/
+
+// The cache is associated with the wrapped variable, not the scdata instance.
+// If cast interprets the same variable as multiple types, the bitmask range can be extended by the largest type.
+var v = 23;  // 0x17
+const p = TrgPlayer.cast(v);
+P12.cummulativeMineral = 9999;
+// TrgPlayer's bitmask is 0xF
+// If that's all we've written, we'll print out the cumulative gas for P8 (playerID=7)
+printAll("{}", p.cumulativeGas);  
+
+// If we cast variable v to a TrgUnit, and access a non-4-byte-stride member,
+// the bitmask of variable v is expanded from 0xF (TrgPlayer) to 0xFF (TrgUnit) globally:
+const u = TrgUnit.cast(v);  
+printAll(u.gasCost, 200);
+
+// This acts globally, so,
+// The above printAll("{}", p.cumulativeGas); will print 9999,
+// which is P24's cumulative gas = P12's cumulative minerals.
+```
+- Miscellaneous bug fixes and improvements
+
+## [0.9.11.2] - 2024.09.07
+### Changed
+- [MSQC] local condition allows not only `EUDVariable`, `EUDXVariable`, `EUDLightVariable`, `EUDLightBool` but *any object* registered by `EUDRegisterObjectToNamespace` (suggested by 고래밥은맛있어)
+
+### Bugfix
+- Bugfix: `CUnit`/`CSprite.from_ptr(ptr)` returns old value when ptr is 0 (reported by @dr-zzt)
 - Fixed bug with CUnit/CSprite not caching ptr/epd
 
 ### Improved
@@ -139,7 +290,7 @@ function onPluginStart() {
   * `TrgUnit.nameString` = "string"
   * `TrgUnit.rank` = "Rank name" [see link for a list of ranks](https://github.com/armoha/eudplib/blob/main/eudplib/core/rawtrigger/strdict/stattxt.py#L1689-L1934)
   * `TrgUnit.readySound/whatSoundStart/whatSoundEnd/pissedSoundStart/pissedSoundEnd/yesSoundStart/yesSoundEnd` = [sfxdata.dat StarCraft sound effects file path](https://github.com/armoha/eudplib/blob/966b1649868d87f7c887a390ab4efa8bd4c22ba6/eudplib/core/rawtrigger/strdict/sfxdata.py#L3-L1145) (case insensitive, both '/' and '\\' are allowed as separators)
-  * `TrgUnit.unitSize` = "Independent", "Small", "Medium", "Large"
+  * `TrgUnit.sizeType` = "Independent", "Small", "Medium", "Large"
   * `TrgUnit.rightClickAction` = "NoCommand_AutoAttack", "NormalMove_NormalAttack", "NormalMove_NoAttack", "NoMove_NormalAttack", "Harvest", "HarvestAndRepair", "Nothing"
   * `Flingy.movementControl` = "FlingyDat", "PartiallyMobile_Weapon", "IscriptBin"
   * `Weapon.damageType` = "Independent", "Explosive", "Concussive", "Normal", "IgnoreArmor"
