@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.0.1] - 2024.09.23
+### Bugfix
+- [MSQC] Fix mouse button event compilation error (reported by 텔)
+- Bugfix: `DisplayTextAt`, `DisplayTextAllAt` compilation error fixed (reported by @dr-zzt)
+- Fixed bug with Korean translation text not showing up
+
+### Improved
+- Optimize `f_rand()` function and fix to not change CurrentPlayer
+- Added error message for invalid arguments when creating `EUDVariable`, `EUDXVariable`, `EUDVArray`
+
 ## [0.10.0.0] - 2024.09.22
 ### Changed
 - `EUDArray` now uses EPD by default

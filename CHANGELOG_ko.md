@@ -1,5 +1,15 @@
 # 변경 사항 (한국어)
 
+## [0.10.0.1] - 2024.09.23
+### 버그 수정
+- [MSQC] 마우스 버튼 인식 컴파일 오류 수정 (텔님 제보)
+- DisplayTextAt, DisplayTextAllAt 컴파일 오류 수정 (@dr-zzt 님 제보)
+- 한국어 번역 텍스트가 안 나오는 버그 수정
+
+### 기능 개선
+- `f_rand()` 함수 최적화 및 CurrentPlayer를 변경하지 않도록 수정
+- `EUDVariable`, `EUDXVariable`, `EUDVArray` 생성시 잘못된 인자에 대해 오류 메시지 추가
+
 ## [0.10.0.0] - 2024.09.22
 ### 기능 변경
 - `EUDArray`가 EPD를 기본으로 사용합니다
