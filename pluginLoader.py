@@ -125,7 +125,8 @@ def loadPluginsFromConfig(ep, config):
 
                     outOffsets = list(filter(lambda x: x != tblOffset, outOffsets))
                     print((' - Loading stat_txt.tbl file "{}"...').format(dataPath))
-                    _AddStatText(open(dataPath, "rb").read())
+                    with open(dataPath, "rb") as file:
+                        _AddStatText(file.read())
                 if not outOffsets and not unknownArg:
                     dataDumperConfig[dataPath] = None
                     continue

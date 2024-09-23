@@ -10,12 +10,8 @@ QCX, QCY = 128, 128  # (4, 4)
 QCDebug, UseVal = True, False
 qc_cons, qc_rets, xy_cons, xy_rets, deathsUnits = [], [], [], [], set()
 
-KeyArray, KeyOffset = EUDArray(8), set()
-if KeyArray._is_epd():
-    KeyArray = 4 * KeyArray + 0x58A364
-MouseArray, MouseOffset = EUDArray(1), set()
-if MouseArray._is_epd():
-    MouseArray = 4 * KeyArray + 0x58A364
+KeyArray, KeyOffset = Db(32), set()
+MouseArray, MouseOffset = Db(4), set()
 cmpScreenX, cmpMouseX, cmpScreenY, cmpMouseY = [Forward() for i in range(4)]
 isMouseMoved, useMouseLocation = EUDVariable(), False
 
