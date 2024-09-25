@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0.2] - 2024.09.26
+### Bugfix
+- Fixed bug in fixed line print functions; `StringBuffer.printfAt`, `DisplayTextAt`, etc. (reported by 고래밥은맛있어, 맛있는건못참아)
+- scdata: Fix compilation error in 2 byte member `+=` (reported by 텔)
+- Fid compilation error in `f_epdread_cp` function (reported by 맛있는건못참아)
+- Fix compilation error when assigning 0 to `CUnit` variable (reported by @Chromowolf)
+
+### Improved
+- Add stack trace to warning messages (reported by 콤)
+- Optimized the number of triggers in `EUDByteReader.readbyte()`, `f_raise_CCMU()`, `f_getcurpl()`
+
 ## [0.10.0.1] - 2024.09.23
 ### Bugfix
 - [MSQC] Fix mouse button event compilation error (reported by 텔)
