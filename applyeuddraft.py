@@ -24,9 +24,9 @@ THE SOFTWARE.
 """
 
 import os
-import subprocess
 import sys
 import traceback
+import warnings
 
 import eudplib as ep
 
@@ -120,6 +120,18 @@ def isEpExc(s):
         or s.startswith('  file "eudplib')
     )
 
+
+def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, "write") else sys.stderr
+    traceback.print_stack(file=log)
+    warning_message = warnings.formatwarning(message, category, filename, lineno, line)
+    plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib"
+    warning_message = warning_message.replace(plibPath, "eudplib")
+    warning_message = warning_message.replace("C:\dev\euddraftPrivate\\", "euddraft\\")
+    log.write(warning_message)
+
+
+warnings.showwarning = warn_with_traceback
 
 ##############################
 
@@ -253,9 +265,9 @@ def applyEUDDraft(sfname):
         for i, exc in enumerate(excs):
             if isEpExc(exc) and not all(isEpExc(e) for e in excs[i + 1 : -1]):
                 continue
-            plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib\\"
-            exc = exc.replace(plibPath, "eudplib\\")
-            exc = exc.replace("C:\dev\euddraftPrivate\\", "euddraft\\")
+            plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib"
+            exc = exc.replace(plibPath, "eudplib")
+            exc = exc.replace("C:\\dev\\euddraftPrivate", "euddraft")
             formatted_excs.append(exc)
 
         print(f"[Error] {err}", "".join(formatted_excs), file=sys.stderr)
