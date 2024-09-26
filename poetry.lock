@@ -148,17 +148,19 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.78.4"
+version = "0.78.5a1"
 description = "EUD Trigger generator"
 optional = false
-python-versions = "<3.12,>=3.10"
-files = [
-    {file = "eudplib-0.78.4-cp311-cp311-win_amd64.whl", hash = "sha256:820231235d0add3897a7c2e7d60687d2e1847abd9f5a39627342d4fca9c00c7f"},
-    {file = "eudplib-0.78.4.tar.gz", hash = "sha256:422049b941c16473fb98c59f387fbba7d10e390e4a8e7847934dd4357d25118a"},
-]
+python-versions = ">=3.10, <3.12"
+files = []
+develop = false
 
 [package.dependencies]
-typing-extensions = "*"
+typing_extensions = "*"
+
+[package.source]
+type = "directory"
+url = "../eudplib"
 
 [[package]]
 name = "filelock"
@@ -439,4 +441,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.10, < 3.12"
-content-hash = "12667688bcc6364782292f662cf4d3f0d7de5f86c79d6422f6001fd64f76b5d3"
+content-hash = "7e031d92160b480b1994d2601a664755eeb678dc3da3af5dc1c723b0b28bdfa6"

@@ -6,6 +6,7 @@
 - scdata: Fix compilation error in 2 byte member `+=` (reported by 텔)
 - Fix compilation error in `f_epdread_cp` function (reported by 맛있는건못참아)
 - Fix compilation error when assigning 0 to `CUnit` variable (reported by @Chromowolf)
+- Fix `f_rand` returned 0 (reported by @Chromowolf)
 
 ### Improved
 - Add stack trace to warning messages (reported by 콤)
