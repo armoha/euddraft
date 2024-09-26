@@ -53,7 +53,8 @@ def onPluginStart():
 
 
 def beforeTriggerExec():
-    MPQAddFile("bgm", open(bgmPath, "rb").read())
+    with open(bgmPath, "rb") as bgm_file:
+        MPQAddFile("bgm", bgm_file.read())
 
     if EUDIf()(f_istimerhit()):
         oldcp = f_getcurpl()

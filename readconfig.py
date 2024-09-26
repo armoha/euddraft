@@ -146,10 +146,10 @@ def readconfig(fname) -> tuple[Dict[str, Dict[str, str]], list[Exception]]:
         return config, exceptions
 
     try:
-        text = open(fname, encoding="UTF-8")
+        with open(fname, encoding="UTF-8") as text:
+            config, excs = parse_config(text)
     except UnicodeDecodeError:
-        text = open(fname)
-    with text:
-        config, excs = parse_config(text)
+        with open(fname) as text:
+            config, excs = parse_config(text)
 
     return config, excs

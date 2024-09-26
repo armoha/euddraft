@@ -260,14 +260,15 @@ def AddLoop(title, goto=1):
     def get_filepath(x):
         fp = _PATH + "/{0}/{0}".format(title)
         fnum = str(x)
+
         while len(fnum) <= 3:
             file_path = fp + fnum + ".ogg"
             try:
-                open(file_path, "rb")
+                with open(file_path, "rb") as f:
+                    return file_path
             except FileNotFoundError:
-                fnum = "0" + fnum
-            else:
-                return file_path
+                fnum = "0" + fnum  # Prepend a "0" to the file number
+    
         return None
 
     intro, bar, bridge = 0, 0, 0
