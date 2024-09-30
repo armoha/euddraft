@@ -525,16 +525,17 @@ def f_chatcmp():
     if rListlen == 0:
         return
 
+    rListEPD = rList if rList._is_epd() else EPD(rList)
     for i in EUDLoopRange(rListlen):
-        start = f_dwread_epd(EPD(rList) + i)
-        startlen = f_dwread_epd(EPD(rList) + rListlen + i)
+        start = f_dwread_epd(rListEPD + i)
+        startlen = f_dwread_epd(rListEPD + rListlen + i)
         if EUDIf()(memcmp(chatptr, start, startlen) == 0):
-            end = f_dwread_epd(EPD(rList) + 2 * rListlen + i)
-            endlen = f_dwread_epd(EPD(rList) + 3 * rListlen + i)
+            end = f_dwread_epd(rListEPD + 2 * rListlen + i)
+            endlen = f_dwread_epd(rListEPD + 3 * rListlen + i)
             if EUDIf()(memcmp(chatptr + chatlen - endlen, end, endlen) == 0):
-                middle = f_dwread_epd(EPD(rList) + 4 * rListlen + i)
+                middle = f_dwread_epd(rListEPD + 4 * rListlen + i)
                 if EUDIfNot()(f_strnstr(chatptr, middle, chatlen) == -1):
-                    value = f_dwread_epd(EPD(rList) + 5 * rListlen + i)
+                    value = f_dwread_epd(rListEPD + 5 * rListlen + i)
                     f_dwwrite(globalAddr(patternAddr), value)
                     EUDJump(exit)
                 EUDEndIf()
