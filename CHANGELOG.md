@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.10.1.0] - 2024.09.30
+### Changed
+- Rewrite `mpqapi` in Rust, change usage of `MPQ` class:
+```py
+# Instantiate MPQs
+mpq = MPQ.open(MPQpath)  # Open an MPQ
+mpq = MPQ.create(create_path, sector_size=3, file_count=1024)  # create MPQ
+# *advanced* Create an MPQ with the same content with a new sector_size
+mpq = MPQ.clone_with_sector_size(MPQpath, create_path, sector_size)
+
+# Read the MPQ internal file
+file_content: bytes = mpq.extract_file(filepath)  # extract file from MPQ
+# Get file names from (listfile)
+filenames: list[str] = mpq.get_file_names_from_listfile()
+
+# Add files to MPQ
+mpq.add_file(name_to_use_in_MPQ, path_of_file_to_be_added, replace_existing=True)
+
+# get/change the maximum number of files limit
+maximum_number_of_files: int = mpq.get_max_file_count()
+mpq.set_max_file_count(new_file_count_limit)
+
+mpq.compact()  # defragment / compress MPQ
+```
+- Changed `MPQAddFile` to also accept the path of file to be added:
+  * `MPQAddFile(name_to_use_in_MPQ, file_path_or_file_content)`
+  Because `StormLib` requires a file system path, it is more advantageous to enter a file path. Entering the file contents as in the old usage creates a temporary file and passes the temporary file location to `StormLib`, with the overhead of copying the file contents.
+
+### Bugfix
+- epScript: `var globalVariable = constant_initial_value;` created an empty trigger scope, causing a `RecursionError` when there are at least 327 of these global variables (reported by snoqqqq)
+
+### Improved
+- Replace setuptools with maturin in eudplib packaging, make it easy to build eudplib
+- Optimized `CUnit.check_buildq`
+- Optimized `LoadMap`
+- Optimized number of eudplib initialisation triggers
+
 ## [0.10.0.2] - 2024.09.26
 ### Bugfix
 - Fixed bug in fixed line print functions; `StringBuffer.printfAt`, `DisplayTextAt`, etc. (reported by 고래밥은맛있어, 맛있는건못참아)

@@ -1,5 +1,42 @@
 # 변경 사항 (한국어)
 
+## [0.10.1.0] - 2024.09.30
+### 기능 변경
+- `mpqapi` Rust로 재작성, `MPQ` 클래스 사용법 변경:
+```py
+# MPQ 생성 방법
+mpq = MPQ.open(MPQ경로)  # MPQ 열기
+mpq = MPQ.create(만들_경로, sector_size=3, file_count=1024)  # MPQ 만들기
+# *고급* 새 sector_size를 가지는 동일한 내용의 MPQ 만들기
+mpq = MPQ.clone_with_sector_size(MPQ경로, 만들_경로, sector_size)
+
+# MPQ 내부 파일 읽기
+파일내용: bytes = mpq.extract_file(파일경로)  # MPQ에서 파일 추출하기
+# (listfile)에서 파일 이름들 가져오기
+파일이름들: list[str] = mpq.get_file_names_from_listfile()
+
+# MPQ에 파일 추가
+mpq.add_file(MPQ에서_사용할_이름, 추가할파일경로, replace_existing=True)
+
+# 최대 파일 개수 제한 가져오기 / 변경하기
+최대파일개수: int = mpq.get_max_file_count()
+mpq.set_max_file_count(새_파일_개수_제한)
+
+mpq.compact()  # MPQ 조각 모음 / 압축
+```
+- `MPQAddFile`에 이제 추가할 파일 경로도 입력할 수 있습니다:
+  * `MPQAddFile(MPQ에서_사용할_이름, 추가할_파일_경로_또는_내용)`
+  `StormLib`이 파일 시스템 경로를 요구하는 것 때문에, 파일 경로를 입력하는 것이 더 유리합니다. 기존 사용법처럼 파일 내용을 입력하면 임시 파일을 만들고 임시 파일 위치를 `StormLib`에 전달해서 파일 내용 복사로 인한 오버헤드가 있습니다.
+
+### 버그 수정
+- epScript: `var 전역변수 = 상수_초기값;`이 빈 트리거 스코프를 만들어서 이러한 전역 변수가 327개 이상 있을 때 `RecursionError`가 발생하는 버그 수정 (snoqqqq님 제보)
+
+### 기능 개선
+- eudplib 패키징에 setuptools를 maturin으로 대체, 빌드 방법 개선
+- `CUnit.check_buildq` 성능 개선
+- `LoadMap` 성능 개선
+- eudplib 초기화 트리거 개수 최적화
+
 ## [0.10.0.2] - 2024.09.26
 ### 버그 수정
 - `StringBuffer.printfAt`, `DisplayTextAt` 등 텍스트 줄 출력 버그 수정 (고래밥은맛있어, 맛있는건못참아님 제보)
