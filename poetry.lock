@@ -148,15 +148,15 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.78.5a1"
-description = "EUD Trigger generator"
+version = "0.79.0"
+description = "eudplib is a package which provides scripting for StarCraft Use Map Setting(UMS) to UMS map and tool developers."
 optional = false
 python-versions = ">=3.10, <3.12"
 files = []
 develop = false
 
 [package.dependencies]
-typing_extensions = "*"
+typing-extensions = "*"
 
 [package.source]
 type = "directory"
