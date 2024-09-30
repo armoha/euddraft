@@ -30,6 +30,7 @@ mpq.compact()  # defragment / compress MPQ
 
 ### Bugfix
 - epScript: `var globalVariable = constant_initial_value;` created an empty trigger scope, causing a `RecursionError` when there are at least 327 of these global variables (reported by snoqqqq)
+- Fix autoupdate to not leave old files behind
 
 ### Improved
 - Replace setuptools with maturin in eudplib packaging, make it easy to build eudplib

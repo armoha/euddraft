@@ -22,7 +22,6 @@ build_exe_options = {
     "optimize": 2,
     "include_msvcr": True,
     "include_files": [
-        "StormLib64.dll",
         "libepScriptLib.dll",
         "license.txt",
         "plugins",

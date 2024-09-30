@@ -30,6 +30,7 @@ mpq.compact()  # MPQ 조각 모음 / 압축
 
 ### 버그 수정
 - epScript: `var 전역변수 = 상수_초기값;`이 빈 트리거 스코프를 만들어서 이러한 전역 변수가 327개 이상 있을 때 `RecursionError`가 발생하는 버그 수정 (snoqqqq님 제보)
+- 자동 업데이트가 이전 버전 파일을 남기지 않도록 수정
 
 ### 기능 개선
 - eudplib 패키징에 setuptools를 maturin으로 대체, 빌드 방법 개선
