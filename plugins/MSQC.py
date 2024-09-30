@@ -876,7 +876,7 @@ def SendQC():
         _ns = GetEUDNamespace()
         for k, v in _ns.items():
             if k in s:
-                s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
+                s = re.sub(r"\b{}\b".format(k), r"_ns['\g<0>']", s)
         return s
 
     def parseSource(src, always=False):
@@ -1044,7 +1044,7 @@ def ReceiveQC():
             if (
                 isUnproxyInstance(v, EUDArray) or isUnproxyInstance(v, VArrayType)
             ) and k in s:
-                s = re.sub(r"\b{}\b".format(k), "_ns['\g<0>']", s)
+                s = re.sub(r"\b{}\b".format(k), r"_ns['\g<0>']", s)
         return s
 
     init_array = []
