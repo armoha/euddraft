@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1.1] - 2024.10.02
+### Bugfix
+- Fixed compilation error when turning off [freeze] protection
+
+### Improved
+- Update Korean localization
+
 ## [0.10.1.0] - 2024.09.30
 ### Changed
 - Rewrite `mpqapi` in Rust, change usage of `MPQ` class:
