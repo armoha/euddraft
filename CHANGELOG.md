@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.1.2] - 2024.10.05
+### Changed
+- Remove unused issueError parameter in Encode functions
+- `scdata.flags.Flag = X;` only takes `true`, `false`, `1`, `0` or `EUDVariable`
+
+### Added
+- Add literal type hints for basic triggers, scdata and `EUDLoopPlayer`
+  * Support autocomplete for `"string"` parameters in Python development environment
+- scdata: add `ButtonSetMember`, change `CUnit.currentButtonSet` to ButtonSet type
+
+### Bugfix
+- Fixed `TrgUnit.rank` from word to byte
+- Fixed compilation error in `EUDJump(variable)` (reported by 공나물)
+- Fixed build error with input map missing `(listfile)` (reported by 귀여미)
+
+### Improved
+- Remove '[Warning]' text in front of type errors
+- Add simple MPQ protection
+
 ## [0.10.1.1] - 2024.10.02
 ### Bugfix
 - Fixed compilation error when turning off [freeze] protection

@@ -1,5 +1,24 @@
 # 변경 사항 (한국어)
 
+## [0.10.1.2] - 2024.10.05
+### 기능 변경
+- Encode류 함수에서 미사용 issueError 인자 삭제
+- `scdata.flags.Flag = X;`에서 `true`, `false`, `1`, `0` 또는 `EUDVariable`만 대입 가능하게 변경
+
+### 기능 추가
+- 기본 트리거와 scdata, `EUDLoopPlayer`에 리터럴 타입 힌트 추가
+  * 파이썬 개발 환경에서 `"텍스트"` 인자 자동 완성이 지원됩니다
+- scdata: `ButtonSetMember` 추가, `CUnit.currentButtonSet`을 버튼셋 타입으로 변경
+
+### 버그 수정
+- `TrgUnit.rank`가 byte여야 하는데 word였던 버그 수정
+- `EUDJump(변수)` 버그 수정 (공나물님 제보)
+- `(listfile)` 없는 원본맵에서 빌드 오류 수정 (귀여미님 제보)
+
+### 기능 개선
+- 타입 에러 메시지 앞에 [경고] 텍스트 삭제
+- 간단한 MPQ 프로텍션 추가
+
 ## [0.10.1.1] - 2024.10.02
 ### 버그 수정
 - [freeze] 프로텍션을 껐을 때 컴파일 오류 수정
