@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.10.1.2] - 2024.10.05
+## [0.10.1.3] - 2024.10.05
 ### Changed
 - Remove unused issueError parameter in Encode functions
 - `scdata.flags.Flag = X;` only takes `true`, `false`, `1`, `0` or `EUDVariable`

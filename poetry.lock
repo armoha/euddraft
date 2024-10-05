@@ -151,14 +151,16 @@ name = "eudplib"
 version = "0.79.5"
 description = "eudplib is a package which provides scripting for StarCraft Use Map Setting(UMS) to UMS map and tool developers."
 optional = false
-python-versions = "<3.12,>=3.10"
-files = [
-    {file = "eudplib-0.79.5-cp310-abi3-win_amd64.whl", hash = "sha256:dded2f195f4cdfbd25560d005b5127e1187f2059b61468c4c251a63c2338e111"},
-    {file = "eudplib-0.79.5.tar.gz", hash = "sha256:2240db828a1963a8704cd42ed7568dd7224f27bba71d33fa724dd4a446ba0e6b"},
-]
+python-versions = ">=3.10, <3.12"
+files = []
+develop = false
 
 [package.dependencies]
 typing-extensions = "*"
+
+[package.source]
+type = "directory"
+url = "../eudplib"
 
 [[package]]
 name = "filelock"
@@ -440,4 +442,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.10, < 3.12"
-content-hash = "58984bffd1fc7e1111445e2b082e39cbbd179f0f45f3a9cb63ed142382dfdafe"
+content-hash = "7e031d92160b480b1994d2601a664755eeb678dc3da3af5dc1c723b0b28bdfa6"
