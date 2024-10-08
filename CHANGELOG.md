@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1.4] - 2024.10.09
+### Bugfix
+- Fixed bug where some triggers wouldn't execute after 4,294,967,295 game ticks (2,087 days in Fastest game), or after setting 0x57F23C to -1 (reported by snoqqqq)
+
+### Improved
+- Improve error message for format print functions when placeholders are more than arguments (reported by Yuuki-Asuna)
+
 ## [0.10.1.3] - 2024.10.05
 ### Changed
 - Remove unused issueError parameter in Encode functions
