@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.1.5] - 2024.10.11
+### Changed
+- Renamed `CUnit.set_noclip`/`clear_noclip` (report by 고래밥은맛있어)
+
+### Added
+- `StringBuffer` can be used as argument for format printing function (reported by Yuuki-Asuna)
+
+### Bugfix
+- epScript: allow 0 as initial value for typed local variables
+- Fix bug that caused QuickDebug map to be broken in euddraft 0.10.1.0-4 (reported by 블라인드)
+- Fix compilation error in member comparison condition of variable scdata instance (reported by furina)
+
+### Improved
+- In cp read function, combine action of adding non-zero cpoffset to function call trigger
+
 ## [0.10.1.4] - 2024.10.09
 ### Bugfix
 - Fixed bug where some triggers wouldn't execute after 4,294,967,295 game ticks (2,087 days in Fastest game), or after setting 0x57F23C to -1 (reported by snoqqqq)
