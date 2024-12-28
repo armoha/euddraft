@@ -1,5 +1,19 @@
 # 변경 사항 (한국어)
 
+## [0.10.1.6] - 2024.12.28
+### 버그 수정
+- `CUnit.reset_buildq()`가 `secondaryOrder` 초기화하게 수정
+- `CUnit.flingyID` (word) 와 `Weapon.flingy` (dword) 데이터 크기 수정 (@Chromowolf 님 제보)
+- [epScript] `EUDFuncPtr`이 함수 매개변수일 때 호출할 수 없는 버그 수정 (하늘바라군님바 제보)
+- [epScript] 현재 업그레이드 단계 설정이 작동 안 하고 임시변수를 수정하는 버그 수정 (@GGrush-SCMapper 님 제보)
+- `CUnit.cast`와 `CSprite.cast`가 변수를 복사하는 트리거를 만드는 버그 수정 (@GGrush-SCMapper 님 제보)
+  * 타입이 `CUnit` 또는 `CSprite`인 `static var`가 매번 초기화되는 버그 수정
+- `CUnit`과 `CSprite`에서 `+= 값;` 컴파일 오류 수정
+- `CUnitMember` 또는 `CSpriteMember`에 대입할 때 ptr을 사용하는 기능이 작동 안 되는 버그 수정 (@GGrush-SCMapper 님 제보)
+
+### 기능 개선
+- `EnumMember` 값 지연 평가 기능 추가
+
 ## [0.10.1.5] - 2024.10.11
 ### 기능 변경
 - CUnit.set_noclip/clear_noclip 이름 변경 (고래밥은맛있어님 제보)

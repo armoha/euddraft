@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.1.6] - 28.12.2024
+### Bugfix
+- Fix `CUnit.reset_buildq()` to initialise `secondaryOrder`
+- Fix `CUnit.flingyID` (word) and `Weapon.flingy` (dword) data size (reported by @Chromowolf)
+- [epScript] Fixed bug where `EUDFuncPtr` could not be called when it was a function parameter (reported by Skywindragoon)
+- [epScript] Fix bug where setting the current upgrade level does not work and modifies temporary variables instead (reported by @GGrush-SCMapper)
+- Fixed a bug where `CUnit.cast` and `CSprite.cast` would create a trigger to copy variable (reported by @GGrush-SCMapper)
+  * Fixed bug where `static var` with type `CUnit` or `CSprite` was initialised every time
+- Fix `+= value;` compilation error in `CUnit` and `CSprite`
+- Fixed bug where using ptr when assigning to `CUnitMember` or `CSpriteMember` didn't work (reported by @GGrush-SCMapper)
+
+### Improved
+- Added lazy evaluation of `EnumMember` values
+
 ## [0.10.1.5] - 2024.10.11
 ### Changed
 - Renamed `CUnit.set_noclip`/`clear_noclip` (report by 고래밥은맛있어)
