@@ -216,7 +216,7 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
         pluginLoader.freeze_enabled = True
 
         ep.LoadMap(sfname)
-        payloadMain = applyeuddraft.createPayloadMain([], {})
+        payloadMain = applyeuddraft.createPayloadMain({})
         ep.CompressPayload(True)
         ofname = sfname[:-4] + " prt.scx"
         ep.SaveMap(ofname, payloadMain)

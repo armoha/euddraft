@@ -90,17 +90,22 @@ def getSCBankSettings():
 
 
 def loadPluginsFromConfig(ep, config):
+    from eudplib.maprw.injector.mainloop import _set_game_loop_start
+
     global freeze_enabled, prompt_enabled, scbank_enabled, scbankSettings
 
     """ Load plugin from config file """
     pluginList = [name for name in config.keys() if name != "main"]
+
+    # detect [unlimiter] plugin and its variants
     if any("unlimiter" in name.casefold() for name in pluginList):
         from eudplib.eudlib.utilf.unlimiterflag import _turnUnlimiterOn
 
         _turnUnlimiterOn()
 
+    # Get stat_txt.tbl entries to parse
     for pluginName in pluginList:
-        if pluginName.casefold() == "datadumper":
+        if pluginName == "dataDumper":
             dataDumperConfig = config[pluginName]
             for dataPath, outOffsetStr in dataDumperConfig.items():
                 flags = []
@@ -135,14 +140,16 @@ def loadPluginsFromConfig(ep, config):
                     itertools.chain(flags, outOffsets, unknownArg)
                 )
 
-    pluginFuncDict = {}
+    onPluginStarts = []
+    beforeTriggerExecs = [lambda: _set_game_loop_start()]
+    afterTriggerExecs = []
 
     initialDirectory = os.getcwd()
     initialPath = sys.path[:]
     initial_warnfilters = warnings.filters.copy()
 
     for pluginName in pluginList:
-        if pluginName.casefold() == "freeze":
+        if pluginName == "freeze":
             if "freeze" in config[pluginName]:
                 freeze_enabled = False
                 continue
@@ -151,7 +158,7 @@ def loadPluginsFromConfig(ep, config):
                 prompt_enabled = True
             continue
 
-        elif pluginName.casefold() == "SCBank":
+        elif pluginName == "SCBank":
             scbank_enabled = True
             print("SCBank plugin loaded")
             SCBankSettings = config[pluginName]
@@ -214,14 +221,9 @@ def loadPluginsFromConfig(ep, config):
             pluginDict = pluginModule.__dict__
 
             if pluginDict:
-                onPluginStart = pluginDict.get("onPluginStart", empty)
-                beforeTriggerExec = pluginDict.get("beforeTriggerExec", empty)
-                afterTriggerExec = pluginDict.get("afterTriggerExec", empty)
-                pluginFuncDict[pluginName] = (
-                    onPluginStart,
-                    beforeTriggerExec,
-                    afterTriggerExec,
-                )
+                onPluginStarts.append(pluginDict.get("onPluginStart", empty))
+                beforeTriggerExecs.append(pluginDict.get("beforeTriggerExec", empty))
+                afterTriggerExecs.append(pluginDict.get("afterTriggerExec", empty))
 
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -244,9 +246,9 @@ def loadPluginsFromConfig(ep, config):
                 *                                                          *\
 """
         )
-    if "freeze" in pluginList:
-        pluginList.remove("freeze")
-    elif "SCBank" in pluginList:
-        pluginList.remove("SCBank")
 
-    return pluginList, pluginFuncDict
+    return {
+        "onPluginStart": onPluginStarts,
+        "beforeTriggerExec": beforeTriggerExecs,
+        "afterTriggerExec": afterTriggerExecs,
+    }

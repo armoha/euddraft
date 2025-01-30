@@ -44,7 +44,7 @@ from pluginLoader import (
 from readconfig import readconfig
 
 
-def createPayloadMain(pluginList, pluginFuncDict):
+def createPayloadMain(pluginFuncDict):
     @ep.EUDFunc
     def payloadMain():
         """Main function of euddraft payload."""
@@ -56,8 +56,7 @@ def createPayloadMain(pluginList, pluginFuncDict):
         if isSCBankIssued():
             scbank_core.onPluginStart()
 
-        for pluginName in pluginList:
-            onPluginStart = pluginFuncDict[pluginName][0]
+        for onPluginStart in pluginFuncDict.get("onPluginStart", []):
             onPluginStart()
 
         # Do trigger loop
@@ -69,14 +68,14 @@ def createPayloadMain(pluginList, pluginFuncDict):
             if isSCBankIssued():
                 scbank_core.beforeTriggerExec()
 
-            for pluginName in pluginList:
-                beforeTriggerExec = pluginFuncDict[pluginName][1]
+            for beforeTriggerExec in pluginFuncDict.get("beforeTriggerExec", []):
                 beforeTriggerExec()
 
             ep.RunTrigTrigger()
 
-            for pluginName in reversed(pluginList):
-                afterTriggerExec = pluginFuncDict[pluginName][2]
+            for afterTriggerExec in reversed(
+                pluginFuncDict.get("afterTriggerExec", [])
+            ):
                 afterTriggerExec()
 
             if isSCBankIssued():
@@ -218,11 +217,11 @@ def applyEUDDraft(sfname):
 
         print("---------- Loading plugins... ----------")
         ep.LoadMap(ifname)
-        pluginList, pluginFuncDict = loadPluginsFromConfig(ep, config)
+        pluginFuncDict = loadPluginsFromConfig(ep, config)
 
         print("--------- Injecting plugins... ---------")
 
-        payloadMain = createPayloadMain(pluginList, pluginFuncDict)
+        payloadMain = createPayloadMain(pluginFuncDict)
         ep.CompressPayload(True)
 
         if IsSCDBMap():
