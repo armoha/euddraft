@@ -1,5 +1,14 @@
 # 변경 사항 (한국어)
 
+## [0.10.2.0] - 2025.02.02
+### 버그 수정
+- `EUDLoopNewCUnit`가 유닛을 놓치는 버그 수정 (armoha/euddraft#132)
+- 오류줄 출력이 캔낫일 때 유닛 제한이 줄어드는 버그 수정
+- `CUnit.cast(epd, ptr=ptr)` 오류 수정
+
+### 기능 개선
+- Python 3.12.8 업데이트, eudplib 0.80.0 업데이트
+
 ## [0.10.1.6] - 2024.12.28
 ### 버그 수정
 - `CUnit.reset_buildq()`가 `secondaryOrder` 초기화하게 수정

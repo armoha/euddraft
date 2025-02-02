@@ -1,6 +1,16 @@
 # Changelog
 
-## [0.10.1.6] - 28.12.2024
+## [0.10.2.0] - 2025.02.02
+
+### Bugfix
+- Fix bug where `EUDLoopNewCUnit` would miss a unit (armoha/euddraft#132)
+- Fixed error line print functions decreasing Unit limit when CCMU
+- Fix `CUnit.cast(epd, ptr=ptr)` error
+
+### Improved
+- Update Python 3.12.8, update eudplib 0.80.0
+
+## [0.10.1.6] - 2024.12.28
 ### Bugfix
 - Fix `CUnit.reset_buildq()` to initialise `secondaryOrder`
 - Fix `CUnit.flingyID` (word) and `Weapon.flingy` (dword) data size (reported by @Chromowolf)
