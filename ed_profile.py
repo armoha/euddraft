@@ -5,16 +5,17 @@ import os
 import sys
 
 sys.path.insert(1, os.path.abspath("."))
-os.chdir("../Roulette")
+os.chdir(
+    "C:/Users/armo/Documents/StarCraft/!Project/RandomAbilityCraft-HAJE/eudplibdata"
+)
 sys.path.insert(1, os.path.abspath("."))
-sys.path.insert(1, os.path.abspath("../eudtrglib"))
 
 
 import euddraft
 
 
 def f():
-    euddraft.applyEUDDraft("main.edd")
+    euddraft.applyEUDDraft("EUDEditor.edd")
 
 
 if False:
@@ -23,5 +24,3 @@ if False:
     profile_tool.profile(f, "../euddraft/profile.json")
 else:
     f()
-
-os.chdir("../euddraft")

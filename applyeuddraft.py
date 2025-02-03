@@ -124,9 +124,9 @@ def warn_with_traceback(message, category, filename, lineno, file=None, line=Non
     log = file if hasattr(file, "write") else sys.stderr
     traceback.print_stack(file=log)
     warning_message = warnings.formatwarning(message, category, filename, lineno, line)
-    plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.11\\Lib\\site-packages\\eudplib"
+    plibPath = "C:\\Users\\armo\\AppData\\Local\\pypoetry\\Cache\\virtualenvs\\euddraft-rwy7uEJp-py3.12\\Lib\\site-packages\\eudplib"
     warning_message = warning_message.replace(plibPath, "eudplib")
-    warning_message = warning_message.replace("C:\dev\euddraftPrivate\\", "euddraft\\")
+    warning_message = warning_message.replace("C:\\dev\\euddraftPrivate\\", "euddraft\\")
     log.write(warning_message)
 
 

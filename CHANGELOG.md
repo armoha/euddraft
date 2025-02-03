@@ -1,7 +1,6 @@
 # Changelog
 
-## [0.10.2.0] - 2025.02.02
-
+## [0.10.2.1] - 2025.02.03
 ### Bugfix
 - Fix bug where `EUDLoopNewCUnit` would miss a unit (armoha/euddraft#132)
 - Fixed error line print functions decreasing Unit limit when CCMU
