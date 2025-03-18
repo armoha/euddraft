@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2.2] - 2025.03.18
+### Bugfix
+- epTrace: fixed invalid epmap file (Contributed by Xenon : https://cafe.naver.com/edac/134776)
+
+### Improved
+- Fixed missing header file error with GCC (Contributed by @zuhanit : https://github.com/armoha/euddraft/issues/158)
+
 ## [0.10.2.1] - 2025.02.03
 ### Bugfix
 - Fix bug where `EUDLoopNewCUnit` would miss a unit (armoha/euddraft#132)

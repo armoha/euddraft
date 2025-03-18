@@ -1,5 +1,12 @@
 # 변경 사항 (한국어)
 
+## [0.10.2.2] - 2025.03.18
+### 버그 수정
+- epTrace: epmap 파일 내용이 잘못된 버그 수정 (Xenon님 기여: https://cafe.naver.com/edac/134776)
+
+### 기능 개선
+- GCC에서 헤더 파일 오류 수정 (@zuhanit 님 기여 : https://github.com/armoha/euddraft/issues/158)
+
 ## [0.10.2.1] - 2025.02.03
 ### 버그 수정
 - `EUDLoopNewCUnit`가 유닛을 놓치는 버그 수정 (armoha/euddraft#132)
