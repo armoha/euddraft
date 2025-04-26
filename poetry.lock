@@ -92,13 +92,13 @@ files = [
 
 [[package]]
 name = "dmgbuild"
-version = "1.6.4"
+version = "1.6.5"
 description = "macOS command line utility to build disk images"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "dmgbuild-1.6.4-py3-none-any.whl", hash = "sha256:53a2f0a9e65111314fce7ecfb6637d08bc3186fa99e719abc9a5af2b484a7d65"},
-    {file = "dmgbuild-1.6.4.tar.gz", hash = "sha256:adacada75ee517398d014e3fb250b004a2225f01e54832df52d38b9cd1530b74"},
+    {file = "dmgbuild-1.6.5-py3-none-any.whl", hash = "sha256:e19ab8c5e8238e6455d9ccb9175817be7fd62b9cdd1eef20f63dd88e0ec469ab"},
+    {file = "dmgbuild-1.6.5.tar.gz", hash = "sha256:c5cbeec574bad84a324348aa7c36d4aada04568c99fb104dec18d22ba3259f45"},
 ]
 
 [package.dependencies]
@@ -106,8 +106,8 @@ ds_store = ">=1.1.0"
 mac_alias = ">=2.0.1"
 
 [package.extras]
-dev = ["coverage (==7.6.10)", "pre-commit (==4.0.1)", "pytest (==8.3.4)", "tox (==4.23.2)"]
-docs = ["furo (==2024.8.6)", "sphinx (==8.1.3)", "sphinx-autobuild (==2024.10.3)"]
+dev = ["coverage (==7.7.0)", "pre-commit (==4.1.0)", "pytest (==8.3.5)", "tox (==4.24.2)"]
+docs = ["furo (==2024.8.6)", "sphinx (==8.2.3)", "sphinx-autobuild (==2024.10.3)"]
 
 [[package]]
 name = "ds-store"
@@ -141,13 +141,13 @@ files = [
 
 [[package]]
 name = "eudplib"
-version = "0.80.2"
+version = "0.80.3"
 description = "eudplib is a package which provides scripting for StarCraft Use Map Setting(UMS) to UMS map and tool developers."
 optional = false
 python-versions = "<3.14,>=3.10"
 files = [
-    {file = "eudplib-0.80.2-cp310-abi3-win_amd64.whl", hash = "sha256:411f201ecf38a4e21696c2b33fc57c38c57fe3f92578cc79614c1ad61139735a"},
-    {file = "eudplib-0.80.2.tar.gz", hash = "sha256:b099bfa9f5b8510d5fbc1f830b42c3524cd57ec415a76a57d0ea8f2f9e62ffd9"},
+    {file = "eudplib-0.80.3-cp310-abi3-win_amd64.whl", hash = "sha256:1e14bd59858c77cdc0ecee6f7bf0c2a083d13cd3c7943d272cbc22673e11f371"},
+    {file = "eudplib-0.80.3.tar.gz", hash = "sha256:d316dba7f2b69056399967045b16b4950cf30638e91567794a629163575876ea"},
 ]
 
 [package.dependencies]
@@ -310,13 +310,13 @@ et-xmlfile = "*"
 
 [[package]]
 name = "packaging"
-version = "24.2"
+version = "25.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
-    {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
+    {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
+    {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
 ]
 
 [[package]]
@@ -435,13 +435,13 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.12.2"
+version = "4.13.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
-    {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
+    {file = "typing_extensions-4.13.2-py3-none-any.whl", hash = "sha256:a439e7c04b49fec3e5d3e2beaa21755cadbbdc391694e28ccdd36ca4a1408f8c"},
+    {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
 ]
 
 [[package]]
@@ -466,4 +466,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.10, < 3.14"
-content-hash = "54e41120ee9af3d88ee375d924f2d87fbc5d8c2324492952354cd3c36c544327"
+content-hash = "a15ee16bc0039834690faeb80a09ad97c116e9de8cd47261804894bcda557a33"

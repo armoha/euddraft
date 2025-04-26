@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.2.3] - 2025.04.26
+### Bugfix
+- Fixed `CUnit.cgive(newOwner)` not supported EUD error when `newOwner` has no unit.
+- Fixed compile error on writing `CSprite` members.
+- Fixed compile error on `CUnit.reset_buildq(bq1=0xE4)` for `CUnit` constant.
+- Fixed not supported EUD error when there're multiple `EUDLoopNewCUnit`.
+- Fixed `CUnit/CSprite` member comparison to use ptr instead of epd.
+
+### Improved
+- Remove randomizing the order of some built-in triggers/actions
+- Reduce trigger in `CUnit.reset_buildq(bq1=0xE4)`
+
 ## [0.10.2.2] - 2025.03.18
 ### Bugfix
 - epTrace: fixed invalid epmap file (Contributed by Xenon : https://cafe.naver.com/edac/134776)

@@ -1,5 +1,17 @@
 # 변경 사항 (한국어)
 
+## [0.10.2.3] - 2025.04.26
+### 버그 수정
+- `CUnit.cgive(newOwner)`가 `newOwner`한테 아무 유닛도 없을 때 지원되지 않는 EUD 오류 발생하는 버그 수정.
+- `CSprite` 멤버 수정 시 컴파일 오류 수정.
+- `CUnit`이 상수일 때 `CUnit.reset_buildq(bq1=0xE4)` 컴파일 오류나는 버그 수정.
+- `EUDLoopNewCUnit`이 2개 이상 있을 때 지원되지 않는 EUD 오류 발생하는 버그 수정.
+- `CUnit/CSprite` 타입의 멤버 비교 시 ptr이 아니라 epd 사용하는 버그 수정.
+
+### 기능 개선
+- 내장 함수 트리거/액션 순서 랜덤화 기능 삭제. (딱히 보안에 도움되지 않음)
+- `CUnit.reset_buildq(bq1=0xE4)` 트리거 수 감소
+
 ## [0.10.2.2] - 2025.03.18
 ### 버그 수정
 - epTrace: epmap 파일 내용이 잘못된 버그 수정 (Xenon님 기여: https://cafe.naver.com/edac/134776)
