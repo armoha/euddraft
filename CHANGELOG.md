@@ -2,6 +2,7 @@
 
 ## [0.10.2.4] - 2025.08.03
 ### Bugfix
+- Fixed a bug where repeated calls to `f_dbstr_addstr` caused the return value to increase unexpectedly.
 - Fixed iterating `EUDVArray`.
   * Allow `EUDSetContinuePoint()` for iterating `EUDVArray`.
   * Type casting array items when iterating EUDVArray.
