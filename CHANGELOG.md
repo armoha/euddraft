@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.2.4] - 2025.08.03
+### Bugfix
+- Fixed iterating `EUDVArray`.
+  * Allow `EUDSetContinuePoint()` for iterating `EUDVArray`.
+  * Type casting array items when iterating EUDVArray.
+- Allow `@property` for `EUDStruct`.
+  * For non-existing fields, `AttributeError` will be raised instead of `KeyError`.
+
+### Improved
+- Better duplicated switch cases error message.
+- `EUDStruct.field = value;` type casts `value` for non-`ConstType` as well.
+
 ## [0.10.2.3] - 2025.04.26
 ### Bugfix
 - Fixed `CUnit.cgive(newOwner)` not supported EUD error when `newOwner` has no unit.
