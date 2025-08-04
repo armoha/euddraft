@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.10.2.4] - 2025.08.03
+## [0.10.2.5] - 2025.08.04
 ### Bugfix
 - Fixed a bug where repeated calls to `f_dbstr_addstr` caused the return value to increase unexpectedly.
 - Fixed iterating `EUDVArray`.
@@ -10,6 +10,7 @@
   * For non-existing fields, `AttributeError` will be raised instead of `KeyError`.
 
 ### Improved
+- Updated Python 3.11 -> 3.13.5
 - Better duplicated switch cases error message.
 - `EUDStruct.field = value;` type casts `value` for non-`ConstType` as well.
 
