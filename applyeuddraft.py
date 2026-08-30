@@ -32,13 +32,11 @@ import eudplib as ep
 
 import freezeMpq
 import msgbox
-import scbank_core
 from freeze import decryptOffsets, encryptOffsets, obfpatch, obfunpatch, unFreeze
 from msgbox import MB_ICONHAND, MB_OK, MessageBeep, MessageBox
 from pluginLoader import (
     isFreezeIssued,
     isPromptIssued,
-    isSCBankIssued,
     loadPluginsFromConfig,
 )
 from readconfig import readconfig
@@ -53,9 +51,6 @@ def createPayloadMain(pluginFuncDict):
             unFreeze()
             # ep.PRT_SetInliningRate(0.05)
 
-        if isSCBankIssued():
-            scbank_core.onPluginStart()
-
         for onPluginStart in pluginFuncDict.get("onPluginStart", []):
             onPluginStart()
 
@@ -64,9 +59,6 @@ def createPayloadMain(pluginFuncDict):
             if isFreezeIssued():
                 decryptOffsets()
                 obfpatch()
-
-            if isSCBankIssued():
-                scbank_core.beforeTriggerExec()
 
             for beforeTriggerExec in pluginFuncDict.get("beforeTriggerExec", []):
                 beforeTriggerExec()
@@ -77,9 +69,6 @@ def createPayloadMain(pluginFuncDict):
                 pluginFuncDict.get("afterTriggerExec", [])
             ):
                 afterTriggerExec()
-
-            if isSCBankIssued():
-                scbank_core.afterTriggerExec()
 
             if isFreezeIssued():
                 obfunpatch()
