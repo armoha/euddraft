@@ -1,2 +1,2 @@
 @echo off
-python setup.py build_exe
+python -m cx_Freeze build_exe

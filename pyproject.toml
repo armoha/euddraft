@@ -6,9 +6,9 @@ authors = [
     { name = "armoha", email = "kein0011@naver.com" },
     { name = "Park Hyun Woo", email = "phu54321@naver.com" },
 ]
-requires-python = ">= 3.10, < 3.14"
+requires-python = ">= 3.10, < 3.15"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 dependencies = [
     "cx-Freeze>=8.3.0,<9",
     "rich>=13.8.1,<14",
@@ -20,3 +20,21 @@ dependencies = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.cxfreeze]
+executables = ["euddraft.py"]
+
+[tool.cxfreeze.build_exe]
+packages = ["os", "ctypes", "sys", "importlib", "json", "eudplib", "openpyxl", "encodings"]
+excludes = ["tkinter"]
+optimize = 2
+include-msvcr = true
+zip-include-packages = "*"
+zip-exclude-packages = []
+include-files = [
+    "libepScriptLib.dll",
+    "license.txt",
+    "plugins",
+    "lib",
+    "epTrace.exe",
+]
