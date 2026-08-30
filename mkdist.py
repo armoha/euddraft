@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 import os
-import runpy
+import platform
 import shutil
+import subprocess
 import sys
 from sysconfig import get_platform
+
+import eudplib
 
 from edpkgutil.cleanDir import cleanDirectory, cleanOutput
 from edpkgutil.packageZip import packageZip
 from euddraft import version
+
+here = os.path.dirname(os.path.abspath(__file__))
 
 buildDir = f"build/exe.{get_platform()}-{sys.version_info[0]}.{sys.version_info[1]}"
 outputZipList = [
@@ -16,13 +21,64 @@ outputZipList = [
     # 'latest/euddraft_latest.zip'
 ]
 
+
+def buildFreezeMpq() -> None:
+    """Build the freezeMpq extension (from mpqprt/) into lib/.
+
+    Produces lib/freezeMpq.pyd on Windows and lib/freezeMpq.so on
+    Linux / macOS, matching the Python running mkdist.py.
+    """
+    cmakeCmd = shutil.which("cmake")
+    if cmakeCmd is None:
+        raise RuntimeError(
+            "cmake not found: required to build the freezeMpq extension "
+            "(see README.md)"
+        )
+    mpqprtDir = os.path.join(here, "mpqprt")
+    cmakeBuildDir = os.path.join(
+        here, "build", f"mpqprt-{sys.version_info[0]}.{sys.version_info[1]}"
+    )
+    subprocess.check_call(
+        [
+            cmakeCmd,
+            "-S",
+            mpqprtDir,
+            "-B",
+            cmakeBuildDir,
+            "-DCMAKE_BUILD_TYPE=Release",
+            f"-DPYTHON_EXECUTABLE={sys.executable}",
+        ]
+    )
+    subprocess.check_call([cmakeCmd, "--build", cmakeBuildDir, "--config", "Release"])
+
+
 cleanDirectory(buildDir)
 
-if sys.platform.startswith("win"):
-    runpy.run_module("setup")
+buildFreezeMpq()
+
+subprocess.check_call(
+    [
+        sys.executable,
+        "-m",
+        "cx_Freeze",
+        "build_exe",
+        f"--build-exe={buildDir}",
+    ]
+)
+
+# Bundle the eudplib native library next to the executable, where
+# eudplib's find_data_file looks for it when frozen.
+libName = {
+    "Linux": "libepScriptLib.so",
+    "Windows": "libepScriptLib.dll",
+    "Darwin": "libepScriptLib.dylib",
+}[platform.system()]
+eudplibDir = os.path.dirname(eudplib.__file__)
+srcPath = os.path.join(eudplibDir, "epscript", libName)
+if os.path.exists(srcPath):
+    shutil.copy(srcPath, os.path.join(buildDir, libName))
 else:
-    os.system("wine python setup.py")
-    shutil.copy("python311.dll", os.path.join(buildDir, "python311.dll"))
+    print(f"Warning: {libName} not found in {os.path.dirname(srcPath)}", file=sys.stderr)
 
 cleanOutput(buildDir)
 
