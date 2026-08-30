@@ -3,11 +3,11 @@
 
 import os
 import sys
+import time
 
-sys.path.insert(1, os.path.abspath("."))
-os.chdir(
-    "C:/Users/armo/Documents/StarCraft/!Project/RandomAbilityCraft-HAJE/eudplibdata"
-)
+repoDir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(1, repoDir)
+os.chdir(os.path.join(repoDir, "..", "RandomAbilityCraft-HAJE", "eudplibdata"))
 sys.path.insert(1, os.path.abspath("."))
 
 
@@ -23,4 +23,6 @@ if False:
 
     profile_tool.profile(f, "../euddraft/profile.json")
 else:
+    start = time.time()
     f()
+    print(f"\nFinished in {time.time() - start:.2f}s")
