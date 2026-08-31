@@ -6,7 +6,7 @@
 // License information for this code is in license.txt
 
 
-#include "SMem.h"
+#include "smem.h"
 #include <stdlib.h>
 
 LPVOID WINAPI SMemAlloc(DWORD dwSize)

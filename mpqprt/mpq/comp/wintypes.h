@@ -5,6 +5,7 @@
 #ifndef WIN_TYPES_INCLUDED
 #define WIN_TYPES_INCLUDED
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifndef WINAPI
@@ -38,6 +39,17 @@ typedef int (WINAPI *FARPROC)();
 
 #define ERROR_NOT_ENOUGH_MEMORY          8L
 #define ERROR_INVALID_PARAMETER          87L
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+void CopyMemory(void *destination, const void *source, size_t length);
+void ZeroMemory(void *destination, size_t length);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

@@ -16,9 +16,9 @@
 
 // Comment this out to disable bzip 2 compression support.
 
-#include "SComp.h"
-#include "SErr.h"
-#include "SMem.h"
+#include "scomp.h"
+#include "serr.h"
+#include "smem.h"
 #include "wave.h"
 #include "huffman.h"
 

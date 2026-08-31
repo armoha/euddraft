@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "mpqtypes.h"
 
 void keycalc(

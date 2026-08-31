@@ -2,6 +2,7 @@
 // Do nothing
 #else
 
+#include <string.h>
 #include <memory.h>
 
 void CopyMemory(void* destination, const void* source, size_t length) {

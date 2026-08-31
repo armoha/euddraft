@@ -1,4 +1,5 @@
 #include "comp/scomp.h"
+#include <cstring>
 #include <string>
 #include <vector>
 #include <stdexcept>

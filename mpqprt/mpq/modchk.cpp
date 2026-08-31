@@ -1,4 +1,5 @@
 #include "keycalc.h"
+#include <cstring>
 #include <string>
 #include <vector>
 #include "stdlib.h"

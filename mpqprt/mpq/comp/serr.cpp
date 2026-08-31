@@ -6,7 +6,7 @@
 // License information for this code is in license.txt
 
 
-#include "SErr.h"
+#include "serr.h"
 
 DWORD dwLastError;
 
