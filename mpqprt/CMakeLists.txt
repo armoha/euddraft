@@ -52,12 +52,20 @@ set(SOURCE_FILES
 
 add_subdirectory(pybind11)
 pybind11_add_module(freeze_pyext ${SOURCE_FILES} mpq/pybindmain.cpp)
+set_target_properties(freeze_pyext PROPERTIES OUTPUT_NAME "freezeMpq")
 
-if (CMAKE_BUILD_TYPE MATCHES "Release")
-    message("release mode - static linked")
-    if (WIN32)
-        add_custom_command(TARGET freeze_pyext POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:freeze_pyext>" "../../freezeMpq.pyd"
-                COMMENT "Copying to main project")
-    endif()
+# Copy the built extension into euddraft's lib/ directory so that the
+# frozen application can `import freezeMpq`. Extension suffix is .pyd on
+# Windows and .so on Linux / macOS.
+if (WIN32)
+    set(FREEZEMPQ_EXT "pyd")
+else()
+    set(FREEZEMPQ_EXT "so")
 endif()
+if (NOT FREEZEMPQ_OUTPUT_DIR)
+    set(FREEZEMPQ_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/../lib")
+endif()
+
+add_custom_command(TARGET freeze_pyext POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:freeze_pyext>" "${FREEZEMPQ_OUTPUT_DIR}/freezeMpq.${FREEZEMPQ_EXT}"
+        COMMENT "Copying freezeMpq.${FREEZEMPQ_EXT} to ${FREEZEMPQ_OUTPUT_DIR}")
