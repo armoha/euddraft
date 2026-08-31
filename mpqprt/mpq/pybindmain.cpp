@@ -24,6 +24,6 @@ int applyFreezeMpqModification(
     return 0;
 }
 
-PYBIND11_MODULE(freezeMpq, m) {
+PYBIND11_MODULE(freezeMpq, m, pybind11::mod_gil_not_used()) {
     m.def("applyFreezeMpqModification", &applyFreezeMpqModification, "Apply freeze");
 }
