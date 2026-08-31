@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 env/
@@ -374,10 +371,6 @@ cmake-*/
 profile.json
 *.lprof
 lprof_log.txt
-
-scbank_core
-!freezeMpq.pyd
-!freezeMpq.so
 
 .gitsecret/keys/random_seed
 euddraft_priv.pem
