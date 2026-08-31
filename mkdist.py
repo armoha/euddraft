@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import os
 import platform
 import shutil
@@ -50,6 +51,22 @@ def buildFreezeMpq() -> None:
         ]
     )
     subprocess.check_call([cmakeCmd, "--build", cmakeBuildDir, "--config", "Release"])
+
+    # The POST_BUILD copy in mpqprt/CMakeLists.txt only runs when the
+    # target is rebuilt, so copy explicitly to make sure lib/ has the
+    # extension even on incremental builds.
+    ext = "pyd" if os.name == "nt" else "so"
+    candidates = [
+        f
+        for f in glob.glob(os.path.join(cmakeBuildDir, "freezeMpq.*"))
+        if os.path.isfile(f)
+    ]
+    if not candidates:
+        raise RuntimeError(
+            f"freezeMpq build produced no extension module in {cmakeBuildDir}"
+        )
+    newest = max(candidates, key=os.path.getmtime)
+    shutil.copy(newest, os.path.join(here, "lib", f"freezeMpq.{ext}"))
 
 
 cleanDirectory(buildDir)
