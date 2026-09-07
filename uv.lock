@@ -4,18 +4,18 @@ requires-python = ">=3.10, <3.16"
 resolution-markers = [
     "python_full_version >= '3.13' and sys_platform == 'win32'",
     "(python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform == 'win32') or (python_full_version >= '3.11' and platform_machine != 'aarch64' and platform_machine != 'armv7l' and platform_machine != 'i686' and platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.11' and sys_platform != 'linux' and sys_platform != 'win32')",
-    "(python_full_version < '3.11' and platform_machine != 'aarch64' and platform_machine != 'armv7l' and platform_machine != 'i686' and platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_machine != 'x86_64') or (python_full_version < '3.11' and sys_platform != 'linux')",
     "python_full_version >= '3.11' and platform_machine == 'x86_64' and sys_platform == 'linux'",
-    "python_full_version < '3.11' and platform_machine == 'x86_64' and sys_platform == 'linux'",
     "python_full_version >= '3.11' and platform_machine == 'i686' and sys_platform == 'linux'",
-    "python_full_version < '3.11' and platform_machine == 'i686' and sys_platform == 'linux'",
     "python_full_version >= '3.11' and platform_machine == 'aarch64' and sys_platform == 'linux'",
-    "python_full_version < '3.11' and platform_machine == 'aarch64' and sys_platform == 'linux'",
     "python_full_version >= '3.11' and platform_machine == 'armv7l' and sys_platform == 'linux'",
-    "python_full_version < '3.11' and platform_machine == 'armv7l' and sys_platform == 'linux'",
     "python_full_version >= '3.11' and platform_machine == 'ppc64le' and sys_platform == 'linux'",
-    "python_full_version < '3.11' and platform_machine == 'ppc64le' and sys_platform == 'linux'",
     "python_full_version >= '3.11' and platform_machine == 's390x' and sys_platform == 'linux'",
+    "(python_full_version < '3.11' and platform_machine != 'aarch64' and platform_machine != 'armv7l' and platform_machine != 'i686' and platform_machine != 'ppc64le' and platform_machine != 's390x' and platform_machine != 'x86_64') or (python_full_version < '3.11' and sys_platform != 'linux')",
+    "python_full_version < '3.11' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version < '3.11' and platform_machine == 'i686' and sys_platform == 'linux'",
+    "python_full_version < '3.11' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.11' and platform_machine == 'armv7l' and sys_platform == 'linux'",
+    "python_full_version < '3.11' and platform_machine == 'ppc64le' and sys_platform == 'linux'",
     "python_full_version < '3.11' and platform_machine == 's390x' and sys_platform == 'linux'",
 ]
 
@@ -84,7 +84,7 @@ wheels = [
 
 [[package]]
 name = "euddraft"
-version = "0.10.2.5"
+version = "0.11.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "cx-freeze" },
