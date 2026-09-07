@@ -1,5 +1,32 @@
 # 변경 사항 (한국어)
 
+## [0.11.0.0] - 2026.09.07
+### 기능 변경
+- Python 3.13.5 → 3.14t (프리스레드 빌드) 업데이트
+
+### 기능 추가
+- GitHub Actions CI/CD를 이용한 크로스 플랫폼 빌드 추가 (Windows, macOS, Linux)
+- 크로스 플랫폼 `libepScriptLib` 지원 — Linux, macOS, Windows 모두에서 빌드 및 배포
+- 빌드 방법 문서 추가
+
+### 기능 개선
+- eudplib 0.81.0 업데이트
+- epScript `co_linetable` 재작성 Rust로 변경
+- epScript 파서에서 연속 상수 DoActions 병합
+- 페이로드/상수 인코딩 핫패치 디스패치 오버헤드 최적화
+- `_memcpy`, `f_memcmp`, `f_randomize`, `EUDLoopPlayerUnit` 루프 분기 조건 최적화
+- epScript 라이브러리 지연 로딩
+- stormlib-rs를 서브모듈 대신 벤더링 — 중첩 서브모듈 불필요
+- freezeMpq가 이제 GIL 없는 모듈로 변경
+- `mkdist.py`에서 증분 빌드 시 freezeMpq를 명시적으로 복하도록 개선
+
+### 버그 수정
+- 임시값이 빌려지는 동안 삭제되는 버그 수정
+- `i32::MIN`/`i64::MIN`으로 인한 오버플로우 패닉 방지
+- 골리앗의 tranwire가 레이스로 잘못 표시되는 버그 수정
+- `train_unit_command` 오타 수정
+- 사용 중단된 `locale.getdefaultlocale()` 대체
+
 ## [0.10.2.5] - 2025.08.04
 ### 버그 수정
 - `f_dbstr_addstr` 반복 호출 시 리턴값이 증가하는 버그 수정.

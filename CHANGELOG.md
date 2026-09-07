@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.11.0.0] - 2026.09.07
+### Changed
+- Updated Python 3.13.5 → 3.14t (free-threaded build)
+
+### Added
+- Added GitHub Actions CI/CD for cross-platform release builds (Windows, macOS, Linux)
+- Cross-platform `libepScriptLib` — now builds and ships for Linux, macOS, and Windows
+- Added build documentation
+
+### Improved
+- Updated eudplib 0.81.0
+- epScript `co_linetable` rewriting in Rust
+- Merge consecutive constant DoActions in epScript parser
+- Trim hot-path dispatch overhead in payload/const encoding
+- Optimize `_memcpy`, `f_memcmp`, `f_randomize`, `EUDLoopPlayerUnit` loop branch conditions
+- Lazy-load the epScript library
+- Vendor stormlib-rs instead of submodule — no nested submodules needed
+- freezeMpq is now a no-GIL module
+- Improved `mkdist.py` to explicitly copy freezeMpq for incremental builds
+
+### Bugfix
+- Fix temporary values dropped while borrowed
+- Prevent panic by overflow with `i32::MIN`/`i64::MIN`
+- Fix incorrect tranwire for Goliath (was Wraith)
+- Fix `train_unit_command` typo
+- Replace deprecated `locale.getdefaultlocale()`
+
 ## [0.10.2.5] - 2025.08.04
 ### Bugfix
 - Fixed a bug where repeated calls to `f_dbstr_addstr` caused the return value to increase unexpectedly.

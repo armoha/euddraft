@@ -99,6 +99,11 @@ else:
 
 cleanOutput(buildDir)
 
+# Copy platform-specific extras into the build directory
+epTraceSrc = os.path.join(here, "epTrace.exe")
+if os.path.exists(epTraceSrc):
+    shutil.copy(epTraceSrc, buildDir)
+
 for outputZipPath in outputZipList:
     print(f"Packaging to {outputZipPath}")
     packageZip(buildDir, outputZipPath, version)

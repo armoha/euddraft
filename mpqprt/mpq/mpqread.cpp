@@ -7,6 +7,7 @@
 #include "mpqtypes.h"
 #include "mpqcrypt.h"
 #include "cmpdcmp.h"
+#include "utf8path.h"
 #include <vector>
 #include <set>
 #include <sstream>
@@ -73,7 +74,12 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
     try {
         is.exceptions(std::ifstream::failbit|std::ifstream::badbit);
 
+#ifdef _WIN32
+        std::wstring wpath = utf8ToWide(mpqName);
+        is.open(wpath.c_str(), std::ios_base::in | std::ios_base::binary);
+#else
         is.open(mpqName, std::ios_base::in | std::ios_base::binary);
+#endif
         is.read(reinterpret_cast<char*>(&header), sizeof(header));
         if(header.sectorSizeShift != 3) {
             throw std::runtime_error("Invalid sectorSizeShift");

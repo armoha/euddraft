@@ -36,7 +36,7 @@ import msgbox
 from pluginLoader import getGlobalPluginDirectory
 from readconfig import readconfig
 
-version = "0.10.2.5"
+version = "0.11.0.0"
 
 
 def applylib():
@@ -221,10 +221,6 @@ if __name__ == "__main__" or __name__ == "euddraft__main__":
         ofname = sfname[:-4] + " prt.scx"
         ep.SaveMap(ofname, payloadMain)
         print("[Stage 4/3] Applying freeze mpq modification...")
-        try:
-            ofname = ofname.encode("mbcs")
-        except LookupError:
-            ofname = ofname.encode(sys.getfilesystemencoding())
         ret = freezeMpq.applyFreezeMpqModification(ofname, ofname)
         if ret != 0:
             raise RuntimeError("Error on mpq protection (%d)" % ret)
