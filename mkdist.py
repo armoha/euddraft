@@ -58,7 +58,7 @@ def buildFreezeMpq() -> None:
     ext = "pyd" if os.name == "nt" else "so"
     candidates = [
         f
-        for f in glob.glob(os.path.join(cmakeBuildDir, "freezeMpq.*"))
+        for f in glob.glob(os.path.join(cmakeBuildDir, "**", "freezeMpq.*"), recursive=True)
         if os.path.isfile(f)
     ]
     if not candidates:
