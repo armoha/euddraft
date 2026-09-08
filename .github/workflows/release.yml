@@ -28,27 +28,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
+          fetch-depth: 0
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
 
-      - name: Install cmake (Ubuntu)
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y cmake
-
-      - name: Install cmake (macOS)
-        if: runner.os == 'macOS'
-        run: brew install cmake
+        run: sudo apt-get update && sudo apt-get install -y libbz2-dev
 
       - name: Install dependencies
         run: uv sync
 
       - name: Build release
+        env:
+          CFLAGS: "-Dfdopen=fdopen"
         run: uv run python mkdist.py
 
       - name: Upload artifact
