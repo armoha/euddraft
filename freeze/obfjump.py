@@ -83,7 +83,11 @@ class CallerProxy(ConstExpr):
 
         ptrV = Evaluate(self.ptr)
         ep_assert(ptrV._is_ptr(), "Invalid ptrV.rlocmode")
-        return RlocInt(ptrV.offset - self.modv, 0)
+        raw = ptrV.offset - self.modv
+        raw &= 0xFFFFFFFF
+        if raw >= 0x80000000:
+            raw -= 0x100000000
+        return RlocInt(raw, 0)
 
 
 def ObfuscatedJump():
