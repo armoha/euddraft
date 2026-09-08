@@ -108,5 +108,5 @@ for outputZipPath in outputZipList:
     print(f"Packaging to {outputZipPath}")
     packageZip(buildDir, outputZipPath, version)
 
-with open("latest/VERSION", "w") as version_file:
+with open("latest/VERSION", "w", newline="") as version_file:
     version_file.write(version)
