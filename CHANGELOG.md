@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.11.0.1] - 2026.09.09
+### Bugfix
+- Fix freezeMpq glob selecting `.lib` import library instead of `.pyd` on Windows
+- Fix `CallerProxy.Evaluate` i32 overflow with eudplib 0.81.0
+
 ## [0.11.0.0] - 2026.09.07
 ### Changed
 - Updated Python 3.13.5 → 3.14t (free-threaded build)
