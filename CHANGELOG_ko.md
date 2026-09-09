@@ -1,9 +1,14 @@
 # 변경 사항 (한국어)
 
 ## [0.11.0.1] - 2026.09.09
+### 기능 추가
+- freeze 보호 맵에서 `sectorSize` 설정 지원 (`[main] sectorSize: 3~15`); 섹터 크기가 인게임 키 계산에 반영됨
+- freeze에서 가짜 빈 `staredit\scenario.chk` 지원 (섹터 크기 `SaveMap`이 추가하는 항목): 실제 chk 블록을 선택하고 가짜 항목은 제거
+
 ### 버그 수정
 - Windows에서 freezeMpq glob이 `.pyd` 대신 `.lib` 임포트 라이브러리를 선택하는 문제 수정
 - eudplib 0.81.0에서 `CallerProxy.Evaluate` i32 오버플로우 수정
+- LP64 플랫폼에서 MPQ 암호화 루틴이 64비트 `unsigned long`을 사용해 해시 테이블 복호화가 깨지고 `(keyfile) not found` 오류로 freeze가 실패하던 문제 수정
 
 ## [0.11.0.0] - 2026.09.07
 ### 기능 변경

@@ -1,9 +1,14 @@
 # Changelog
 
 ## [0.11.0.1] - 2026.09.09
+### Added
+- Support custom `sectorSize` (`[main] sectorSize: 3~15`) in freeze-protected maps; the sector size is threaded into the in-game key calculation
+- Support the fake empty `staredit\scenario.chk` (added by sector-size `SaveMap`) in freeze: the real chk block is selected and decoy entries are dropped
+
 ### Bugfix
 - Fix freezeMpq glob selecting `.lib` import library instead of `.pyd` on Windows
 - Fix `CallerProxy.Evaluate` i32 overflow with eudplib 0.81.0
+- Fix MPQ crypt routines using 64-bit `unsigned long` on LP64 platforms, which corrupted hash-table decryption and failed freeze with `(keyfile) not found`
 
 ## [0.11.0.0] - 2026.09.07
 ### Changed
