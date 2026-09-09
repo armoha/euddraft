@@ -5,11 +5,12 @@
 #include <cctype>
 #include <cassert>
 #include <cstring>
+#include <cstdint>
 #include <vector>
 #include <functional>
 #include "mpqcrypt.h"
 
-unsigned long dwCryptTable[0x500];
+uint32_t dwCryptTable[0x500];
 
 // The encryption and hashing functions use a number table in their procedures. This table must be initialized before the functions are called the first time.
 void InitializeCryptTable()
@@ -18,16 +19,16 @@ void InitializeCryptTable()
     if(inited) return;
     inited = true;
 
-    unsigned long seed   = 0x00100001;
-    unsigned long index1 = 0;
-    unsigned long index2 = 0;
+    uint32_t seed   = 0x00100001;
+    uint32_t index1 = 0;
+    uint32_t index2 = 0;
     int   i;
 
     for (index1 = 0; index1 < 0x100; index1++)
     {
         for (index2 = index1, i = 0; i < 5; i++, index2 += 0x100)
         {
-            unsigned long temp1, temp2;
+            uint32_t temp1, temp2;
 
             seed  = (seed * 125 + 3) % 0x2AAAAB;
             temp1 = (seed & 0xFFFF) << 0x10;
@@ -40,16 +41,16 @@ void InitializeCryptTable()
     }
 }
 
-void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
+void EncryptData(void *lpbyBuffer, uint32_t dwLength, uint32_t dwKey)
 {
     InitializeCryptTable();
     assert(lpbyBuffer);
 
-    unsigned long *lpdwBuffer = (unsigned long *)lpbyBuffer;
-    unsigned long seed = 0xEEEEEEEE;
-    unsigned long ch;
+    uint32_t *lpdwBuffer = (uint32_t *)lpbyBuffer;
+    uint32_t seed = 0xEEEEEEEE;
+    uint32_t ch;
 
-    dwLength /= sizeof(unsigned long);
+    dwLength /= sizeof(uint32_t);
 
     while(dwLength-- > 0)
     {
@@ -63,23 +64,23 @@ void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
     }
 }
 
-void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
+void DecryptData(void *lpbyBuffer, uint32_t dwLength, uint32_t dwKey)
 {
     InitializeCryptTable();
     assert(lpbyBuffer);
 
-    unsigned long *lpdwBuffer = (unsigned long *)lpbyBuffer;
-    unsigned long seed = 0xEEEEEEEEL;
-    unsigned long ch;
+    uint32_t *lpdwBuffer = (uint32_t *)lpbyBuffer;
+    uint32_t seed = 0xEEEEEEEE;
+    uint32_t ch;
 
-    dwLength /= sizeof(unsigned long);
+    dwLength /= sizeof(uint32_t);
 
     while(dwLength-- > 0)
     {
         seed += dwCryptTable[0x400 + (dwKey & 0xFF)];
         ch = *lpdwBuffer ^ (dwKey + seed);
 
-        dwKey = ((~dwKey << 0x15) + 0x11111111L) | (dwKey >> 0x0B);
+        dwKey = ((~dwKey << 0x15) + 0x11111111) | (dwKey >> 0x0B);
         seed = ch + seed + (seed << 5) + 3;
 
         *lpdwBuffer++ = ch;
@@ -89,7 +90,7 @@ void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey)
 // Different types of hashes to make with HashString
 
 // Based on code from StormLib.
-unsigned long HashString(const char *lpszString, unsigned long dwHashType)
+uint32_t HashString(const char *lpszString, uint32_t dwHashType)
 {
     InitializeCryptTable();
     assert(lpszString);
@@ -99,8 +100,8 @@ unsigned long HashString(const char *lpszString, unsigned long dwHashType)
         while (strchr(lpszString,'\\') != NULL) lpszString = strchr(lpszString,'\\') + 1;
 
 
-    unsigned long  seed1 = 0x7FED7FEDL;
-    unsigned long  seed2 = 0xEEEEEEEEL;
+    uint32_t  seed1 = 0x7FED7FED;
+    uint32_t  seed2 = 0xEEEEEEEE;
     int    ch;
 
     while (*lpszString != 0)

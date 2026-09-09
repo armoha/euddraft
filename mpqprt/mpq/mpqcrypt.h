@@ -8,15 +8,15 @@
 #include "mpqtypes.h"
 #include <functional>
 
-void EncryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey);
-void DecryptData(void *lpbyBuffer, unsigned long dwLength, unsigned long dwKey);
+void EncryptData(void *lpbyBuffer, uint32_t dwLength, uint32_t dwKey);
+void DecryptData(void *lpbyBuffer, uint32_t dwLength, uint32_t dwKey);
 
 #define MPQ_HASH_TABLE_OFFSET	0
 #define MPQ_HASH_NAME_A	1
 #define MPQ_HASH_NAME_B	2
 #define MPQ_HASH_FILE_KEY	3
 
-unsigned long HashString(const char *lpszString, unsigned long dwHashType);
+uint32_t HashString(const char *lpszString, uint32_t dwHashType);
 uint32_t GetFileDecryptKey(const void *buffer, uint32_t bufferSize, uint32_t expectedFirstDword,
                            const std::function<bool(const void *)> &validator);
 
