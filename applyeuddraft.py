@@ -42,13 +42,13 @@ from pluginLoader import (
 from readconfig import readconfig
 
 
-def createPayloadMain(pluginFuncDict):
+def createPayloadMain(pluginFuncDict, sector_size=4096):
     @ep.EUDFunc
     def payloadMain():
         """Main function of euddraft payload."""
         # init plugins
         if isFreezeIssued():
-            unFreeze()
+            unFreeze(sector_size)
             # ep.PRT_SetInliningRate(0.05)
 
         for onPluginStart in pluginFuncDict.get("onPluginStart", []):
@@ -210,9 +210,6 @@ def applyEUDDraft(sfname):
 
         print("--------- Injecting plugins... ---------")
 
-        payloadMain = createPayloadMain(pluginFuncDict)
-        ep.CompressPayload(True)
-
         if IsSCDBMap():
             if isFreezeIssued():
                 raise RuntimeError(
@@ -220,10 +217,13 @@ def applyEUDDraft(sfname):
                 )
             print("SCDB - sectorSize disabled")
             sectorSize = None
-        elif isFreezeIssued():
-            # FIXME: Add variable sectorSize support for freeze
-            print("Freeze - sectorSize disabled")
-            sectorSize = None
+        if sectorSize is None:
+            sector_size_bytes = 4096
+        else:
+            sector_size_bytes = 512 << sectorSize
+        payloadMain = createPayloadMain(pluginFuncDict, sector_size_bytes)
+        ep.CompressPayload(True)
+
         ep.SaveMap(ofname, payloadMain, sector_size=sectorSize)
 
         if isFreezeIssued():

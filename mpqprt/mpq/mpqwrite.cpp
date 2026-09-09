@@ -75,6 +75,34 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 		}
     }
 
+    // SaveMap with a custom sectorSize adds a fake empty "staredit\scenario.chk"
+    // (under a different locale) alongside the real one, so the hash table may
+    // contain several entries with the scenario.chk hash. Keep only the entry
+    // with the largest block (the real chk) and drop the fakes: the in-game key
+    // search takes the first hash match, which would otherwise be ambiguous.
+    {
+        int bestIdx = -1;
+        uint32_t bestSize = 0;
+        for (int i = 0; i < hashEntryCount; i++) {
+            auto& hashEntry = hashTable[i];
+            if (hashEntry.blockIndex >= 0xFFFFFFFE) continue;
+            if (!hashMatch(&hashEntry, "staredit\\scenario.chk")) continue;
+            auto blockEntry = mr->getBlockEntry(hashEntry.blockIndex);
+            if (bestIdx < 0 || blockEntry->fileSize > bestSize) {
+                bestIdx = i;
+                bestSize = blockEntry->fileSize;
+            }
+        }
+        for (int i = 0; i < hashEntryCount; i++) {
+            if (i == bestIdx) continue;
+            auto& hashEntry = hashTable[i];
+            if (hashEntry.blockIndex >= 0xFFFFFFFE) continue;
+            if (!hashMatch(&hashEntry, "staredit\\scenario.chk")) continue;
+            memset(&hashEntry, 0, sizeof(HashTableEntry));
+            hashEntry.blockIndex = 0xFFFFFFFE;
+        }
+    }
+
     // Get blocks & block data
     BlockTable blockTable;
     BlockDataTable blockDataTable;

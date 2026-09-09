@@ -81,7 +81,7 @@ MpqReadImpl::MpqReadImpl(const std::string &mpqName) {
         is.open(mpqName, std::ios_base::in | std::ios_base::binary);
 #endif
         is.read(reinterpret_cast<char*>(&header), sizeof(header));
-        if(header.sectorSizeShift != 3) {
+        if(header.sectorSizeShift > 15) {
             throw std::runtime_error("Invalid sectorSizeShift");
         }
         const size_t sectorSize = 512u << header.sectorSizeShift;
@@ -183,6 +183,8 @@ std::string MpqReadImpl::getDecryptedBlockContent(const HashTableEntry* hashEntr
     bool compressed = blockEntry->fileFlag & BLOCK_COMPRESSED;
     bool encrypted = blockEntry->fileFlag & BLOCK_ENCRYPTED;
     bool imploded = blockEntry->fileFlag & BLOCK_IMPLODED;
+
+    if (blockEntry->blockSize == 0) return {};
 
     // Read entire block
     is.seekg(blockEntry->blockOffset, std::ios_base::beg);

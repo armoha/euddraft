@@ -44,7 +44,7 @@ g_seedKey = None
 # Call patching
 
 
-def unFreeze():
+def unFreeze(sector_size=4096):
     global tKeys, cryptKey
 
     RestorePUPx()
@@ -84,7 +84,7 @@ def unFreeze():
     cryptKeyVal = mix2(cryptKeyVal, 0)
 
     # Calculate key using file data
-    keycalc(seedKey, fileCursor)
+    keycalc(seedKey, fileCursor, sector_size)
     # now seedKey should be equal to destKey.
 
     # Modify tables!

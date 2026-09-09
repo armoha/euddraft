@@ -32,7 +32,7 @@ from .mpqh import getMapHandleEPD
 from .trigutils import ObfuscatedAdd, SetMemoryC, srand, MoveCP
 
 
-def keycalc(seedKey, fileCursor):
+def keycalc(seedKey, fileCursor, sector_size=4096):
     DoActions(srand(), MoveCP(EPD(0x6D0F14)))
     if EUDIf()(Deaths(CurrentPlayer, Exactly, 0, 0)):  # On game
         mpqEPD = getMapHandleEPD()
@@ -143,7 +143,9 @@ def keycalc(seedKey, fileCursor):
 
     # 4. Feed scenario.chk sectorOffsetTable
     chkSector_ = f_dwread_epd(chkBlockEntryEPD)
-    sectorSize = 4096
+    sectorSize = sector_size
+    if sectorSize is None:
+        sectorSize = 4096
     if random.random() >= 0.6:
         ObfuscatedAdd(chkSector_, sectorSize - 1, SetMemoryC(0x6509B0, SetTo, 0))
     else:
