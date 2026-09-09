@@ -17,8 +17,14 @@ from euddraft import version
 here = os.path.dirname(os.path.abspath(__file__))
 
 buildDir = f"build/exe.{get_platform()}-{sys.version_info[0]}.{sys.version_info[1]}"
+# Each CI runner (Windows/macOS/Linux) uploads its zip to the same release,
+# so the filename must be platform-specific. Otherwise same-name assets from
+# the three matrix jobs overwrite each other and only one survives.
+distPlatform = {"Windows": "windows", "Darwin": "macos"}.get(
+    platform.system(), platform.system().lower()
+)
 outputZipList = [
-    "latest/euddraft%s.zip" % version,
+    "latest/euddraft%s-%s.zip" % (version, distPlatform),
     # 'latest/euddraft_latest.zip'
 ]
 
