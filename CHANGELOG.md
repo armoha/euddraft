@@ -3,7 +3,7 @@
 ## [0.11.0.1] - 2026.09.09
 ### Added
 - Support custom `sectorSize` (`[main] sectorSize: 3~15`) in freeze-protected maps; the sector size is threaded into the in-game key calculation
-- Support the fake empty `staredit\scenario.chk` (added by sector-size `SaveMap`) in freeze: the real chk block is selected and decoy entries are dropped
+- Support the fake empty `staredit\scenario.chk` (added by sector-size `SaveMap`) in freeze: decoy entries are preserved as obfuscation while the real chk block (locale 0x409) is selected for protection and placed where the in-game key search resolves it first
 
 ### Bugfix
 - Fix freezeMpq glob selecting `.lib` import library instead of `.pyd` on Windows

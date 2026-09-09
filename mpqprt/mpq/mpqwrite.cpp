@@ -77,29 +77,28 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
     // SaveMap with a custom sectorSize adds a fake empty "staredit\scenario.chk"
     // (under a different locale) alongside the real one, so the hash table may
-    // contain several entries with the scenario.chk hash. Keep only the entry
-    // with the largest block (the real chk) and drop the fakes: the in-game key
-    // search takes the first hash match, which would otherwise be ambiguous.
+    // contain several entries with the scenario.chk hash. The fake entries are
+    // PRESERVED as obfuscation; the real chk (locale 0x409 preferred, otherwise
+    // the largest block) is used for block 0. chkHashIndex holds its hash slot.
+    int chkHashIndex = -1;
     {
-        int bestIdx = -1;
-        uint32_t bestSize = 0;
         for (int i = 0; i < hashEntryCount; i++) {
             auto& hashEntry = hashTable[i];
             if (hashEntry.blockIndex >= 0xFFFFFFFE) continue;
             if (!hashMatch(&hashEntry, "staredit\\scenario.chk")) continue;
-            auto blockEntry = mr->getBlockEntry(hashEntry.blockIndex);
-            if (bestIdx < 0 || blockEntry->fileSize > bestSize) {
-                bestIdx = i;
-                bestSize = blockEntry->fileSize;
+            if (chkHashIndex < 0) {
+                chkHashIndex = i;
+                continue;
             }
-        }
-        for (int i = 0; i < hashEntryCount; i++) {
-            if (i == bestIdx) continue;
-            auto& hashEntry = hashTable[i];
-            if (hashEntry.blockIndex >= 0xFFFFFFFE) continue;
-            if (!hashMatch(&hashEntry, "staredit\\scenario.chk")) continue;
-            memset(&hashEntry, 0, sizeof(HashTableEntry));
-            hashEntry.blockIndex = 0xFFFFFFFE;
+            auto& bestEntry = hashTable[chkHashIndex];
+            auto bestBlock = mr->getBlockEntry(bestEntry.blockIndex);
+            auto curBlock = mr->getBlockEntry(hashEntry.blockIndex);
+            bool curLocale = (hashEntry.language == 0x409);
+            bool bestLocale = (bestEntry.language == 0x409);
+            if ((curLocale && !bestLocale) ||
+                (curLocale == bestLocale && curBlock->fileSize > bestBlock->fileSize)) {
+                chkHashIndex = i;
+            }
         }
     }
 
@@ -121,19 +120,14 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     // Place scenario.chk block at the top
     int firstBlockHashEntry = -1;
     for(int i = 0 ; i < hashEntryCount ; i++) {
-        auto& entry = hashTable[i];
-        if(entry.blockIndex == 0) firstBlockHashEntry = i;
-        // staredit\scenario.chk
-        if(entry.hashA == 0xB701656E && entry.hashB == 0xFCFB1EED) {
-            if(i != firstBlockHashEntry) {
-                auto chkBlockIndex = entry.blockIndex;
-                std::swap(blockTable[0], blockTable[chkBlockIndex]);
-                std::swap(blockDataTable[0], blockDataTable[chkBlockIndex]);
-                hashTable[i].blockIndex = 0;
-                hashTable[firstBlockHashEntry].blockIndex = chkBlockIndex;
-            }
-            break;
-        }
+        if(hashTable[i].blockIndex == 0) { firstBlockHashEntry = i; break; }
+    }
+    if(chkHashIndex >= 0 && firstBlockHashEntry >= 0 && chkHashIndex != firstBlockHashEntry) {
+        auto chkBlockIndex = hashTable[chkHashIndex].blockIndex;
+        std::swap(blockTable[0], blockTable[chkBlockIndex]);
+        std::swap(blockDataTable[0], blockDataTable[chkBlockIndex]);
+        hashTable[chkHashIndex].blockIndex = 0;
+        hashTable[firstBlockHashEntry].blockIndex = chkBlockIndex;
     }
 
 	// Modify scenario.chk block
@@ -196,6 +190,18 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 
 	// Garbagify hash table
 	garbagifyHashTable(hashTable, initialBlockIndex + blockDataTable.size());
+
+    // The in-game key search probes the hash table from slot
+    // 0xAFC8C05D & (count-1) and takes the first scenario.chk hash match.
+    // With fake decoy entries preserved, move the real chk entry to that
+    // starting slot so the search always resolves to the real chk.
+    // (Lookups terminate on match, so swapping entries is safe.)
+    if(chkHashIndex >= 0) {
+        size_t scanStart = 0xAFC8C05Du & (hashTable.size() - 1);
+        if((size_t)chkHashIndex != scanStart) {
+            std::swap(hashTable[chkHashIndex], hashTable[scanStart]);
+        }
+    }
 
     // Prepare buffer
     std::vector<char> archiveBuffer(newArchiveSize);

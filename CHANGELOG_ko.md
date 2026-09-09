@@ -3,7 +3,7 @@
 ## [0.11.0.1] - 2026.09.09
 ### 기능 추가
 - freeze 보호 맵에서 `sectorSize` 설정 지원 (`[main] sectorSize: 3~15`); 섹터 크기가 인게임 키 계산에 반영됨
-- freeze에서 가짜 빈 `staredit\scenario.chk` 지원 (섹터 크기 `SaveMap`이 추가하는 항목): 실제 chk 블록을 선택하고 가짜 항목은 제거
+- freeze에서 가짜 빈 `staredit\scenario.chk` 지원 (섹터 크기 `SaveMap`이 추가하는 항목): 가짜 항목은 난독화용으로 유지하면서 실제 chk 블록(로케일 0x409)을 선택해 인게임 키 탐색이 가장 먼저 찾도록 배치
 
 ### 버그 수정
 - Windows에서 freezeMpq glob이 `.pyd` 대신 `.lib` 임포트 라이브러리를 선택하는 문제 수정
