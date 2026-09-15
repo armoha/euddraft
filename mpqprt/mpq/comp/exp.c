@@ -46,6 +46,11 @@ typedef struct
     unsigned short LenBase[0x10];       // 3114 - Buffer for
 } TDcmpStruct;
 
+// Work buffer is sized by EXP_BUFFER_SIZE in pklib.h; catch growth here.
+// (typedef trick instead of _Static_assert: works in any C dialect/MSVC.)
+typedef char TDcmpStruct_fits_EXP_BUFFER[
+    sizeof(TDcmpStruct) <= EXP_BUFFER_SIZE ? 1 : -1];
+
 //-----------------------------------------------------------------------------
 // Tables
 

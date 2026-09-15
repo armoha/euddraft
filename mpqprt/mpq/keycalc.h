@@ -1,9 +1,14 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 #include "mpqtypes.h"
 
+// Bit-exact counterpart of freeze/keycalc.py + freeze/crypt.py.
+// All arithmetic is mod 2**32; dwData is the whole archive viewed as
+// little-endian u32 words. Throws std::invalid_argument on null/implausible
+// inputs instead of invoking undefined behavior.
 void keycalc(
 	const uint32_t seedKey[4],
 	const uint32_t destKey[4],

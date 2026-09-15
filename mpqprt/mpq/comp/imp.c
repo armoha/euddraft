@@ -53,6 +53,11 @@ typedef struct
     unsigned short offs49D0[0x2000];    // 49D0 :
 } TCmpStruct;
 
+// Work buffer is sized by CMP_BUFFER_SIZE in pklib.h; catch growth here.
+// (typedef trick instead of _Static_assert: works in any C dialect/MSVC.)
+typedef char TCmpStruct_fits_CMP_BUFFER[
+    sizeof(TCmpStruct) <= CMP_BUFFER_SIZE ? 1 : -1];
+
 //-----------------------------------------------------------------------------
 // Tables
 

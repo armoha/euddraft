@@ -21,8 +21,11 @@
 //-----------------------------------------------------------------------------
 // Defines
 
-#define CMP_BUFFER_SIZE    36312        // Size of compression buffer
-#define EXP_BUFFER_SIZE    12596        // Size of decompress buffer
+// NOTE: the structs in imp.c / exp.c were laid out assuming 32-bit
+// long/pointers. On 64-bit platforms the structs are larger, so these
+// buffers carry slack. Compile-time asserts in imp.c / exp.c verify fit.
+#define CMP_BUFFER_SIZE    40408        // Size of compression buffer
+#define EXP_BUFFER_SIZE    16692        // Size of decompress buffer
 
 #define CMP_BINARY             0        // Binary compression
 #define CMP_ASCII              1        // Ascii compression

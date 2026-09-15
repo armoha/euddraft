@@ -120,8 +120,9 @@ uint32_t HashString(const char *lpszString, uint32_t dwHashType)
 
 uint32_t GetFileDecryptKey(const void *buffer, uint32_t bufferSize, uint32_t expectedFirstDword,
                            const std::function<bool(const void *)> &validator) {
-    if (bufferSize < 4) return 0xffffffff;
-    uint8_t *decryptedBuffer = nullptr;
+    if (buffer == nullptr || bufferSize < 4) return 0xffffffff;
+    // RAII buffer: no manual new[]/delete[], exception-safe if validator throws.
+    std::vector<uint8_t> decryptedBuffer;
 
     // We know that decryptedOffsetTable[0] should be offsetTableLength.
     // Exploit storm encryption algorithm with that knowledge.
@@ -133,21 +134,21 @@ uint32_t GetFileDecryptKey(const void *buffer, uint32_t bufferSize, uint32_t exp
         // dwKey = (ch ^ *lpdwBuffer) - seed0
         // Check if this equation holds.
         const uint32_t seed = 0xEEEEEEEE + dwCryptTable[0x400 + dwKeyLobyte];
-        const uint32_t dwKey = (*(uint32_t *) buffer ^ expectedFirstDword) - seed;
-        if((dwKey & 0xff) == dwKeyLobyte) {  // Viable candidate
-            if (!decryptedBuffer) decryptedBuffer = new uint8_t[bufferSize];
+        uint32_t firstDword;
+        memcpy(&firstDword, buffer, sizeof(firstDword));
+        const uint32_t dwKey = (firstDword ^ expectedFirstDword) - seed;
+        if((dwKey & 0xff) == (uint32_t)dwKeyLobyte) {  // Viable candidate
+            if (decryptedBuffer.empty()) decryptedBuffer.resize(bufferSize);
             // Do full decryption and check if decrypted offset table is valid.
-            memcpy(decryptedBuffer, buffer, bufferSize);
-            DecryptData(decryptedBuffer, bufferSize, dwKey);
+            memcpy(decryptedBuffer.data(), buffer, bufferSize);
+            DecryptData(decryptedBuffer.data(), bufferSize, dwKey);
 
-            if (validator(decryptedBuffer)) {
-                delete[] decryptedBuffer;
+            if (validator(decryptedBuffer.data())) {
                 return dwKey;
             }
         }
     }
 
     // Cannot find viable candidate.
-    delete[] decryptedBuffer;  // This works even if decryptedBuffer == nullptr
     return 0xFFFFFFFF;
 }

@@ -1,7 +1,9 @@
 #include "mpqread.h"
 #include "mpqwrite.h"
-#include <fstream>
+#include <cstdio>
 #include <cstring>
+#include <exception>
+#include <fstream>
 
 int main(int argc, char** argv) {
     if(argc != 2) return -1;
@@ -17,7 +19,7 @@ int main(int argc, char** argv) {
 		os.write(data.data(), data.size());
 		os.close();
 	}
-    catch (std::runtime_error e) {
+    catch (const std::exception& e) {
         puts(e.what());
 		return -2;
     }

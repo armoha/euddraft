@@ -54,6 +54,19 @@ add_subdirectory(pybind11)
 pybind11_add_module(freeze_pyext ${SOURCE_FILES} mpq/pybindmain.cpp)
 set_target_properties(freeze_pyext PROPERTIES OUTPUT_NAME "freezeMpq")
 
+option(FREEZE_BUILD_TESTS "Build freeze unit tests" ON)
+if (FREEZE_BUILD_TESTS)
+    enable_testing()
+    add_executable(mpq_unit_tests
+        ${SOURCE_FILES}
+        mpq/test_main.cpp
+        mpq/test/test_cmpdcmp.cpp
+        mpq/test/test_keycalc_crypt.cpp
+    )
+    target_include_directories(mpq_unit_tests PRIVATE mpq)
+    add_test(NAME mpq_unit_tests COMMAND mpq_unit_tests)
+endif()
+
 # Copy the built extension into euddraft's lib/ directory so that the
 # frozen application can `import freezeMpq`. Extension suffix is .pyd on
 # Windows and .so on Linux / macOS.

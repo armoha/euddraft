@@ -487,7 +487,12 @@ void __fastcall Deflate(LPVOID lpvDestinationMem, LPDWORD lpdwCompressedSize, LP
 		}
 	}
 
-	compress2((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwCompressedSize,(LPBYTE)lpvSourceMem,dwDecompressedSize,dwCompressLevel);
+	// NOTE: zlib uses uLong (64-bit on LP64) for lengths while our ABI uses
+	// 32-bit LPDWORD. Never cast LPDWORD to unsigned long* (heap/stack
+	// corruption on Linux/macOS); bounce through a uLong temp instead.
+	uLongf destLen = *lpdwCompressedSize;
+	compress2((LPBYTE)lpvDestinationMem, &destLen, (LPBYTE)lpvSourceMem, dwDecompressedSize, dwCompressLevel);
+	*lpdwCompressedSize = (DWORD)destLen;
 	*lpdwCompressionSubType = 0;
 }
 
@@ -624,7 +629,11 @@ void __fastcall HuffmanDecompress(LPVOID lpvDestinationMem, LPDWORD lpdwDecompre
 
 void __fastcall Inflate(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)
 {
-	uncompress((LPBYTE)lpvDestinationMem,(unsigned long *)lpdwDecompressedSize,(LPBYTE)lpvSourceMem,dwCompressedSize);
+	// See Deflate above: bounce through uLong instead of casting LPDWORD
+	// (32-bit) to unsigned long* (64-bit on LP64).
+	uLongf destLen = *lpdwDecompressedSize;
+	uncompress((LPBYTE)lpvDestinationMem, &destLen, (LPBYTE)lpvSourceMem, dwCompressedSize);
+	*lpdwDecompressedSize = (DWORD)destLen;
 }
 
 void __fastcall Explode(LPVOID lpvDestinationMem, LPDWORD lpdwDecompressedSize, LPCVOID lpvSourceMem, DWORD dwCompressedSize)

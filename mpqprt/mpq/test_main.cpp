@@ -13,7 +13,9 @@ int main(int argc, char** argv) {
 	context.applyCommandLine(argc, argv);
 
 	int res = context.run(); // run
+#ifdef _WIN32
 	system("pause");
+#endif
 
 	if (context.shouldExit()) // important - query flags (and --exit) rely on the user doing this
 		return res;          // propagate the result of the tests
