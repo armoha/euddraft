@@ -1,0 +1,43 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  mpq-unit-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.14"
+
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # Only a bare interpreter is needed: pybind11's CMake configure
+      # requires Python dev headers, but the tests link no Python code.
+      - name: Create venv
+        run: uv venv --python 3.14
+
+      - name: Configure
+        run: uv run --no-sync cmake -S mpqprt -B build/mpqtest -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: uv run --no-sync cmake --build build/mpqtest --target mpq_unit_tests --config Release
+
+      - name: Run
+        run: uv run --no-sync ctest --test-dir build/mpqtest -C Release --output-on-failure

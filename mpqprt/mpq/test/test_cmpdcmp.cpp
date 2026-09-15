@@ -1,5 +1,6 @@
 #include "../doctest.h"
 #include <stdlib.h>
+#include <string.h>
 #include "../cmpdcmp.h"
 #include "../doctest.h"
 
@@ -12,5 +13,11 @@ TEST_CASE("Compression & decompression")
 
 	std::string cmp = compressToBlock(data, MAFA_COMPRESS_STANDARD, MAFA_COMPRESS_STANDARD, 4096);
 	std::string dcmp = decompressBlock(s_size, cmp, 4096);
-	CHECK(dcmp == data);
+	// NOTE: compare via size + memcmp (integral CHECKs) instead of
+	// CHECK(dcmp == data): doctest has no std::string overload, so the
+	// latter instantiates operator<<(ostream, string), which some
+	// toolchains fail to provide at link time.
+	CHECK(dcmp.size() == data.size());
+	CHECK(dcmp.size() == (size_t)s_size);
+	CHECK(memcmp(dcmp.data(), data.data(), data.size()) == 0);
 }

@@ -5,6 +5,7 @@
 #include "mpqtypes.h"
 #include "mpqwrite.h"
 #include "mpqcrypt.h"
+#include <cstdint>
 #include <vector>
 #include <set>
 #include <cstring>
@@ -36,6 +37,13 @@ bool hashMatch(const HashTableEntry* hashEntry, const char* filename)
 }
 
 void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex);
+
+// Deterministic overload for unit tests with an injected engine. Same behavior
+// as below. Production path keeps random_device (output is
+// intentionally non-byte-identical run to run; tests must assert invariants,
+// not golden bytes).
+void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex,
+                        std::mt19937& gen);
 
 
 std::string createEncryptedMPQ(MpqReadPtr mr) {
@@ -292,8 +300,12 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
 }
 
 
-void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex)
+void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex,
+                        std::mt19937& gen)
 {
+	if (maxBlockIndex <= 0) {
+		throw std::invalid_argument("garbagifyHashTable: maxBlockIndex must be positive");
+	}
 	// Garbagify hash table
 	std::set<uint32_t> nameHashSet;
 	for (auto& hashEntry: hashTable)
@@ -301,8 +313,6 @@ void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockInde
 		nameHashSet.insert(hashEntry.hashA);
 		nameHashSet.insert(hashEntry.hashB);
 	}
-	std::random_device rd;
-	std::mt19937 gen(rd());
 	std::uniform_int_distribution<uint32_t> dis;
 	auto randomPick = [&]()
 	{
@@ -317,7 +327,15 @@ void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockInde
 		{
 			hashEntry.hashA = randomPick();
 			hashEntry.hashB = randomPick();
-			hashEntry.blockIndex = dis(gen) % (maxBlockIndex);
+			hashEntry.blockIndex = dis(gen) % (uint32_t)(maxBlockIndex);
 		}
 	}
+}
+
+
+void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockIndex)
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	garbagifyHashTable(hashTable, maxBlockIndex, gen);
 }

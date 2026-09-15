@@ -1,8 +1,10 @@
 #include "mpqread.h"
 #include "mpqwrite.h"
 #include "utf8path.h"
-#include <fstream>
+#include <cstdio>
 #include <cstring>
+#include <exception>
+#include <fstream>
 #include <pybind11/pybind11.h>
 
 int applyFreezeMpqModification(
@@ -23,7 +25,7 @@ int applyFreezeMpqModification(
         os.write(data.data(), data.size());
         os.close();
     }
-    catch (std::runtime_error e) {
+    catch (const std::exception& e) {
         puts(e.what());
         return -2;
     }
