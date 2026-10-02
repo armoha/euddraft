@@ -46,6 +46,22 @@ void garbagifyHashTable(std::vector<HashTableEntry>& hashTable, int maxBlockInde
                         std::mt19937& gen);
 
 
+uint32_t freezeBlockTableEntryCount(size_t blockTableOffset, size_t blockDataCount) {
+	uint64_t count = (blockTableOffset >> 4) + blockDataCount + 2;
+	if (count > kMaxBlockTableEntryCount) {
+		throw std::runtime_error(
+			"Cannot apply freeze protection: inflated block table entry count " +
+			std::to_string(count) +
+			" exceeds the SC:R limit of " +
+			std::to_string(kMaxBlockTableEntryCount) +
+			" entries (4 MiB). The compressed scenario.chk is too large for "
+			"freeze protection; keep it under ~4 MiB or disable freeze "
+			"([freeze] freeze : 0).");
+	}
+	return static_cast<uint32_t>(count);
+}
+
+
 std::string createEncryptedMPQ(MpqReadPtr mr) {
 	// Read map keys
 	uint32_t keyDwords[9];
@@ -226,7 +242,7 @@ std::string createEncryptedMPQ(MpqReadPtr mr) {
     header.hashTableOffset = hashTableOffset;
     header.blockTableOffset = 0;
     header.hashTableEntryCount = hashTable.size();
-    header.blockTableEntryCount = (blockTableOffset >> 4) + blockDataTable.size() + 2;
+    header.blockTableEntryCount = freezeBlockTableEntryCount(blockTableOffset, blockDataTable.size());
     memcpy(archiveBuffer.data(), &header, sizeof(MPQHeader));
 
     // Write scenario.chk

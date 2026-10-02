@@ -62,6 +62,7 @@ if (FREEZE_BUILD_TESTS)
         mpq/test_main.cpp
         mpq/test/test_cmpdcmp.cpp
         mpq/test/test_keycalc_crypt.cpp
+        mpq/test/test_mpqwrite.cpp
     )
     target_include_directories(mpq_unit_tests PRIVATE mpq)
     add_test(NAME mpq_unit_tests COMMAND mpq_unit_tests)
